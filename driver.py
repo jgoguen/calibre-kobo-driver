@@ -136,11 +136,6 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 	OPT_EXTRA_FEATURES = 12
 
 	def _modify_epub(self, file):
-		opts = self.settings()
-		if not opts.extra_customization[self.OPT_EXTRA_FEATURES]:
-			debug_print("KoboTouchExtended:_modify_epub:Extended features not enabled")
-			return False
-
 		debug_print("KoboTouchExtended:_modify_epub:Processing file {0}".format(file))
 		changed = False
 		container = Container(file)
@@ -149,7 +144,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 			return False
 
 		for name in container.get_html_names():
-			debug_print("KoboTouchExtended:_modify_epub:Processing HTML contents {0}#{1}".format(file, name))
+			debug_print("KoboTouchExtended:_modify_epub:Processing HTML {0}".format(name))
 			root = container.get_parsed(name)
 			count = 0
 
@@ -183,112 +178,117 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 		return changed
 
 	def upload_books(self, files, names, on_card = None, end_session = True, metadata = None):
-		for file in files:
-			ext = file[file.rfind('.'):]
-			if ext == EPUB_EXT:
-				self._modify_epub(file)
+		opts = self.settings()
+		if opts.extra_customization[self.OPT_EXTRA_FEATURES]:
+			debug_print("KoboTouchExtended:upload_books:Enabling extra ePub features for Kobo devices")
+			for file in files:
+				ext = file[file.rfind('.'):]
+				if ext == EPUB_EXT:
+					self._modify_epub(file)
+
 		result = super(KOBOTOUCHEXTENDED, self).upload_books(files, names, on_card, end_session, metadata)
 
-		db = sqlite.connect(os.path.join(self._main_prefix, ".kobo", "KoboReader.sqlite"), isolation_level = None)
-		db.text_factory = lambda x: unicode(x, "utf-8", "ignore")
+		if opts.extra_customization[self.OPT_EXTRA_FEATURES]:
+			db = sqlite.connect(os.path.join(self._main_prefix, ".kobo", "KoboReader.sqlite"), isolation_level = None)
+			db.text_factory = lambda x: unicode(x, "utf-8", "ignore")
 
-		add_content_query = "INSERT INTO content (ContentID, ContentType, MimeType, BookID, BookTitle, ImageId, Title, Attribution, Description, adobe_location, IsEncrypted, FirstTimeReading, ChapterIDBookmarked, " + \
-		"NumShortcovers, VolumeIndex, ___NumPages, ___FileSize, Accessibility, ___UserID, Publisher, ParagraphBookmarked, BookmarkWordOffset, ___SyncTime, ReadStatus, ___PercentRead, IsDownloaded, Depth, " + \
-		"InWishlist, WishlistedDate, FeedbackTypeSynced, IsSocialEnabled, Language, ___ExpirationStatus, Series, SeriesNumber) VALUES " + \
-		"(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'true', ?, " + \
-		"?, ?, 0, ?, -1, '', ?, 0, 0, ?, 0, 0, 'true', 0, " + \
-		"'false', '', 48, 'true', ?, 0, ?, ?)"
-		add_shortcover_query = "INSERT INTO volume_shortcovers (volumeId, shortcoverId, VolumeIndex) VALUES (?, ?, ?)"
-		for path, card in result:
-			ext = path[path.rfind('.'):]
-			if ext != '.epub':
-				continue
-			epub = None
-			cursor = None
-			try:
-				epub_uri = self.contentid_from_path(path, 6)
-				epub_path = re.sub(r'^file\:\/\/', '', epub_uri)
-				debug_print("KoboTouchExtended:upload_books:URI - {0}".format(epub_uri))
-				debug_print("KoboTouchExtended:upload_books:Path - {0}".format(epub_path))
-				epub = Container(path)
+			add_content_query = "INSERT INTO content (ContentID, ContentType, MimeType, BookID, BookTitle, ImageId, Title, Attribution, Description, adobe_location, IsEncrypted, FirstTimeReading, ChapterIDBookmarked, " + \
+			"NumShortcovers, VolumeIndex, ___NumPages, ___FileSize, Accessibility, ___UserID, Publisher, ParagraphBookmarked, BookmarkWordOffset, ___SyncTime, ReadStatus, ___PercentRead, IsDownloaded, Depth, " + \
+			"InWishlist, WishlistedDate, FeedbackTypeSynced, IsSocialEnabled, Language, ___ExpirationStatus, Series, SeriesNumber) VALUES " + \
+			"(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'true', ?, " + \
+			"?, ?, 0, ?, -1, '', ?, 0, 0, ?, 0, 0, 'true', 0, " + \
+			"'false', '', 48, 'true', ?, 0, ?, ?)"
+			add_shortcover_query = "INSERT INTO volume_shortcovers (volumeId, shortcoverId, VolumeIndex) VALUES (?, ?, ?)"
+			for path, card in result:
+				ext = path[path.rfind('.'):]
+				if ext != '.epub':
+					continue
+				epub = None
+				cursor = None
+				try:
+					epub_uri = self.contentid_from_path(path, 6)
+					epub_path = re.sub(r'^file\:\/\/', '', epub_uri)
+					debug_print("KoboTouchExtended:upload_books:URI - {0}".format(epub_uri))
+					debug_print("KoboTouchExtended:upload_books:Path - {0}".format(epub_path))
+					epub = Container(path)
 
-				metadata = self.metadata_from_path(path)
+					metadata = self.metadata_from_path(path)
 
-				# Create the internal content rows
-				container = epub.get_parsed('META-INF/container.xml')
-				debug_print("KoboTouchExtended:upload_books:Parsing META-INF/container.xml")
-				opf_path = container.xpath('./ns:rootfiles/ns:rootfile/@full-path', namespaces = {"ns": self.container_ns})[0]
-				debug_print("KoboTouchExtended:upload_books:OPF file - {0}".format(opf_path))
+					# Create the internal content rows
+					container = epub.get_parsed('META-INF/container.xml')
+					debug_print("KoboTouchExtended:upload_books:Parsing META-INF/container.xml")
+					opf_path = container.xpath('./ns:rootfiles/ns:rootfile/@full-path', namespaces = {"ns": self.container_ns})[0]
+					debug_print("KoboTouchExtended:upload_books:OPF file - {0}".format(opf_path))
 
-				debug_print("KoboTouchExtended:upload_books:Parsing OPF file {0}".format(opf_path))
-				opf = epub.get_parsed(opf_path)
-				opf_path_prefix = ""
-				idx = opf_path.rfind('/')
-				if idx > -1:
-					opf_path_prefix = opf_path[:idx + 1]
-				content_id_to_href_map = {}
-				ncx_path = None
-				for node in opf.xpath('./ns:manifest/ns:item[@id and @href]', namespaces = {"ns": self.opf_ns}):
-					content_id_to_href_map[node.attrib["id"]] = "{0}{1}".format(opf_path_prefix, node.attrib["href"])
-					if node.attrib["media-type"] == self.ncx_mime_type:
-						ncx_path = "{0}{1}".format(opf_path_prefix, node.attrib["href"])
+					debug_print("KoboTouchExtended:upload_books:Parsing OPF file {0}".format(opf_path))
+					opf = epub.get_parsed(opf_path)
+					opf_path_prefix = ""
+					idx = opf_path.rfind('/')
+					if idx > -1:
+						opf_path_prefix = opf_path[:idx + 1]
+					content_id_to_href_map = {}
+					ncx_path = None
+					for node in opf.xpath('./ns:manifest/ns:item[@id and @href]', namespaces = {"ns": self.opf_ns}):
+						content_id_to_href_map[node.attrib["id"]] = "{0}{1}".format(opf_path_prefix, node.attrib["href"])
+						if node.attrib["media-type"] == self.ncx_mime_type:
+							ncx_path = "{0}{1}".format(opf_path_prefix, node.attrib["href"])
 
-				# Begin the transaction for the entire book
-				cursor = db.cursor()
-				cursor.execute("BEGIN TRANSACTION")
+					# Begin the transaction for the entire book
+					cursor = db.cursor()
+					cursor.execute("BEGIN TRANSACTION")
 
-				# Add general content entries
-				num_rows = 0
-				for id in opf.xpath('./ns:spine[@toc="ncx"]/ns:itemref[@idref]/@idref', namespaces = {"ns": self.opf_ns}):
-					t = ("{0}!!{1}".format(epub_path, content_id_to_href_map[id]), self.content_types["content"], self.kobo_epub_mime_type, epub_uri, metadata.title, "", content_id_to_href_map[id], "", "", "", "false", "",
-						"", num_rows, 0, "", "",
-						"", "", "")
-					cursor.execute(add_content_query, t)
-					t = (epub_uri, "{0}!!{1}".format(epub_path, content_id_to_href_map[id]), num_rows)
-					cursor.execute(add_shortcover_query, t)
-					num_rows += 1
-					debug_print("KoboTouchExtended:upload_books:Inserting new database row for ContentID = {0}, Title = {1}".format("{0}!!{1}".format(epub_path, content_id_to_href_map[id]), content_id_to_href_map[id]))
-
-				# Find the language
-				lang = opf.xpath('./ns:metadata/dc:language/text()', namespaces = {"ns": self.opf_ns, "dc": self.dc_ns})
-				if len(lang) > 0:
-					lang = lang[0]
-				else:
-					lang = "en"
-
-				# Add TOC entries
-				if ncx_path is not None:
-					ncx = epub.get_parsed(ncx_path)
-					hrefs = ncx.xpath('./ns:navMap/ns:navPoint/ns:content[@src]/@src', namespaces = {"ns": self.ncx_mime_type})
-					titles = ncx.xpath('./ns:navMap/ns:navPoint/ns:navLabel/ns:text/text()', namespaces = {"ns": self.ncx_mime_type})
-					for idx in range(len(hrefs)):
-						t = ("{0}!!{1}-1".format(epub_path, hrefs[idx]), self.content_types["toc"], self.kobo_epub_mime_type, epub_uri, metadata.title, "", titles[idx], "", "", "", "false", "{0}!!{1}".format(epub_path, hrefs[idx]),
-							"", idx, 0, "", "",
+					# Add general content entries
+					num_rows = 0
+					for id in opf.xpath('./ns:spine[@toc="ncx"]/ns:itemref[@idref]/@idref', namespaces = {"ns": self.opf_ns}):
+						t = ("{0}!!{1}".format(epub_path, content_id_to_href_map[id]), self.content_types["content"], self.kobo_epub_mime_type, epub_uri, metadata.title, "", content_id_to_href_map[id], "", "", "", "false", "",
+							"", num_rows, 0, "", "",
 							"", "", "")
 						cursor.execute(add_content_query, t)
-						debug_print("KoboTouchExtended:upload_books:Inserting new database row for TOC ContentID = {0} Title = {1}".format("{0}!!{1}-1".format(epub_path, hrefs[idx]), titles[idx]))
+						t = (epub_uri, "{0}!!{1}".format(epub_path, content_id_to_href_map[id]), num_rows)
+						cursor.execute(add_shortcover_query, t)
+						num_rows += 1
+						debug_print("KoboTouchExtended:upload_books:Inserting new database row for ContentID = {0}, Title = {1}".format("{0}!!{1}".format(epub_path, content_id_to_href_map[id]), content_id_to_href_map[id]))
 
-				# Create the main kepub entry
-				t = (epub_uri, self.content_types["main"], self.kobo_epub_mime_type, "", "", self.imageid_from_contentid(epub_uri), metadata.title, authors_to_string(metadata.authors).split(' & ')[0].strip(), metadata.comments, epub_path, "true", "",
-					num_rows, 0, os.path.getsize(path), metadata.publisher, datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
-					lang, metadata.series, metadata.format_series_index())
-				cursor.execute(add_content_query, t)
-				debug_print("KoboTouchExtended:upload_books:Inserting new database row for ePub file {0}, ImageID = {1}".format(path, self.imageid_from_contentid(epub_uri)))
+					# Find the language
+					lang = opf.xpath('./ns:metadata/dc:language/text()', namespaces = {"ns": self.opf_ns, "dc": self.dc_ns})
+					if len(lang) > 0:
+						lang = lang[0]
+					else:
+						lang = "en"
 
-				# Commit the transaction and close the cursor.
-				# MAKE SURE THIS IS AFTER ALL THE BOOK INSERTIONS ARE DONE
-				cursor.execute("COMMIT TRANSACTION")
-				cursor.close()
-			except Exception as e:
-				debug_print("KoboTouchExtended:upload_books:ERROR:{0}".format(e.message))
-				try:
-					if cursor:
-						cursor.execute("ROLLBACK TRANSACTION")
-						cursor.close()
-				except:
-					pass # It's cool, this might not work depending on the internal state
-				raise
-		db.close()
+					# Add TOC entries
+					if ncx_path is not None:
+						ncx = epub.get_parsed(ncx_path)
+						hrefs = ncx.xpath('./ns:navMap/ns:navPoint/ns:content[@src]/@src', namespaces = {"ns": self.ncx_mime_type})
+						titles = ncx.xpath('./ns:navMap/ns:navPoint/ns:navLabel/ns:text/text()', namespaces = {"ns": self.ncx_mime_type})
+						for idx in range(len(hrefs)):
+							t = ("{0}!!{1}-1".format(epub_path, hrefs[idx]), self.content_types["toc"], self.kobo_epub_mime_type, epub_uri, metadata.title, "", titles[idx], "", "", "", "false", "{0}!!{1}".format(epub_path, hrefs[idx]),
+								"", idx, 0, "", "",
+								"", "", "")
+							cursor.execute(add_content_query, t)
+							debug_print("KoboTouchExtended:upload_books:Inserting new database row for TOC ContentID = {0} Title = {1}".format("{0}!!{1}-1".format(epub_path, hrefs[idx]), titles[idx]))
+
+					# Create the main kepub entry
+					t = (epub_uri, self.content_types["main"], self.kobo_epub_mime_type, "", "", self.imageid_from_contentid(epub_uri), metadata.title, authors_to_string(metadata.authors).split(' & ')[0].strip(), metadata.comments, epub_path, "true", "",
+						num_rows, 0, os.path.getsize(path), metadata.publisher, datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
+						lang, metadata.series, metadata.format_series_index())
+					cursor.execute(add_content_query, t)
+					debug_print("KoboTouchExtended:upload_books:Inserting new database row for ePub file {0}, ImageID = {1}".format(path, self.imageid_from_contentid(epub_uri)))
+
+					# Commit the transaction and close the cursor.
+					# MAKE SURE THIS IS AFTER ALL THE BOOK INSERTIONS ARE DONE
+					cursor.execute("COMMIT TRANSACTION")
+					cursor.close()
+				except Exception as e:
+					debug_print("KoboTouchExtended:upload_books:ERROR:{0}".format(e.message))
+					try:
+						if cursor:
+							cursor.execute("ROLLBACK TRANSACTION")
+							cursor.close()
+					except:
+						pass # It's cool, this might not work depending on the internal state
+					raise
+			db.close()
 
 		return result
 
