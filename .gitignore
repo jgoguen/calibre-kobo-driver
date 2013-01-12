@@ -33,3 +33,13 @@ nosetests.xml
 .mr.developer.cfg
 .project
 .pydevproject
+
+# IDE files
+.project
+.pydevproject
+.includepath
+.classpath
+*.xcodeproj
+*.kpf
+*.komodoproject
+.komodotools
