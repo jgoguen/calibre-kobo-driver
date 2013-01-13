@@ -189,6 +189,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 		result = super(KOBOTOUCHEXTENDED, self).upload_books(files, names, on_card, end_session, metadata)
 
 		if opts.extra_customization[self.OPT_EXTRA_FEATURES]:
+			include_images = opts.extra_customization[self.OPT_UPLOAD_COVERS] or opts.extra_customization[self.OPT_ALWAYS_UPLOAD_COVERS]
 			db = sqlite.connect(os.path.join(self._main_prefix, ".kobo", "KoboReader.sqlite"), isolation_level = None)
 			db.text_factory = lambda x: unicode(x, "utf-8", "ignore")
 
@@ -288,11 +289,11 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 
 					# Create the main kepub entry
 					if opts.extra_customization[self.OPT_UPDATE_SERIES_DETAILS] and self.supports_series():
-						t = (epub_uri, self.content_types["main"], self.kobo_epub_mime_type, "", "", self.imageid_from_contentid(epub_uri), metadata.title, authors_to_string(metadata.authors).split(' & ')[0].strip(), metadata.comments, epub_path, "true", "",
+						t = (epub_uri, self.content_types["main"], self.kobo_epub_mime_type, "", "", self.imageid_from_contentid(epub_uri) if include_images else "", metadata.title, authors_to_string(metadata.authors).split(' & ')[0].strip(), metadata.comments, epub_path, "true", "",
 							num_rows, 0, os.path.getsize(path), metadata.publisher, datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
 							lang, metadata.series, metadata.format_series_index())
 					else:
-						t = (epub_uri, self.content_types["main"], self.kobo_epub_mime_type, "", "", self.imageid_from_contentid(epub_uri), metadata.title, authors_to_string(metadata.authors).split(' & ')[0].strip(), metadata.comments, epub_path, "true", "",
+						t = (epub_uri, self.content_types["main"], self.kobo_epub_mime_type, "", "", self.imageid_from_contentid(epub_uri) if include_images else "", metadata.title, authors_to_string(metadata.authors).split(' & ')[0].strip(), metadata.comments, epub_path, "true", "",
 							num_rows, 0, os.path.getsize(path), metadata.publisher, datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
 							lang)
 					cursor.execute(add_content_query, t)
