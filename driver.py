@@ -215,6 +215,10 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 				epub = None
 				cursor = None
 				try:
+					# Begin the transaction for the entire book
+					cursor = db.cursor()
+					cursor.execute("BEGIN TRANSACTION")
+
 					epub_uri = self.contentid_from_path(path, 6)
 					epub_path = re.sub(r'^file\:\/\/', '', epub_uri)
 					debug_print("KoboTouchExtended:upload_books:URI - {0}".format(epub_uri))
@@ -241,10 +245,6 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 						content_id_to_href_map[node.attrib["id"]] = "{0}{1}".format(opf_path_prefix, node.attrib["href"])
 						if node.attrib["media-type"] == self.ncx_mime_type:
 							ncx_path = "{0}{1}".format(opf_path_prefix, node.attrib["href"])
-
-					# Begin the transaction for the entire book
-					cursor = db.cursor()
-					cursor.execute("BEGIN TRANSACTION")
 
 					# Add general content entries
 					num_rows = 0
@@ -305,12 +305,9 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 					cursor.close()
 				except Exception as e:
 					debug_print("KoboTouchExtended:upload_books:ERROR:{0}".format(e.message))
-					try:
-						if cursor:
-							cursor.execute("ROLLBACK TRANSACTION")
-							cursor.close()
-					except:
-						pass # It's cool, this might not work depending on the internal state
+					if cursor:
+						cursor.execute("ROLLBACK TRANSACTION")
+						cursor.close()
 					raise
 			db.close()
 
