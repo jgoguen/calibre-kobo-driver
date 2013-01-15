@@ -191,13 +191,15 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 		return result
 
 	def filename_callback(self, path, mi):
-		debug_print("KoboTouchExtended:filename_callback:Path - {0}".format(path))
+		opts = self.settings()
+		if opts.extra_customization[self.OPT_EXTRA_FEATURES]:
+			debug_print("KoboTouchExtended:filename_callback:Path - {0}".format(path))
 
-		idx = path.rfind('.')
-		ext = path[idx:]
-		if ext == EPUB_EXT:
-			path = "{0}.kepub{1}".format(path[:idx], EPUB_EXT)
-			debug_print("KoboTouchExtended:filename_callback:New path - {0}".format(path))
+			idx = path.rfind('.')
+			ext = path[idx:]
+			if ext == EPUB_EXT:
+				path = "{0}.kepub{1}".format(path[:idx], EPUB_EXT)
+				debug_print("KoboTouchExtended:filename_callback:New path - {0}".format(path))
 
 		return path
 
