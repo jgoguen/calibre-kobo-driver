@@ -1,8 +1,10 @@
 # Calibre driver for Kobo Touch/Glo/Mini
-An extension of the existing KoboTouch driver provided with Calibre. This plugin allows modifying ePub files to enable extra Kobo features.
+An extension of the existing KoboTouch driver provided with Calibre. This plugin allows modifying ePub files to enable 
+extra Kobo features.
 
-**Please note**: There is currently no way to save the modified books back into your Calibre library, so books are processed in transit to 
-your device every time.
+**Please note**: Modified books are not saved back into your Calibre library to prevent issues with overwriting library 
+configurations unexpectedly, so books are processed in transit to your device every time. In most cases, the extra time 
+required should not be noticable.
 
 #Installation
 To install this plugin from source, you have two options:
