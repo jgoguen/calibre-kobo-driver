@@ -15,6 +15,7 @@ from calibre.ebooks.epub.fix.container import Container as _Container
 from calibre.libunzip import extract
 from calibre.ptempfile import PersistentTemporaryDirectory
 from calibre.utils.logging import Log
+from calibre.utils.unsmarten import unsmarten_text
 from lxml import etree
 
 HTML_EXTENSIONS = ['.htm', '.html', '.xhtml']
@@ -74,7 +75,11 @@ class Container(_Container):
 		data = self.get_raw(name)
 		if not data:
 			return None
-		data = strip_encoding_declarations(data)
+		try:
+			data = strip_encoding_declarations(data)
+		except UnicodeDecodeError as ude:
+			data = unsmarten_text(data)
+			data = strip_encoding_declarations(data)
 		ext = name[name.rfind('.'):]
 		if ext in HTML_EXTENSIONS:
 			return etree.fromstring(data, parser = etree.HTMLParser())
