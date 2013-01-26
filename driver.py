@@ -8,12 +8,9 @@ __docformat__ = 'markdown en'
 import os
 import re
 import sqlite3 as sqlite
-import zipfile
 
-from calibre.constants import iswindows
 from calibre.devices.kobo.driver import KOBOTOUCH
 from calibre.devices.usbms.driver import debug_print
-from calibre.ebooks.chardet import strip_encoding_declarations
 from calibre.ebooks.metadata import authors_to_string
 from calibre_plugins.kobotouch_extended.container import Container
 
