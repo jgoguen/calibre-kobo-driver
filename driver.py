@@ -42,12 +42,6 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 		"toc": 899
 	}
 	kobo_epub_mime_type = "application/x-kobo-epub+zip"
-	opf_mime_type = 'application/oebps-package+xml'
-	opf_ns = "http://www.idpf.org/2007/opf"
-	container_ns = "urn:oasis:names:tc:opendocument:xmlns:container"
-	ncx_mime_type = "application/x-dtbncx+xml"
-	ncx_ns = "http://www.daisy.org/z3986/2005/ncx/"
-	dc_ns = "http://purl.org/dc/elements/1.1/"
 
 	supported_dbversion = 75
 	min_supported_dbversion = 65
@@ -140,6 +134,14 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 			debug_print("KoboTouchExtended:_modify_epub:ERROR: ePub is DRM-encrypted, not modifying")
 			return False
 
+		opf = container.get_parsed(container.opf_file)
+		for node in opf.xpath('./ns:manifest/ns:item[@id="cover"]', namespaces = {"ns": container.opf_ns}):
+			if "properties" not in node.attrib or node.attrib["properties"] != 'cover-image':
+				debug_print("KoboTouchExtended:_modify_epub:Setting cover-image")
+				node.set("properties", "cover-image")
+				container.set(container.opf_file, opf)
+				changed = True
+
 		for name in container.get_html_names():
 			debug_print("KoboTouchExtended:_modify_epub:Processing HTML {0}".format(name))
 			root = container.get_parsed(name)
@@ -225,27 +227,22 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 					metadata = self.metadata_from_path(path)
 
 					# Create the internal content rows
-					container = epub.get_parsed('META-INF/container.xml')
-					debug_print("KoboTouchExtended:upload_books:Parsing META-INF/container.xml")
-					opf_path = container.xpath('./ns:rootfiles/ns:rootfile/@full-path', namespaces = {"ns": self.container_ns})[0]
-					debug_print("KoboTouchExtended:upload_books:OPF file - {0}".format(opf_path))
-
-					debug_print("KoboTouchExtended:upload_books:Parsing OPF file {0}".format(opf_path))
-					opf = epub.get_parsed(opf_path)
+					debug_print("KoboTouchExtended:upload_books:Parsing OPF file {0}".format(epub.opf_file))
+					opf = epub.get_parsed(epub.opf_file)
 					opf_path_prefix = ""
-					idx = opf_path.rfind('/')
+					idx = epub.opf_file.rfind('/')
 					if idx > -1:
-						opf_path_prefix = opf_path[:idx + 1]
+						opf_path_prefix = epub.opf_file[:idx + 1]
 					content_id_to_href_map = {}
 					ncx_path = None
-					for node in opf.xpath('./ns:manifest/ns:item[@id and @href]', namespaces = {"ns": self.opf_ns}):
+					for node in opf.xpath('./ns:manifest/ns:item[@id and @href]', namespaces = {"ns": epub.opf_ns}):
 						content_id_to_href_map[node.attrib["id"]] = "{0}{1}".format(opf_path_prefix, node.attrib["href"])
-						if node.attrib["media-type"] == self.ncx_mime_type:
+						if node.attrib["media-type"] == epub.ncx_mime_type:
 							ncx_path = "{0}{1}".format(opf_path_prefix, node.attrib["href"])
 
 					# Add general content entries
 					num_rows = 0
-					for id in opf.xpath('./ns:spine[@toc="ncx"]/ns:itemref[@idref]/@idref', namespaces = {"ns": self.opf_ns}):
+					for id in opf.xpath('./ns:spine[@toc="ncx"]/ns:itemref[@idref]/@idref', namespaces = {"ns": epub.opf_ns}):
 						if opts.extra_customization[self.OPT_UPDATE_SERIES_DETAILS] and self.supports_series():
 							t = ("{0}!!{1}".format(epub_path, content_id_to_href_map[id]), self.content_types["content"], self.kobo_epub_mime_type, epub_uri, metadata.title, "", content_id_to_href_map[id], "", "", "", "false", "",
 								"", num_rows, 0, "", "",
@@ -261,7 +258,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 						debug_print("KoboTouchExtended:upload_books:Inserting new database row for ContentID = {0}, Title = {1}".format("{0}!!{1}".format(epub_path, content_id_to_href_map[id]), content_id_to_href_map[id]))
 
 					# Find the language
-					lang = opf.xpath('./ns:metadata/dc:language/text()', namespaces = {"ns": self.opf_ns, "dc": self.dc_ns})
+					lang = opf.xpath('./ns:metadata/dc:language/text()', namespaces = {"ns": epub.opf_ns, "dc": epub.dc_ns})
 					if len(lang) > 0:
 						lang = lang[0]
 					else:
@@ -270,8 +267,8 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 					# Add TOC entries
 					if ncx_path is not None:
 						ncx = epub.get_parsed(ncx_path)
-						hrefs = ncx.xpath('./ns:navMap/ns:navPoint/ns:content[@src]/@src', namespaces = {"ns": self.ncx_mime_type})
-						titles = ncx.xpath('./ns:navMap/ns:navPoint/ns:navLabel/ns:text/text()', namespaces = {"ns": self.ncx_mime_type})
+						hrefs = ncx.xpath('./ns:navMap/ns:navPoint/ns:content[@src]/@src', namespaces = {"ns": epub.ncx_mime_type})
+						titles = ncx.xpath('./ns:navMap/ns:navPoint/ns:navLabel/ns:text/text()', namespaces = {"ns": epub.ncx_mime_type})
 						for idx in range(len(hrefs)):
 							if opts.extra_customization[self.OPT_UPDATE_SERIES_DETAILS] and self.supports_series():
 								t = ("{0}!!{1}-1".format(epub_path, hrefs[idx]), self.content_types["toc"], self.kobo_epub_mime_type, epub_uri, metadata.title, "", titles[idx], "", "", "", "false", "{0}!!{1}".format(epub_path, hrefs[idx]),
