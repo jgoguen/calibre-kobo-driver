@@ -42,7 +42,7 @@ class Container(_Container):
 		super(Container, self).__init__(tmpdir, Log())
 		container = self.get_parsed('META-INF/container.xml')
 		self.opf_file = container.xpath('./ns:rootfiles/ns:rootfile/@full-path', namespaces = {"ns": self.container_ns})[0]
-		debug_print("KoboTouchExtended:upload_books:OPF file - {0}".format(self.opf_file))
+		debug_print("KoboTouchExtended:Container:__init__:OPF file - {0}".format(self.opf_file))
 
 	def get_html_names(self):
 		"""A generator function that yields only HTML file names from
