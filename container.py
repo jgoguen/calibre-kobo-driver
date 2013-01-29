@@ -26,12 +26,23 @@ class Container(_Container):
 	allow easier listing of only desired files.
 	"""
 
+	opf_mime_type = 'application/oebps-package+xml'
+	opf_ns = "http://www.idpf.org/2007/opf"
+	container_ns = "urn:oasis:names:tc:opendocument:xmlns:container"
+	ncx_mime_type = "application/x-dtbncx+xml"
+	ncx_ns = "http://www.daisy.org/z3986/2005/ncx/"
+	dc_ns = "http://purl.org/dc/elements/1.1/"
+
 	data_map = {}
+	opf_file = None
 
 	def __init__(self, path):
 		tmpdir = PersistentTemporaryDirectory("_kobo-driver-extended")
 		extract(path, tmpdir)
 		super(Container, self).__init__(tmpdir, Log())
+		container = self.get_parsed('META-INF/container.xml')
+		self.opf_file = container.xpath('./ns:rootfiles/ns:rootfile/@full-path', namespaces = {"ns": self.container_ns})[0]
+		debug_print("KoboTouchExtended:upload_books:OPF file - {0}".format(self.opf_file))
 
 	def get_html_names(self):
 		"""A generator function that yields only HTML file names from
@@ -86,12 +97,6 @@ class Container(_Container):
 		else:
 			return etree.fromstring(data)
 
-	def set(self, name, val):
-		data = val
-		if hasattr(data, 'xpath'):
-			data = etree.tostring(data, encoding = "UTF-8")
-		super(Container, self).set(name, val)
-
 	def write(self, path):
 		"""Overridden to not use add_dir and to exclude OS special files.
 		"""
@@ -108,18 +113,15 @@ class Container(_Container):
 		epub = zipfile.ZipFile(path, 'w')
 		cwd = os.getcwdu()
 		os.chdir(self.root)
-		debug_print("Container:write:In directory {0}".format(os.getcwdu()))
 		epub.writestr('mimetype', bytes('application/epub+zip'), compress_type = zipfile.ZIP_STORED)
 		zip_prefix = self.root
 		if not zip_prefix.endswith(os.sep):
 			zip_prefix += os.sep
-		debug_print("Container:write:ZIP file contents prefix - {0}".format(zip_prefix))
 		for t in os.walk(self.root, topdown = True):
 			for f in t[2]:
 				if f not in EXCLUDE_FROM_ZIP:
-					debug_print("Container:write:Adding file {0} from directory {1}".format(f, t[0]))
 					filepath = os.path.join(t[0], f).replace(zip_prefix, '')
-					debug_print("Container:write:Resolved file path {0}".format(filepath))
+					debug_print("Container:write:Adding file {0}".format(filepath))
 					epub.write(filepath, compress_type = zipfile.ZIP_DEFLATED)
 		epub.close()
 		os.chdir(cwd)
