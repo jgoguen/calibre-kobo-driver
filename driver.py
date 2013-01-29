@@ -237,8 +237,10 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 					ncx_path = None
 					for node in opf.xpath('./ns:manifest/ns:item[@id and @href]', namespaces = {"ns": epub.opf_ns}):
 						content_id_to_href_map[node.attrib["id"]] = "{0}{1}".format(opf_path_prefix, node.attrib["href"])
+						debug_print("KoboTouchExtended:upload_books:Adding content ID {0} -> {1}".format(node.attrib["id"], content_id_to_href_map[node.attrib["id"]]))
 						if node.attrib["media-type"] == epub.ncx_mime_type:
 							ncx_path = "{0}{1}".format(opf_path_prefix, node.attrib["href"])
+							debug_print("KoboTouchExtended:upload_books:Found NCX file {0}".format(ncx_path))
 
 					# Add general content entries
 					num_rows = 0
