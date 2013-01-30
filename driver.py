@@ -232,32 +232,32 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 					opf_path_prefix = ""
 					idx = epub.opf_file.rfind('/')
 					if idx > -1:
-						opf_path_prefix = epub.opf_file[:idx + 1]
+						opf_path_prefix = epub.opf_file[:idx]
 					content_id_to_href_map = {}
 					ncx_path = None
 					for node in opf.xpath('./ns:manifest/ns:item[@id and @href]', namespaces = {"ns": epub.opf_ns}):
-						content_id_to_href_map[node.attrib["id"]] = "{0}{1}".format(opf_path_prefix, node.attrib["href"])
+						content_id_to_href_map[node.attrib["id"]] = node.attrib["href"]
 						debug_print("KoboTouchExtended:upload_books:Adding content ID {0} -> {1}".format(node.attrib["id"], content_id_to_href_map[node.attrib["id"]]))
 						if node.attrib["media-type"] == epub.ncx_mime_type:
-							ncx_path = "{0}{1}".format(opf_path_prefix, node.attrib["href"])
+							ncx_path = "{0}/{1}".format(opf_path_prefix, node.attrib["href"])
 							debug_print("KoboTouchExtended:upload_books:Found NCX file {0}".format(ncx_path))
 
 					# Add general content entries
 					num_rows = 0
 					for id in opf.xpath('./ns:spine[@toc="ncx"]/ns:itemref[@idref]/@idref', namespaces = {"ns": epub.opf_ns}):
 						if opts.extra_customization[self.OPT_UPDATE_SERIES_DETAILS] and self.supports_series():
-							t = ("{0}!!{1}".format(epub_path, content_id_to_href_map[id]), self.content_types["content"], self.kobo_epub_mime_type, epub_uri, metadata.title, "", content_id_to_href_map[id], "", "", "", "false", "",
+							t = ("{0}!{1}!{2}".format(epub_path, opf_path_prefix, content_id_to_href_map[id]), self.content_types["content"], self.kobo_epub_mime_type, epub_uri, metadata.title, "", content_id_to_href_map[id], "", "", "", "false", "",
 								"", num_rows, 0, "", "",
 								"", "", "")
 						else:
-							t = ("{0}!!{1}".format(epub_path, content_id_to_href_map[id]), self.content_types["content"], self.kobo_epub_mime_type, epub_uri, metadata.title, "", content_id_to_href_map[id], "", "", "", "false", "",
+							t = ("{0}!{1}!{2}".format(epub_path, opf_path_prefix, content_id_to_href_map[id]), self.content_types["content"], self.kobo_epub_mime_type, epub_uri, metadata.title, "", content_id_to_href_map[id], "", "", "", "false", "",
 								"", num_rows, 0, "", "",
 								"")
 						cursor.execute(add_content_query, t)
-						t = (epub_uri, "{0}!!{1}".format(epub_path, content_id_to_href_map[id]), num_rows)
+						t = (epub_uri, "{0}!{1}!{2}".format(epub_path, opf_path_prefix, content_id_to_href_map[id]), num_rows)
 						cursor.execute(add_shortcover_query, t)
 						num_rows += 1
-						debug_print("KoboTouchExtended:upload_books:Inserting new database row for ContentID = {0}, Title = {1}".format("{0}!!{1}".format(epub_path, content_id_to_href_map[id]), content_id_to_href_map[id]))
+						debug_print("KoboTouchExtended:upload_books:Inserting new database row for ContentID = {0}, Title = {1}".format("{0}!{1}!{2}".format(epub_path, opf_path_prefix, content_id_to_href_map[id]), content_id_to_href_map[id]))
 
 					# Find the language
 					lang = opf.xpath('./ns:metadata/dc:language/text()', namespaces = {"ns": epub.opf_ns, "dc": epub.dc_ns})
@@ -268,20 +268,21 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 
 					# Add TOC entries
 					if ncx_path is not None:
+						debug_print("KoboTouchExtended:upload_books:Parsing NCX file {0}".format(ncx_path))
 						ncx = epub.get_parsed(ncx_path)
-						hrefs = ncx.xpath('./ns:navMap/ns:navPoint/ns:content[@src]/@src', namespaces = {"ns": epub.ncx_mime_type})
-						titles = ncx.xpath('./ns:navMap/ns:navPoint/ns:navLabel/ns:text/text()', namespaces = {"ns": epub.ncx_mime_type})
+						hrefs = ncx.xpath('./ns:navMap/ns:navPoint/ns:content[@src]/@src', namespaces = {"ns": epub.ncx_ns})
+						titles = ncx.xpath('./ns:navMap/ns:navPoint/ns:navLabel/ns:text/text()', namespaces = {"ns": epub.ncx_ns})
 						for idx in range(len(hrefs)):
 							if opts.extra_customization[self.OPT_UPDATE_SERIES_DETAILS] and self.supports_series():
-								t = ("{0}!!{1}-1".format(epub_path, hrefs[idx]), self.content_types["toc"], self.kobo_epub_mime_type, epub_uri, metadata.title, "", titles[idx], "", "", "", "false", "{0}!!{1}".format(epub_path, hrefs[idx]),
+								t = ("{0}!{1}!{2}-1".format(epub_path, opf_path_prefix, hrefs[idx]), self.content_types["toc"], self.kobo_epub_mime_type, epub_uri, metadata.title, "", titles[idx], "", "", "", "false", "{0}!{1}!{2}".format(epub_path, opf_path_prefix, hrefs[idx]),
 									"", idx, 0, "", "",
 									"", "", "")
 							else:
-								t = ("{0}!!{1}-1".format(epub_path, hrefs[idx]), self.content_types["toc"], self.kobo_epub_mime_type, epub_uri, metadata.title, "", titles[idx], "", "", "", "false", "{0}!!{1}".format(epub_path, hrefs[idx]),
+								t = ("{0}!{1}!{2}-1".format(epub_path, opf_path_prefix, hrefs[idx]), self.content_types["toc"], self.kobo_epub_mime_type, epub_uri, metadata.title, "", titles[idx], "", "", "", "false", "{0}!{1}!{2}".format(epub_path, opf_path_prefix, hrefs[idx]),
 									"", idx, 0, "", "",
 									"")
 							cursor.execute(add_content_query, t)
-							debug_print("KoboTouchExtended:upload_books:Inserting new database row for TOC ContentID = {0} Title = {1}".format("{0}!!{1}-1".format(epub_path, hrefs[idx]), titles[idx]))
+							debug_print("KoboTouchExtended:upload_books:Inserting new database row for TOC ContentID = {0} Title = {1}".format("{0}!{1}!{2}-1".format(epub_path, opf_path_prefix, hrefs[idx]), titles[idx]))
 
 					# Create the main kepub entry
 					if opts.extra_customization[self.OPT_UPDATE_SERIES_DETAILS] and self.supports_series():
