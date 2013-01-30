@@ -197,14 +197,14 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 				"NumShortcovers, VolumeIndex, ___NumPages, ___FileSize, Accessibility, ___UserID, Publisher, ParagraphBookmarked, BookmarkWordOffset, ___SyncTime, ReadStatus, ___PercentRead, IsDownloaded, Depth, " + \
 				"InWishlist, WishlistedDate, FeedbackTypeSynced, IsSocialEnabled, Language, ___ExpirationStatus, Series, SeriesNumber) VALUES " + \
 				"(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'true', ?, " + \
-				"?, ?, 0, ?, -1, '', ?, 0, 0, ?, 0, 0, 'true', 0, " + \
+				"?, ?, 0, ?, -1, ?, ?, 0, 0, ?, 0, 0, 'true', 0, " + \
 				"'false', '', 48, 'true', ?, 0, ?, ?)"
 			else:
 				add_content_query = "INSERT INTO content (ContentID, ContentType, MimeType, BookID, BookTitle, ImageId, Title, Attribution, Description, adobe_location, IsEncrypted, FirstTimeReading, ChapterIDBookmarked, " + \
 				"NumShortcovers, VolumeIndex, ___NumPages, ___FileSize, Accessibility, ___UserID, Publisher, ParagraphBookmarked, BookmarkWordOffset, ___SyncTime, ReadStatus, ___PercentRead, IsDownloaded, Depth, " + \
 				"InWishlist, WishlistedDate, FeedbackTypeSynced, IsSocialEnabled, Language, ___ExpirationStatus) VALUES " + \
 				"(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'true', ?, " + \
-				"?, ?, 0, ?, -1, '', ?, 0, 0, ?, 0, 0, 'true', 0, " + \
+				"?, ?, 0, ?, -1, ?, ?, 0, 0, ?, 0, 0, 'true', 0, " + \
 				"'false', '', 48, 'true', ?, 0)"
 			add_shortcover_query = "INSERT INTO volume_shortcovers (volumeId, shortcoverId, VolumeIndex) VALUES (?, ?, ?)"
 			for path, card in result:
@@ -247,11 +247,11 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 					for id in opf.xpath('./ns:spine[@toc="ncx"]/ns:itemref[@idref]/@idref', namespaces = {"ns": epub.opf_ns}):
 						if opts.extra_customization[self.OPT_UPDATE_SERIES_DETAILS] and self.supports_series():
 							t = ("{0}!{1}!{2}".format(epub_path, opf_path_prefix, content_id_to_href_map[id]), self.content_types["content"], self.kobo_epub_mime_type, epub_uri, metadata.title, "", content_id_to_href_map[id], "", "", "", "false", "",
-								"", num_rows, 0, "", "",
+								"", num_rows, 0, "", "", "",
 								"", "", "")
 						else:
 							t = ("{0}!{1}!{2}".format(epub_path, opf_path_prefix, content_id_to_href_map[id]), self.content_types["content"], self.kobo_epub_mime_type, epub_uri, metadata.title, "", content_id_to_href_map[id], "", "", "", "false", "",
-								"", num_rows, 0, "", "",
+								"", num_rows, 0, "", "", "",
 								"")
 						cursor.execute(add_content_query, t)
 						t = (epub_uri, "{0}!{1}!{2}".format(epub_path, opf_path_prefix, content_id_to_href_map[id]), num_rows)
@@ -275,11 +275,11 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 						for idx in range(len(hrefs)):
 							if opts.extra_customization[self.OPT_UPDATE_SERIES_DETAILS] and self.supports_series():
 								t = ("{0}!{1}!{2}-1".format(epub_path, opf_path_prefix, hrefs[idx]), self.content_types["toc"], self.kobo_epub_mime_type, epub_uri, metadata.title, "", titles[idx], "", "", "", "false", "{0}!{1}!{2}".format(epub_path, opf_path_prefix, hrefs[idx]),
-									"", idx, 0, "", "",
+									"", idx, 0, "", "", "",
 									"", "", "")
 							else:
 								t = ("{0}!{1}!{2}-1".format(epub_path, opf_path_prefix, hrefs[idx]), self.content_types["toc"], self.kobo_epub_mime_type, epub_uri, metadata.title, "", titles[idx], "", "", "", "false", "{0}!{1}!{2}".format(epub_path, opf_path_prefix, hrefs[idx]),
-									"", idx, 0, "", "",
+									"", idx, 0, "", "", "",
 									"")
 							cursor.execute(add_content_query, t)
 							debug_print("KoboTouchExtended:upload_books:Inserting new database row for TOC ContentID = {0} Title = {1}".format("{0}!{1}!{2}-1".format(epub_path, opf_path_prefix, hrefs[idx]), titles[idx]))
@@ -287,11 +287,11 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 					# Create the main kepub entry
 					if opts.extra_customization[self.OPT_UPDATE_SERIES_DETAILS] and self.supports_series():
 						t = (epub_uri, self.content_types["main"], self.kobo_epub_mime_type, "", "", self.imageid_from_contentid(epub_uri) if include_images else "", metadata.title, authors_to_string(metadata.authors).split(' & ')[0].strip(), metadata.comments, epub_path, "true", "",
-							num_rows, 0, os.path.getsize(path), metadata.publisher, datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
+							num_rows, 0, os.path.getsize(path), "kobo_user", metadata.publisher, datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
 							lang, metadata.series, metadata.format_series_index())
 					else:
 						t = (epub_uri, self.content_types["main"], self.kobo_epub_mime_type, "", "", self.imageid_from_contentid(epub_uri) if include_images else "", metadata.title, authors_to_string(metadata.authors).split(' & ')[0].strip(), metadata.comments, epub_path, "true", "",
-							num_rows, 0, os.path.getsize(path), metadata.publisher, datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
+							num_rows, 0, os.path.getsize(path), "kobo_user", metadata.publisher, datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
 							lang)
 					cursor.execute(add_content_query, t)
 					debug_print("KoboTouchExtended:upload_books:Inserting new database row for ePub file {0}, ImageID = {1}".format(path, self.imageid_from_contentid(epub_uri)))
