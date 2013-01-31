@@ -157,7 +157,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 					attrs = {}
 					for key in node.attrib.keys():
 						attrs[key] = node.attrib[key]
-					new_span = etree.Element("span", attrib = {"id": "kobo.{0}.1".format(count)})
+					new_span = etree.Element("span", attrib = {"id": "kobo.{0}.1".format(count), "class": "koboSpan"})
 					if isinstance(children[0], basestring):
 						new_span.text = unicode(deepcopy(children.pop(0)))
 					for child in children:
