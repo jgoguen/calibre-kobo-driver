@@ -240,6 +240,8 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 						debug_print("KoboTouchExtended:upload_books:Adding content ID {0} -> {1}".format(node.attrib["id"], content_id_to_href_map[node.attrib["id"]]))
 						if node.attrib["media-type"] == epub.ncx_mime_type:
 							ncx_path = "{0}/{1}".format(opf_path_prefix, node.attrib["href"])
+							if ncx_path.startswith('/'):
+								ncx_path = ncx_path[1:]
 							debug_print("KoboTouchExtended:upload_books:Found NCX file {0}".format(ncx_path))
 
 					# Add general content entries
