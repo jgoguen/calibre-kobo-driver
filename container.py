@@ -10,6 +10,8 @@ import tempfile
 import time
 import zipfile
 
+from calibre import isbytestring
+from calibre.constants import filesystem_encoding
 from calibre.devices.usbms.driver import debug_print
 from calibre.ebooks.chardet import strip_encoding_declarations
 from calibre.ebooks.epub.fix.container import Container as _Container
@@ -88,9 +90,15 @@ class Container(_Container):
 		if not data:
 			return None
 		try:
+			if isbytestring(data):
+				data = data.decode(filesystem_encoding)
 			data = strip_encoding_declarations(data)
 		except UnicodeDecodeError as ude:
+			# With the decoding based on the filesystem encoding, I'm not expecting this to actually happen now, but you never know...
+			debug_print("Container:get_parsed:Error decoding data with {0} codec, removing 'smart' punctuation and trying again".format(filesystem_encoding))
 			data = unsmarten_text(data)
+			if isbytestring(data):
+				data = data.decode(filesystem_encoding)
 			data = strip_encoding_declarations(data)
 		ext = name[name.rfind('.'):]
 		if ext in HTML_EXTENSIONS:
