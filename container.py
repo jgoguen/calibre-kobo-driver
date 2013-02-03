@@ -7,6 +7,7 @@ __docformat__ = 'markdown en'
 
 import os
 import tempfile
+import time
 import zipfile
 
 from calibre.devices.usbms.driver import debug_print
@@ -42,7 +43,7 @@ class Container(_Container):
 		super(Container, self).__init__(tmpdir, Log())
 		container = self.get_parsed('META-INF/container.xml')
 		self.opf_file = container.xpath('./ns:rootfiles/ns:rootfile/@full-path', namespaces = {"ns": self.container_ns})[0]
-		debug_print("KoboTouchExtended:Container:__init__:OPF file - {0}".format(self.opf_file))
+		debug_print("Container:__init__:OPF file - {0}".format(self.opf_file))
 
 	def get_html_names(self):
 		"""A generator function that yields only HTML file names from
@@ -122,6 +123,13 @@ class Container(_Container):
 				if f not in EXCLUDE_FROM_ZIP:
 					filepath = os.path.join(t[0], f).replace(zip_prefix, '')
 					debug_print("Container:write:Adding file {0}".format(filepath))
+					st = os.stat(filepath)
+					mtime = time.localtime(st.st_mtime)
+					if mtime[0] < 1980:
+						debug_print("Container:write:File mtime is before 1980 ({0}-{1}-{2}), updating to current time.".format(mtime[:3]))
+						os.utime(filepath, None)
+						st = os.stat(filepath)
+						mtime = time.localtime(st.st_mtime)
 					epub.write(filepath, compress_type = zipfile.ZIP_DEFLATED)
 		epub.close()
 		os.chdir(cwd)
