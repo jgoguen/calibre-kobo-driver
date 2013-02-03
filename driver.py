@@ -135,7 +135,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 			return False
 
 		opf = container.get_parsed(container.opf_file)
-		for node in opf.xpath('./ns:manifest/ns:item[@id="cover"]', namespaces = {"ns": container.opf_ns}):
+		for node in opf.xpath('./ns:manifest/ns:item[@id="cover" or starts-with(@id, "cover") and not(substring(@id, string-length(@id) - string-length("html") + 1))]', namespaces = {"ns": container.opf_ns}):
 			if "properties" not in node.attrib or node.attrib["properties"] != 'cover-image':
 				debug_print("KoboTouchExtended:_modify_epub:Setting cover-image")
 				node.set("properties", "cover-image")
