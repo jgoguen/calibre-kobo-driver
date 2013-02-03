@@ -4,7 +4,7 @@ extra Kobo features.
 
 **Please note**: Modified books are not saved back into your Calibre library to prevent issues with overwriting library 
 configurations unexpectedly, so books are processed in transit to your device every time. In most cases, the extra time 
-required should not be noticable.
+required should not be noticeable.
 
 #Installation
 To install this plugin from source, you have two options:
