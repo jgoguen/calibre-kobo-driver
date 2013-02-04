@@ -138,10 +138,10 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 		cover_meta_node = opf.xpath('./ns:metadata/ns:meta[@name="cover"]', namespaces = {"ns": container.opf_ns})
 		if len(cover_meta_node) > 0:
 			cover_meta_node = cover_meta_node[0]
-		if cover_meta_node:
+		if cover_meta_node is not None:
 			cover_id = cover_meta_node.attrib["content"] if "content" in cover_meta_node.attrib else None
 			if cover_id is not None:
-				debug_print("KoboTouchExtended:_modify_epub:Found cover image id {0}".format(cover_image))
+				debug_print("KoboTouchExtended:_modify_epub:Found cover image id {0}".format(cover_id))
 				cover_node = opf.xpath('./ns:manifest/ns:item[@id="{0}"]'.format(cover_id), namespaces = {"ns": container.opf_ns})
 				if len(cover_node) > 0:
 					cover_node = cover_node[0]
