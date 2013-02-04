@@ -134,7 +134,7 @@ class Container(_Container):
 					st = os.stat(filepath)
 					mtime = time.localtime(st.st_mtime)
 					if mtime[0] < 1980:
-						debug_print("Container:write:File mtime is before 1980 ({0}-{1}-{2}), updating to current time.".format(mtime[:3]))
+						debug_print("Container:write:File mtime is before 1980, updating to current time.")
 						os.utime(filepath, None)
 						st = os.stat(filepath)
 						mtime = time.localtime(st.st_mtime)
