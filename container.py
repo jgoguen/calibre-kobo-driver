@@ -104,7 +104,7 @@ class Container(_Container):
 				# alternative makes it look like I'm corrupting the file. Hopefully this
 				# case won't ever get hit.
 				data = data.decode(encoding["encoding"], "ignore")
-				data = strip_encoding_declarations(data)
+			data = strip_encoding_declarations(data)
 		ext = name[name.rfind('.'):]
 		if ext in HTML_EXTENSIONS:
 			return etree.fromstring(data, parser = etree.HTMLParser())

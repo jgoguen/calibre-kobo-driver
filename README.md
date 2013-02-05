@@ -1,3 +1,5 @@
+**Looking for the `no-database` branch? It's gone now, the database code has been removed from `master` so this is the same as the old `no-database` branch.**
+
 # Calibre driver for Kobo Touch/Glo/Mini
 An extension of the existing KoboTouch driver provided with Calibre. This plugin allows modifying ePub files to enable 
 extra Kobo features.
