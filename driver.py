@@ -150,7 +150,9 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 		# It's possible that the cover image can't be detected this way. Try looking for the cover image ID in the OPF manifest.
 		if not changed:
 			debug_print("KoboTouchExtended:_modify_epub:Looking for cover image in OPF manifest")
-			for node in opf.xpath('./ns:manifest/ns:item[@id="cover" or starts-with(@id, "cover") and not(substring(@id, string-length(@id) - string-length("html") + 1)) and starts-with(@media-type, "image")]', namespaces = {"ns": container.opf_ns}):
+			node_list = opf.xpath('./ns:manifest/ns:item[@id="cover" or starts-with(@id, "cover") and not(substring(@id, string-length(@id) - string-length("html") + 1)) and starts-with(@media-type, "image")]', namespaces = {"ns": container.opf_ns})
+			if len(node_list) > 0:
+				node = node_list[0]
 				if "properties" not in node.attrib or node.attrib["properties"] != 'cover-image':
 					debug_print("KoboTouchExtended:_modify_epub:Setting cover-image")
 					node.set("properties", "cover-image")
