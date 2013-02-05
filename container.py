@@ -10,9 +10,8 @@ import tempfile
 import time
 import zipfile
 
-from calibre import isbytestring
-from calibre.constants import filesystem_encoding
 from calibre.devices.usbms.driver import debug_print
+from calibre.ebooks.chardet import detect
 from calibre.ebooks.chardet import strip_encoding_declarations
 from calibre.ebooks.epub.fix.container import Container as _Container
 from calibre.libunzip import extract
@@ -89,17 +88,23 @@ class Container(_Container):
 		data = self.get_raw(name)
 		if not data:
 			return None
+		encoding = detect(data)
 		try:
-			if isbytestring(data):
-				data = data.decode(filesystem_encoding)
+			data = data.decode(encoding["encoding"])
 			data = strip_encoding_declarations(data)
-		except UnicodeDecodeError as ude:
-			# With the decoding based on the filesystem encoding, I'm not expecting this to actually happen now, but you never know...
-			debug_print("Container:get_parsed:Error decoding data with {0} codec, removing 'smart' punctuation and trying again".format(filesystem_encoding))
+		except Exception as e:
 			data = unsmarten_text(data)
-			if isbytestring(data):
-				data = data.decode(filesystem_encoding)
-			data = strip_encoding_declarations(data)
+			try:
+				# Try really hard to be strict about encodings...
+				data = data.decode(encoding["encoding"])
+				data = strip_encoding_declarations(data)
+			except Exception as e2:
+				# ...but sometimes you just have to roll with it.
+				# This is likely to cause a problem on the next line, but the "replace"
+				# alternative makes it look like I'm corrupting the file. Hopefully this
+				# case won't ever get hit.
+				data = data.decode(encoding["encoding"], "ignore")
+				data = strip_encoding_declarations(data)
 		ext = name[name.rfind('.'):]
 		if ext in HTML_EXTENSIONS:
 			return etree.fromstring(data, parser = etree.HTMLParser())
