@@ -89,21 +89,16 @@ class Container(_Container):
 		if not data:
 			return None
 		try:
-			debug_print("Container:get_parsed:Stripping encoding declaration")
 			data = strip_encoding_declarations(data)
 		except Exception as e:
-			debug_print("Container:get_parsed:Decoding failed, removing 'smart' punctuation and trying again")
 			data = unsmarten_text(data)
 			try:
 				data = strip_encoding_declarations(data)
 			except Exception as e2:
-				debug_print("Container:get_parsed:Decoding really failed, using chardet to find encoding...")
 				encoding = detect(data)
-				debug_print("Container:get_parsed:Found encoding {encoding} with confidence {confidence}".format(**encoding))
 				try:
 					data = data.decode(encoding["encoding"])
 				except Exception as e3:
-					debug_print("Container:get_parsed:Decoding is busted up good, using 'ignore' option and hoping for the best...")
 					data = data.decode(encoding["encoding"], 'ignore')
 			data = strip_encoding_declarations(data)
 		ext = name[name.rfind('.'):]
