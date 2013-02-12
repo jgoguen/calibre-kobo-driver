@@ -30,3 +30,12 @@ Add the resulting ZIP file to calibre:
 1. Load plugin from file
 
 You may also shut down Calibre and run `calibre-customize -b /path/to/calibre-kobo-driver` from the command line to have calibre add the plugin itself.
+
+# Reporting a Bug
+Found a bug with this plugin? Great! Please use the Github issue tracker to send me reports of issues or questions. Under no circumstances should I be emailed directly unless I have asked to have something sent to me. Any emails I haven't asked for will be silently ignored. Everyone can benefit from a public bug tracker, but only one person benefits from a private email.
+
+When submitting a bug, I require the following information as a minimum, but any additional information is good to include:
+
+1. What version of calibre you are using. If you are not on the latet version I will require that you update before I accept any report.
+1. The full error message reported by calibre.
+1. For issues processing books, whether or not you have a book that you are able to send me that demonstrates the issue. Please be aware of any copyright restrictions that may prohibit sending me a book.
