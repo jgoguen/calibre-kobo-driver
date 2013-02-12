@@ -88,22 +88,23 @@ class Container(_Container):
 		data = self.get_raw(name)
 		if not data:
 			return None
-		encoding = detect(data)
 		try:
-			data = data.decode(encoding["encoding"])
+			debug_print("Container:get_parsed:Stripping encoding declaration")
 			data = strip_encoding_declarations(data)
 		except Exception as e:
+			debug_print("Container:get_parsed:Decoding failed, removing 'smart' punctuation and trying again")
 			data = unsmarten_text(data)
 			try:
-				# Try really hard to be strict about encodings...
-				data = data.decode(encoding["encoding"])
 				data = strip_encoding_declarations(data)
 			except Exception as e2:
-				# ...but sometimes you just have to roll with it.
-				# This is likely to cause a problem on the next line, but the "replace"
-				# alternative makes it look like I'm corrupting the file. Hopefully this
-				# case won't ever get hit.
-				data = data.decode(encoding["encoding"], "ignore")
+				debug_print("Container:get_parsed:Decoding really failed, using chardet to find encoding...")
+				encoding = detect(data)
+				debug_print("Container:get_parsed:Found encoding {encoding} with confidence {confidence}".format(**encoding))
+				try:
+					data = data.decode(encoding["encoding"])
+				except Exception as e3:
+					debug_print("Container:get_parsed:Decoding is busted up good, using 'ignore' option and hoping for the best...")
+					data = data.decode(encoding["encoding"], 'ignore')
 			data = strip_encoding_declarations(data)
 		ext = name[name.rfind('.'):]
 		if ext in HTML_EXTENSIONS:
