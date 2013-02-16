@@ -131,37 +131,37 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 			debug_print("KoboTouchExtended:_modify_epub:ERROR: ePub is DRM-encrypted, not modifying")
 			return False
 
-		opf = container.get_parsed(container.opf_file)
-		cover_meta_node = opf.xpath('./ns:metadata/ns:meta[@name="cover"]', namespaces = {"ns": container.opf_ns})
+		opf = container.opf
+		cover_meta_node = opf.xpath('./ns:metadata/ns:meta[@name="cover"]', namespaces = {"ns": container.OPF_NS})
 		if len(cover_meta_node) > 0:
 			cover_meta_node = cover_meta_node[0]
 			cover_id = cover_meta_node.attrib["content"] if "content" in cover_meta_node.attrib else None
 			if cover_id is not None:
 				debug_print("KoboTouchExtended:_modify_epub:Found cover image id {0}".format(cover_id))
-				cover_node = opf.xpath('./ns:manifest/ns:item[@id="{0}"]'.format(cover_id), namespaces = {"ns": container.opf_ns})
+				cover_node = opf.xpath('./ns:manifest/ns:item[@id="{0}"]'.format(cover_id), namespaces = {"ns": container.OPF_NS})
 				if len(cover_node) > 0:
 					cover_node = cover_node[0]
 					if "properties" not in cover_node.attrib or cover_node.attrib["properties"] != "cover-image":
 						debug_print("KoboTouchExtended:_modify_epub:Setting cover-image")
 						cover_node.set("properties", "cover-image")
-						container.set(container.opf_file, opf)
+						container.set(container.opf_name, opf)
 						changed = True
 
 		# It's possible that the cover image can't be detected this way. Try looking for the cover image ID in the OPF manifest.
 		if not changed:
 			debug_print("KoboTouchExtended:_modify_epub:Looking for cover image in OPF manifest")
-			node_list = opf.xpath('./ns:manifest/ns:item[@id="cover" or starts-with(@id, "cover") and not(substring(@id, string-length(@id) - string-length("html") + 1)) and starts-with(@media-type, "image")]', namespaces = {"ns": container.opf_ns})
+			node_list = opf.xpath('./ns:manifest/ns:item[@id="cover" or starts-with(@id, "cover") and not(substring(@id, string-length(@id) - string-length("html") + 1)) and starts-with(@media-type, "image")]', namespaces = {"ns": container.OPF_NS})
 			if len(node_list) > 0:
 				node = node_list[0]
 				if "properties" not in node.attrib or node.attrib["properties"] != 'cover-image':
 					debug_print("KoboTouchExtended:_modify_epub:Setting cover-image")
 					node.set("properties", "cover-image")
-					container.set(container.opf_file, opf)
+					container.set(container.opf_name, opf)
 					changed = True
 
 		for name in container.get_html_names():
 			debug_print("KoboTouchExtended:_modify_epub:Processing HTML {0}".format(name))
-			root = container.get_parsed(name)
+			root = container.get(name)
 			count = 0
 
 			for node in root.xpath('./body//h1 | ./body//h2 | ./body//h3 | ./body//h4 | ./body//h5 | ./body//h6 | ./body//p'):
