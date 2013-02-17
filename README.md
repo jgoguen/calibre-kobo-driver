@@ -39,3 +39,13 @@ When submitting a bug, I require the following information as a minimum, but any
 1. What version of calibre you are using. If you are not on the latet version I will require that you update before I accept any report.
 1. The full error message reported by calibre.
 1. For issues processing books, whether or not you have a book that you are able to send me that demonstrates the issue. Please be aware of any copyright restrictions that may prohibit sending me a book.
+
+# Known Issues
+If you have previously installed this plugin in calibre 0.9.18 or earlier, then you upgrade to calibre 0.9.19 or later and can't update the plugin, you must manually replace the plugin ZIP file:
+
+1. Download the latest version of the code.
+1. Generate a new plugin ZIP file. **Do not** use the `calibre-customize` method.
+1. Shut down calibre entirely.
+1. Open the calibre plugin directory.
+	1. Don't know where this is? Before you close calibre, open calibre's preferences, choose **Miscellaneous**, and click the **Open calibre configuration directory** button. The plugin directory is in there.
+1. Replace the file named **KoboTouchExtended.zip** with the new version you created. Please make sure the file name remains the same.
