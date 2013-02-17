@@ -59,6 +59,7 @@ class Container(object):
 	OPF_NS = 'http://www.idpf.org/2007/opf'
 	NCX_NS = "http://www.daisy.org/z3986/2005/ncx/"
 	DC_NS = "http://purl.org/dc/elements/1.1/"
+	XHTML_NS = "http://www.w3.org/1999/xhtml"
 	OPF_MIMETYPE = 'application/oebps-package+xml'
 	NCX_MIMETYPE = "application/x-dtbncx+xml"
 

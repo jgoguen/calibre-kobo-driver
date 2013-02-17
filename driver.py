@@ -164,17 +164,17 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 			root = container.get(name)
 			count = 0
 
-			for node in root.xpath('./body//h1 | ./body//h2 | ./body//h3 | ./body//h4 | ./body//h5 | ./body//h6 | ./body//p'):
+			for node in root.xpath('./xhtml:body//xhtml:h1 | ./xhtml:body//xhtml:h2 | ./xhtml:body//xhtml:h3 | ./xhtml:body//xhtml:h4 | ./xhtml:body//xhtml:h5 | ./xhtml:body//xhtml:h6 | ./xhtml:body//xhtml:p', namespaces = {"xhtml": container.XHTML_NS}):
 				children = node.xpath('node()')
 				if not len(children):
 					node.getparent().remove(node)
 					continue
-				if not len(node.xpath("./span[starts-with(@id, 'kobo.')]")):
+				if not len(node.xpath("./xhtml:span[starts-with(@id, 'kobo.')]", namespaces = {"xhtml": container.XHTML_NS})):
 					count += 1
 					attrs = {}
 					for key in node.attrib.keys():
 						attrs[key] = node.attrib[key]
-					new_span = etree.Element("span", attrib = {"id": "kobo.{0}.1".format(count), "class": "koboSpan"})
+					new_span = etree.Element("{%s}span" % (container.XHTML_NS,), attrib = {"id": "kobo.{0}.1".format(count), "class": "koboSpan"})
 					if isinstance(children[0], basestring):
 						new_span.text = unicode(deepcopy(children.pop(0)))
 					for child in children:
@@ -184,6 +184,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 					for key in attrs.keys():
 						node.set(key, attrs[key])
 					node.append(new_span)
+
 			if count > 0:
 				debug_print("KoboTouchExtended:_modify_epub:Added Kobo tags to {0}".format(name))
 				changed = True
