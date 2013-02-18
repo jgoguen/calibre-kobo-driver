@@ -123,49 +123,18 @@ class Container(object):
 		ePub encumbered by Digital Restrictions Management. DRM-encumbered
 		files cannot be edited.
 		"""
-		for name in self.name_map:
-			if name.lower().endswith('encryption.xml'):
-				try:
-					xml = self.get_raw(name)
-					root = etree.fromstring(xml)
-					for elem in root.xpath('.//*[contains(name(), "EncryptionMethod")]'):
-						alg = elem.get('Algorithm')
-						return alg != 'http://ns.adobe.com/pdf/enc#RC'
-				except:
-					self.log.error("Could not parse encryption.xml")
-					return True # If encryption.xml is present, assume the file is encumbered
-		return False
-
-	def get_parsed(self, name):
-		"""Get the named resource parsed with etree.
-
-		Parses the named resource with lxml.etree and returns the
-		resulting Element. Returns None if the named resource doesn't
-		exist.
-		"""
-		if not name or name not in self.name_map:
-			return None
-		data = self.get(name)
-		if not data:
-			return None
-		try:
-			data = strip_encoding_declarations(data)
-		except Exception as e:
-			data = unsmarten_text(data)
+		if 'META-INF/encryption.xml' in self.name_map:
 			try:
-				data = strip_encoding_declarations(data)
-			except Exception as e2:
-				encoding = detect(data)
-				try:
-					data = data.decode(encoding["encoding"])
-				except Exception as e3:
-					data = data.decode(encoding["encoding"], 'ignore')
-			data = strip_encoding_declarations(data)
-		ext = name[name.rfind('.'):]
-		if ext in HTML_EXTENSIONS:
-			return etree.fromstring(data, parser = etree.HTMLParser())
-		else:
-			return etree.fromstring(data)
+				xml = self.get('META-INF/encryption.xml')
+				if not xml:
+					return True # Even if encryption.xml can't be parsed, assume its presence means an encumbered file
+				for elem in xml.xpath('.//*[contains(name(), "EncryptionMethod")]'):
+					alg = elem.get('Algorithm')
+					return alg != 'http://ns.adobe.com/pdf/enc#RC'
+			except:
+				self.log.error("Could not parse encryption.xml")
+				return True # If encryption.xml is present, assume the file is encumbered
+		return False
 
 	def manifest_worthy_names(self):
 		for name in self.name_map:
