@@ -19,7 +19,7 @@ To install this plugin from source, you must create a ZIP file named `KoboTouchE
 To create the ZIP file:
 
 1. Windows users can run the `create-plugin.ps1` script (requires that Powershell allow running unsigned scripts, which is not the default setting).
-1. Linux users can run the `create-plugin.sh` script (either grant it executable permissions first, or run `sh create-plugin.sh`).
+1. Linux and Mac OS X users can run the `create-plugin.sh` script (either grant it executable permissions first, or run `sh create-plugin.sh`).
 1. Create an empty ZIP file and add the files noted above.
 1. Select the files noted-above, right-click, and add the files to a new ZIP file. This may also be referred to as a "Compressed Folder" or only be available once you choose the "Archive" option, depending on your operating system.
 
@@ -30,6 +30,13 @@ Add the resulting ZIP file to calibre:
 1. Load plugin from file
 
 You may also shut down Calibre and run `calibre-customize -b /path/to/calibre-kobo-driver` from the command line to have calibre add the plugin itself.
+
+# Usage
+To use this plugin after installing:
+
+1. Connect your Kobo Touch/Glo/Mini device and wait for it to be detected by calibre
+1. Select the book(s) you want to send to your device.
+1. Click the **Send to device** button.
 
 # Reporting a Bug
 Found a bug with this plugin? Great! Please use the Github issue tracker to send me reports of issues or questions. Under no circumstances should I be emailed directly unless I have asked to have something sent to me. Any emails I haven't asked for will be silently ignored. Everyone can benefit from a public bug tracker, but only one person benefits from a private email.
