@@ -38,7 +38,6 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 		"content": 9,
 		"toc": 899
 	}
-	kobo_epub_mime_type = "application/x-kobo-epub+zip"
 
 	supported_dbversion = 75
 	min_supported_dbversion = 65
@@ -90,7 +89,9 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 			'The test is to see if the string is contained in the title of a book. '
 			'The better the match, the less extraneous output.'),
 		_('Enable Extended Features') + \
-			':::' + _('Choose whether to enable extra customisations')
+			':::' + _('Choose whether to enable extra customisations'),
+		_('Delete Files not in Manifest') + \
+			':::' + _('Select this to silently delete files that are not in the manifest if they are encountered during processing')
 	]
 
 	EXTRA_CUSTOMIZATION_DEFAULT = [
@@ -106,7 +107,8 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 		False,
 		False,
 		u'',
-		True
+		True,
+		False
 	]
 
 	OPT_COLLECTIONS = 0
@@ -122,8 +124,10 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 	OPT_SUPPORT_NEWER_FIRMWARE = 10
 	OPT_DEBUGGING_TITLE = 11
 	OPT_EXTRA_FEATURES = 12
+	OPT_DELETE_UNMANIFESTED = 13
 
 	def _modify_epub(self, file):
+		opts = self.settings()
 		debug_print("KoboTouchExtended:_modify_epub:Processing file {0}".format(file))
 		changed = False
 		container = Container(file)
@@ -162,6 +166,11 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 		for name in container.get_html_names():
 			debug_print("KoboTouchExtended:_modify_epub:Processing HTML {0}".format(name))
 			root = container.get(name)
+			if not hasattr(root, 'xpath'):
+				if opts.extra_customization[self.OPT_DELETE_UNMANIFESTED]:
+					debug_print("KoboTouchExtended:_modify_epub:Removing unmanifested file {0}".format(name))
+					os.unlink(os.path.join(container.root, name).replace('/', os.sep))
+				continue
 			count = 0
 
 			for node in root.xpath('./xhtml:body//xhtml:h1 | ./xhtml:body//xhtml:h2 | ./xhtml:body//xhtml:h3 | ./xhtml:body//xhtml:h4 | ./xhtml:body//xhtml:h5 | ./xhtml:body//xhtml:h6 | ./xhtml:body//xhtml:p', namespaces = {"xhtml": container.XHTML_NS}):
