@@ -232,7 +232,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 	def sync_booklists(self, booklists, end_session = True):
 		debug_print("KoboTouchExtended:sync_booklists:Setting ImageId fields")
 
-		db = sqlite.connect(os.path.join(self._main_prefix, ".kobo", "koboreader.sqlite"), isolation_level = None)
+		db = sqlite.connect(os.path.join(self._main_prefix, ".kobo", "KoboReader.sqlite"), isolation_level = None)
 		db.text_factory = lambda x: unicode(x, "utf-8", "ignore")
 
 		def _rows_needing_imageid():
