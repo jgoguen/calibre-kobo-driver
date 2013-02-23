@@ -91,7 +91,8 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 		_('Enable Extended Features') + \
 			':::' + _('Choose whether to enable extra customisations'),
 		_('Delete Files not in Manifest') + \
-			':::' + _('Select this to silently delete files that are not in the manifest if they are encountered during processing')
+			':::' + _('Select this to silently delete files that are not in the manifest if they are encountered during processing. '
+				'If this option is not selected, files not in the manifest will be silently added to the manifest and processed as if they always were in the manifest.')
 	]
 
 	EXTRA_CUSTOMIZATION_DEFAULT = [
@@ -170,7 +171,16 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 				if opts.extra_customization[self.OPT_DELETE_UNMANIFESTED]:
 					debug_print("KoboTouchExtended:_modify_epub:Removing unmanifested file {0}".format(name))
 					os.unlink(os.path.join(container.root, name).replace('/', os.sep))
-				continue
+					continue
+				else:
+					item = container.manifest_item_for_name(name)
+					if item is None:
+						debug_print("KoboTouchExtended:_modify_epub:Adding unmanifested item {0} to the manifest".format(name))
+						container.add_name_to_manifest(name)
+						root = container.get(name)
+					if item is not None or not hasattr(root, "xpath"):
+						debug_print("KoboTouchExtended:_modify_epub:{0} is not a XML-based format".format(name))
+						continue
 			count = 0
 
 			for node in root.xpath('./xhtml:body//xhtml:h1 | ./xhtml:body//xhtml:h2 | ./xhtml:body//xhtml:h3 | ./xhtml:body//xhtml:h4 | ./xhtml:body//xhtml:h5 | ./xhtml:body//xhtml:h6 | ./xhtml:body//xhtml:p', namespaces = {"xhtml": container.XHTML_NS}):
