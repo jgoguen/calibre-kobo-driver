@@ -33,6 +33,7 @@ from calibre.utils.zipfile import ZIP_STORED
 exists, join = os.path.exists, os.path.join
 
 HTML_EXTENSIONS = ['.htm', '.html', '.xhtml']
+HTML_MIMETYPES = ['text/html', 'application/xhtml+xml']
 EXCLUDE_FROM_ZIP = ['mimetype', '.DS_Store', 'thumbs.db', '.directory']
 
 class InvalidEpub(ValueError):
@@ -74,7 +75,7 @@ class Container(object):
 		self.cache = {}
 		self.mime_map = {}
 
-		print("Got container path {0}".format(self.root))
+		debug_print("Container:__init__:Got container path {0}".format(self.root))
 
 		if os.path.exists(os.path.join(self.root, 'mimetype')):
 			os.remove(os.path.join(self.root, 'mimetype'))
@@ -110,10 +111,9 @@ class Container(object):
 		"""A generator function that yields only HTML file names from
 		the ePub.
 		"""
-		for name in self.name_map.keys():
-			ext = name[name.lower().rfind('.'):].lower()
-			if ext in HTML_EXTENSIONS:
-				yield name
+		for node in self.opf.xpath('//opf:manifest/opf:item[@href and @media-type]', namespaces = {"opf": self.OPF_NS}):
+			if node.get("media-type") in HTML_MIMETYPES:
+				yield node.get("href")
 
 	def is_drm_encrypted(self):
 		"""Determine if the ePub container is encumbered with Digital
