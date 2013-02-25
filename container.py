@@ -75,7 +75,7 @@ class Container(object):
 		self.cache = {}
 		self.mime_map = {}
 
-		debug_print("Container:__init__:Got container path {0}".format(self.root))
+		print("Container:__init__:Got container path {0}".format(self.root))
 
 		if os.path.exists(os.path.join(self.root, 'mimetype')):
 			os.remove(os.path.join(self.root, 'mimetype'))
