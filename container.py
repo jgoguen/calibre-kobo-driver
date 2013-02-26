@@ -113,7 +113,9 @@ class Container(object):
 		"""
 		for node in self.opf.xpath('//opf:manifest/opf:item[@href and @media-type]', namespaces = {"opf": self.OPF_NS}):
 			if node.get("media-type") in HTML_MIMETYPES:
-				yield node.get("href")
+				href = posixpath.join(posixpath.dirname(self.opf_name), node.get("href"))
+				href = os.path.normpath(href).replace(os.sep, '/')
+				yield href
 
 	def is_drm_encrypted(self):
 		"""Determine if the ePub container is encumbered with Digital
