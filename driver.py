@@ -44,50 +44,47 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 
 	EXTRA_CUSTOMIZATION_MESSAGE = [
 		_('The Kobo Touch from firmware V2.0.0 supports bookshelves.') + \
-			'These are created on the Kobo Touch. ' + \
-		_('Specify a tags type column for automatic management'),
-		_('Create Bookshelves') +
+					'These are created on the Kobo Touch. ' + \
+					_('Specify a tags type column for automatic management'),
+			_('Create Bookshelves') +
 			':::' + _('Create new bookshelves on the Kobo Touch if they do not exist. This is only for firmware V2.0.0 or later.'),
-		_('Delete Empty Bookshelves') +
+			_('Delete Empty Bookshelves') +
 			':::' + _('Delete any empty bookshelves from the Kobo Touch when syncing is finished. This is only for firmware V2.0.0 or later.'),
-		_('Upload covers for books') +
-			':::' + _('Normally, the KOBO readers get the cover image from the'
-			' ebook file itself. With this option, calibre will send a '
-			'separate cover image to the reader, useful if you '
-			'have modified the cover.'),
-		_('Upload Black and White Covers'),
-		_('Always upload covers') +
-			':::' + _('If the Upload covers option is selected, the driver will only replace covers already on the device.'
-			' Select this option if you want covers uploaded the first time you send the book to the device.'),
-		_('Show expired books') +
+			_('Upload covers for books') +
+			':::' + _('Upload cover images from the calibre library when sending books to the device.'),
+			_('Upload Black and White Covers'),
+			_('Keep cover aspect ratio') +
+			':::' + _('When uploading covers, do not change the aspect ratio when resizing for the device.'
+					' This is for firmware versions 2.3.1 and later.'),
+			_('Show expired books') +
 			':::' + _('A bug in an earlier version left non kepubs book records'
-			' in the database.  With this option Calibre will show the '
-			'expired records and allow you to delete them with '
-			'the new delete logic.'),
-		_('Show Previews') +
+				' in the database.  With this option Calibre will show the '
+				'expired records and allow you to delete them with '
+				'the new delete logic.'),
+			_('Show Previews') +
 			':::' + _('Kobo previews are included on the Touch and some other versions'
-			' by default they are no longer displayed as there is no good reason to '
-			'see them.  Enable if you wish to see/delete them.'),
-		_('Show Recommendations') +
+				' by default they are no longer displayed as there is no good reason to '
+				'see them.  Enable if you wish to see/delete them.'),
+			_('Show Recommendations') +
 			':::' + _('Kobo shows recommendations on the device.  In some cases these have '
-			'files but in other cases they are just pointers to the web site to buy. '
-			'Enable if you wish to see/delete them.'),
-		_('Set Series information') +
+				'files but in other cases they are just pointers to the web site to buy. '
+				'Enable if you wish to see/delete them.'),
+			_('Set Series information') +
 			':::' + _('The book lists on the Kobo devices can display series information. '
-			'This is not read by the device from the sideloaded books. '
-			'Series information can only be added to the device after the book has been processed by the device. '
-			'Enable if you wish to set series information.'),
-		_('Attempt to support newer firmware') +
+					'This is not read by the device from the sideloaded books. '
+					'Series information can only be added to the device after the book has been processed by the device. '
+					'Enable if you wish to set series information.'),
+			_('Attempt to support newer firmware') +
 			':::' + _('Kobo routinely updates the firmware and the '
-			'database version.  With this option Calibre will attempt '
-			'to perform full read-write functionality - Here be Dragons!! '
-			'Enable only if you are comfortable with restoring your kobo '
-			'to factory defaults and testing software. '
-			'This driver supports firmware V2.x.x and DBVersion up to ' + unicode(supported_dbversion)),
-		_('Title to test when debugging') +
+				'database version.  With this option Calibre will attempt '
+				'to perform full read-write functionality - Here be Dragons!! '
+				'Enable only if you are comfortable with restoring your kobo '
+				'to factory defaults and testing software. '
+				'This driver supports firmware V2.x.x and DBVersion up to ' + unicode(supported_dbversion)),
+			_('Title to test when debugging') +
 			':::' + _('Part of title of a book that can be used when doing some tests for debugging. '
-			'The test is to see if the string is contained in the title of a book. '
-			'The better the match, the less extraneous output.'),
+					'The test is to see if the string is contained in the title of a book. '
+					'The better the match, the less extraneous output.'),
 		_('Enable Extended Features') + \
 			':::' + _('Choose whether to enable extra customisations'),
 		_('Delete Files not in Manifest') + \
@@ -117,7 +114,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 	OPT_DELETE_BOOKSHELVES = 2
 	OPT_UPLOAD_COVERS = 3
 	OPT_UPLOAD_GRAYSCALE_COVERS = 4
-	OPT_ALWAYS_UPLOAD_COVERS = 5
+	OPT_KEEP_COVER_ASPECT_RATIO = 5
 	OPT_SHOW_EXPIRED_BOOK_RECORDS = 6
 	OPT_SHOW_PREVIEWS = 7
 	OPT_SHOW_RECOMMENDATIONS = 8
