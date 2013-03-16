@@ -33,6 +33,8 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 	author = 'Joel Goguen'
 	description = 'Communicate with the Kobo Touch, Glo, and Mini firmwares and enable extended Kobo ePub features.'
 
+	version = (1, 0, 0)
+
 	content_types = {
 		"main": 6,
 		"content": 9,
