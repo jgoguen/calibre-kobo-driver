@@ -43,9 +43,11 @@ Found a bug with this plugin? Great! Please use the Github issue tracker to send
 
 When submitting a bug, I require the following information as a minimum, but any additional information is good to include:
 
-1. What version of calibre you are using. If you are not on the latet version I will require that you update before I accept any report.
-1. The full error message reported by calibre.
+1. What version of calibre you are using. If you are not on the latest version I will require that you update before I accept any report.
+1. The full error message reported by calibre, if any.
 1. For issues processing books, whether or not you have a book that you are able to send me that demonstrates the issue. Please be aware of any copyright restrictions that may prohibit sending me a book.
+1. The calibre debug log.
+	1. To get the calibre debug log, click the arrow beside the "Preferences" menu, choose "Restart in debug mode", repeat the same action that caused the issue, and close calibre. The debug log will be automatically displayed to you.
 
 # Known Issues
 If you have previously installed this plugin in calibre 0.9.18 or earlier, then you upgrade to calibre 0.9.19 or later and can't update the plugin, you must manually replace the plugin ZIP file:
