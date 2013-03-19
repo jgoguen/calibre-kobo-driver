@@ -33,7 +33,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 	author = 'Joel Goguen'
 	description = 'Communicate with the Kobo Touch, Glo, and Mini firmwares and enable extended Kobo ePub features.'
 
-	version = (1, 0, 0)
+	version = (1, 0, 1)
 
 	content_types = {
 		"main": 6,
@@ -126,13 +126,16 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 	OPT_EXTRA_FEATURES = 12
 	OPT_DELETE_UNMANIFESTED = 13
 
-	def _modify_epub(self, file):
+	encrypted_files = []
+
+	def _modify_epub(self, file, metadata):
 		opts = self.settings()
-		debug_print("KoboTouchExtended:_modify_epub:Processing file {0}".format(file))
+		debug_print("KoboTouchExtended:_modify_epub:Processing {0}".format(metadata.title))
 		changed = False
 		container = Container(file)
 		if container.is_drm_encrypted():
-			debug_print("KoboTouchExtended:_modify_epub:ERROR: ePub is DRM-encrypted, not modifying")
+			debug_print("KoboTouchExtended:_modify_epub:ERROR: ePub is DRM-encumbered, not modifying")
+			encrypted_files.append(metadata.uuid)
 			return False
 
 		opf = container.opf
@@ -216,10 +219,10 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 		opts = self.settings()
 		if opts.extra_customization[self.OPT_EXTRA_FEATURES]:
 			debug_print("KoboTouchExtended:upload_books:Enabling extra ePub features for Kobo devices")
-			for file in files:
+			for file, mi in zip(files, metadata):
 				ext = file[file.rfind('.'):]
 				if ext == EPUB_EXT:
-					self._modify_epub(file)
+					self._modify_epub(file, mi)
 
 		result = super(KOBOTOUCHEXTENDED, self).upload_books(files, names, on_card, end_session, metadata)
 
@@ -232,7 +235,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 
 			idx = path.rfind('.')
 			ext = path[idx:]
-			if ext == EPUB_EXT:
+			if ext == EPUB_EXT and mi.uuid not in self.encrypted_files:
 				path = "{0}.kepub{1}".format(path[:idx], EPUB_EXT)
 				debug_print("KoboTouchExtended:filename_callback:New path - {0}".format(path))
 
