@@ -30,6 +30,8 @@ from calibre.utils.zipfile import ZipFile
 from calibre.utils.zipfile import ZIP_DEFLATED
 from calibre.utils.zipfile import ZIP_STORED
 
+from urllib import unquote
+
 exists, join = os.path.exists, os.path.join
 
 HTML_EXTENSIONS = ['.htm', '.html', '.xhtml']
@@ -103,9 +105,12 @@ class Container(object):
 					self.opf_name = name
 					self.mime_map[name] = guess_type('a.opf')[0]
 
-		for item in self.opf.xpath('//opf:manifest/opf:item[@href and @media-type]', namespaces = {'opf': self.OPF_NS}):
-			href = item.get('href')
+		opf = self.opf
+		for item in opf.xpath('//opf:manifest/opf:item[@href and @media-type]', namespaces = {'opf': self.OPF_NS}):
+			href = unquote(item.get('href'))
+			item.set("href", href)
 			self.mime_map[self.href_to_name(href, posixpath.dirname(self.opf_name))] = item.get('media-type')
+		self.set(self.opf_name, opf)
 
 	def get_html_names(self):
 		"""A generator function that yields only HTML file names from
