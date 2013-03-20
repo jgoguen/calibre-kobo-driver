@@ -133,9 +133,9 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 		debug_print("KoboTouchExtended:_modify_epub:Processing {0}".format(metadata.title))
 		changed = False
 		container = Container(file)
-		if container.is_drm_encrypted():
+		if container.is_drm_encumbered:
 			debug_print("KoboTouchExtended:_modify_epub:ERROR: ePub is DRM-encumbered, not modifying")
-			encrypted_files.append(metadata.uuid)
+			self.encrypted_files.append(metadata.uuid)
 			return False
 
 		opf = container.opf

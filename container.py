@@ -58,11 +58,28 @@ class Container(object):
 			'rights.xml' : False,
 	}
 
+	acceptable_encryption_algorithms = (
+		'http://ns.adobe.com/pdf/enc#RC'
+	)
+
 	OCF_NS = 'urn:oasis:names:tc:opendocument:xmlns:container'
 	OPF_NS = 'http://www.idpf.org/2007/opf'
 	NCX_NS = "http://www.daisy.org/z3986/2005/ncx/"
 	DC_NS = "http://purl.org/dc/elements/1.1/"
 	XHTML_NS = "http://www.w3.org/1999/xhtml"
+	XMLENC_NS = "http://www.w3.org/2001/04/xmlenc#"
+	DIGEDENC_NS = "http://ns.adobe.com/digitaleditions/enc"
+
+	namespaces = {
+		'opf': 'http://www.idpf.org/2007/opf',
+		'ocf': 'urn:oasis:names:tc:opendocument:xmlns:container',
+		'ncx': 'http://www.daisy.org/z3986/2005/ncx/',
+		'dc': 'http://purl.org/dc/elements/1.1/',
+		'xhtml': 'http://www.w3.org/1999/xhtml',
+		'enc': 'http://www.w3.org/2001/04/xmlenc#',
+		'deenc': 'http://ns.adobe.com/digitaleditions/enc'
+	}
+
 	OPF_MIMETYPE = 'application/oebps-package+xml'
 	NCX_MIMETYPE = "application/x-dtbncx+xml"
 
@@ -86,7 +103,7 @@ class Container(object):
 		if not os.path.exists(container_path):
 			raise InvalidEpub('No META-INF/container.xml in epub')
 		self.container = etree.fromstring(open(container_path, 'rb').read())
-		opf_files = self.container.xpath((r'child::ocf:rootfiles/ocf:rootfile[@media-type="{0}" and @full-path]'.format(guess_type('a.opf')[0])), namespaces = {'ocf': self.OCF_NS})
+		opf_files = self.container.xpath((r'child::ocf:rootfiles/ocf:rootfile[@media-type="{0}" and @full-path]'.format(guess_type('a.opf')[0])), namespaces = self.namespaces)
 		if not opf_files:
 			raise InvalidEpub('META-INF/container.xml contains no link to OPF file')
 		opf_path = os.path.join(self.root, *opf_files[0].get('full-path').split('/'))
@@ -101,12 +118,13 @@ class Container(object):
 				path = os.path.join(dirpath, f)
 				name = os.path.relpath(path, self.root).replace(os.sep, '/')
 				self.name_map[name] = path
+				self.mime_map[name] = guess_type(f)[0]
 				if path == opf_path:
 					self.opf_name = name
 					self.mime_map[name] = guess_type('a.opf')[0]
 
 		opf = self.opf
-		for item in opf.xpath('//opf:manifest/opf:item[@href and @media-type]', namespaces = {'opf': self.OPF_NS}):
+		for item in opf.xpath('//opf:manifest/opf:item[@href and @media-type]', namespaces = self.namespaces):
 			href = unquote(item.get('href'))
 			item.set("href", href)
 			self.mime_map[self.href_to_name(href, posixpath.dirname(self.opf_name))] = item.get('media-type')
@@ -116,13 +134,14 @@ class Container(object):
 		"""A generator function that yields only HTML file names from
 		the ePub.
 		"""
-		for node in self.opf.xpath('//opf:manifest/opf:item[@href and @media-type]', namespaces = {"opf": self.OPF_NS}):
+		for node in self.opf.xpath('//opf:manifest/opf:item[@href and @media-type]', namespaces = self.namespaces):
 			if node.get("media-type") in HTML_MIMETYPES:
 				href = posixpath.join(posixpath.dirname(self.opf_name), node.get("href"))
 				href = os.path.normpath(href).replace(os.sep, '/')
 				yield href
 
-	def is_drm_encrypted(self):
+	@property
+	def is_drm_encumbered(self):
 		"""Determine if the ePub container is encumbered with Digital
 		Restrictions Management.
 
@@ -130,18 +149,24 @@ class Container(object):
 		ePub encumbered by Digital Restrictions Management. DRM-encumbered
 		files cannot be edited.
 		"""
+		is_encumbered = False
 		if 'META-INF/encryption.xml' in self.name_map:
 			try:
 				xml = self.get('META-INF/encryption.xml')
-				if not xml:
-					return True # Even if encryption.xml can't be parsed, assume its presence means an encumbered file
-				for elem in xml.xpath('.//*[contains(name(), "EncryptionMethod")]'):
+				if xml is None:
+					return True # If encryption.xml can't be parsed, assume its presence means an encumbered file
+				for elem in xml.xpath('./enc:EncryptedData/enc:EncryptionMethod[@Algorithm]', namespaces = self.namespaces):
 					alg = elem.get('Algorithm')
-					return alg != 'http://ns.adobe.com/pdf/enc#RC'
-			except:
-				self.log.error("Could not parse encryption.xml")
-				return True # If encryption.xml is present, assume the file is encumbered
-		return False
+
+					# Anything not in acceptable_encryption_algorithms is a sign of an
+					# encumbered file.
+					if alg not in self.acceptable_encryption_algorithms:
+						is_encumbered = True
+			except Exception as e:
+				self.log.error("Could not parse encryption.xml: " + e.message)
+				raise
+
+		return is_encumbered
 
 	def manifest_worthy_names(self):
 		for name in self.name_map:
@@ -159,7 +184,7 @@ class Container(object):
 	def manifest_item_for_name(self, name):
 		href = self.name_to_href(name, posixpath.dirname(self.opf_name))
 		q = prepare_string_for_xml(href, attribute = True)
-		existing = self.opf.xpath('//opf:manifest/opf:item[@href="{0}"]'.format(q), namespaces = {'opf': self.OPF_NS})
+		existing = self.opf.xpath('//opf:manifest/opf:item[@href="{0}"]'.format(q), namespaces = self.namespaces)
 		if not existing:
 			return None
 		return existing[0]
@@ -168,7 +193,7 @@ class Container(object):
 		item = self.manifest_item_for_name(name)
 		if item is not None:
 			return
-		manifest = self.opf.xpath('//opf:manifest', namespaces = {'opf': self.OPF_NS})[0]
+		manifest = self.opf.xpath('//opf:manifest', namespaces = self.namespaces)[0]
 		item = manifest.makeelement('{%s}item' % self.OPF_NS, nsmap = {'opf': self.OPF_NS}, href = self.name_to_href(name, posixpath.dirname(self.opf_name)), id = self.generate_manifest_id())
 		if not mt:
 			mt = guess_type(posixpath.basename(name))[0]
@@ -193,7 +218,7 @@ class Container(object):
 				parent[idx - 1].tail = parent.text
 
 	def generate_manifest_id(self):
-		items = self.opf.xpath('//opf:manifest/opf:item[@id]', namespaces = {'opf': self.OPF_NS})
+		items = self.opf.xpath('//opf:manifest/opf:item[@id]', namespaces = self.namespaces)
 		ids = set([x.get('id') for x in items])
 		for x in xrange(sys.maxint):
 			c = 'id{0}'.format(x)
@@ -287,7 +312,7 @@ class Container(object):
 
 	def _parse(self, raw, mimetype):
 		mt = mimetype.lower()
-		if mt.endswith('+xml'):
+		if mt.endswith('xml'):
 			parser = etree.XMLParser(no_network = True, huge_tree = not iswindows)
 			raw = xml_to_unicode(raw,
 				strip_encoding_pats = True, assume_utf8 = True,
