@@ -42,7 +42,6 @@ class InvalidEpub(ValueError):
 	pass
 
 class ParseError(ValueError):
-
 	def __init__(self, name, desc):
 		self.name = name
 		self.desc = desc

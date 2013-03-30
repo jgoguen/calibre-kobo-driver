@@ -11,11 +11,18 @@ import sqlite3 as sqlite
 from calibre.devices.kobo.driver import KOBOTOUCH
 from calibre.devices.usbms.driver import debug_print
 from calibre_plugins.kobotouch_extended.container import Container
+from calibre_plugins.kobotouch_extended.container import ParseError
 
 from copy import deepcopy
 from lxml import etree
 
 EPUB_EXT = '.epub'
+
+class DRMEncumberedEPub(ValueError):
+	def __init__(self, name, author):
+		self.name = name
+		self.author = author
+		ValueError.__init__(self, _("ePub '{0}' by '{1}' is encumbered by DRM").format(name, author))
 
 class KOBOTOUCHEXTENDED(KOBOTOUCH):
 	'''Extended driver for Kobo Touch, Kobo Glo, and Kobo Mini devices.
@@ -33,7 +40,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 	author = 'Joel Goguen'
 	description = 'Communicate with the Kobo Touch, Glo, and Mini firmwares and enable extended Kobo ePub features.'
 
-	version = (1, 0, 2)
+	version = (1, 1, 0)
 
 	content_types = {
 		"main": 6,
@@ -91,7 +98,12 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 			':::' + _('Choose whether to enable extra customisations'),
 		_('Delete Files not in Manifest') + \
 			':::' + _('Select this to silently delete files that are not in the manifest if they are encountered during processing. '
-				'If this option is not selected, files not in the manifest will be silently added to the manifest and processed as if they always were in the manifest.')
+				'If this option is not selected, files not in the manifest will be silently added to the manifest and processed as if they always were in the manifest.'),
+		_('Upload DRM-encumbered ePub files') + \
+			':::' + _('Select this to upload ePub files encumbered by DRM. If this is not selected, it is a fatal error to upload an encumbered file'),
+		_('Silently Ignore Failed Conversions') + \
+			':::' + _('Select this to not upload any book that fails conversion to kepub. If this is not selected, the upload process '
+				'will be stopped at the first book that fails. If this is selected, failed books will be silently removed from the upload queue.')
 	]
 
 	EXTRA_CUSTOMIZATION_DEFAULT = [
@@ -108,6 +120,8 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 		False,
 		u'',
 		True,
+		False,
+		False,
 		False
 	]
 
@@ -125,18 +139,30 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 	OPT_DEBUGGING_TITLE = 11
 	OPT_EXTRA_FEATURES = 12
 	OPT_DELETE_UNMANIFESTED = 13
+	OPT_UPLOAD_ENCUMBERED = 14
+	OPT_SKIP_FAILED = 15
 
 	encrypted_files = []
 
 	def _modify_epub(self, file, metadata):
 		opts = self.settings()
 		debug_print("KoboTouchExtended:_modify_epub:Processing {0}".format(metadata.title))
+
+		skip_failed = opts.extra_customization[self.OPT_SKIP_FAILED]
+		if skip_failed:
+			debug_print("KoboTouchExtended:_modify_epub:Failed conversions will be skipped")
+		else:
+			debug_print("KoboTouchExtended:_modify_epub:Failed conversions will raise exceptions")
+
 		changed = False
 		container = Container(file)
 		if container.is_drm_encumbered:
 			debug_print("KoboTouchExtended:_modify_epub:ERROR: ePub is DRM-encumbered, not modifying")
 			self.encrypted_files.append(metadata.uuid)
-			return False
+			if opts.extra_customization[self.OPT_UPLOAD_ENCUMBERED]:
+				raise DRMEncumberedEPub(metadata.title, ", ".join(metadata.authors))
+			else:
+				return False
 
 		opf = container.opf
 		cover_meta_node = opf.xpath('./ns:metadata/ns:meta[@name="cover"]', namespaces = {"ns": container.OPF_NS})
@@ -217,14 +243,37 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 
 	def upload_books(self, files, names, on_card = None, end_session = True, metadata = None):
 		opts = self.settings()
+		skip_failed = opts.extra_customization[self.OPT_SKIP_FAILED]
+		new_files = []
+		new_names = []
+		new_metadata = []
+		errors = []
 		if opts.extra_customization[self.OPT_EXTRA_FEATURES]:
 			debug_print("KoboTouchExtended:upload_books:Enabling extra ePub features for Kobo devices")
-			for file, mi in zip(files, metadata):
+			for file, n, mi in zip(files, names, metadata):
 				ext = file[file.rfind('.'):]
 				if ext == EPUB_EXT:
-					self._modify_epub(file, mi)
+					try:
+						self._modify_epub(file, mi)
+					except Exception as e:
+						if not skip_failed:
+							raise ParseError("'{0}' by '{1}'".format(mi.title, " and ".join(mi.authors)), e.message)
+						else:
+							errors.append("Failed to upload {0} with error: {1}".format("'{0}' by '{1}'".format(mi.title, " and ".join(mi.authors)), e.message))
+					else:
+						new_files.append(file)
+						new_names.append(n)
+						new_metadata.append(mi)
+		else:
+			new_files = files
+			new_names = names
+			new_metadata = metadata
 
-		result = super(KOBOTOUCHEXTENDED, self).upload_books(files, names, on_card, end_session, metadata)
+		if metadata and new_metadata and len(metadata) != len(new_metadata) and len(new_metadata) > 0:
+			print("The following books could not be processed and will not be uploaded to your device:")
+			print("\n".join(errors))
+
+		result = super(KOBOTOUCHEXTENDED, self).upload_books(new_files, new_names, on_card, end_session, new_metadata)
 
 		return result
 
