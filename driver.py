@@ -290,6 +290,9 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 
 		return path
 
+	def sanitize_path_components(self, components):
+		return [x.replace('!', '_') for x in components]
+
 	def sync_booklists(self, booklists, end_session = True):
 		debug_print("KoboTouchExtended:sync_booklists:Setting ImageId fields")
 
