@@ -53,7 +53,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 	description = 'Communicate with the Kobo Touch, Glo, and Mini firmwares and enable extended Kobo ePub features.'
 	configdir = os.path.join(config_dir, 'plugins', 'KoboTouchExtended')
 
-	version = (1, 2, 0)
+	version = (1, 2, 2)
 
 	content_types = {
 		"main": 6,
@@ -233,6 +233,28 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 					node.set("properties", "cover-image")
 					container.set(container.opf_name, opf)
 
+		hyphenator = None
+		if opts.extra_customization[self.OPT_HYPHENATE]:
+			dictfile = None
+			for lang in metadata.languages:
+				if lang == 'und':
+					continue
+				dictfile = os.path.join(self.configdir, "hyph_{0}.dic".format(lang))
+				if os.path.isfile(dictfile):
+					break
+			if dictfile is None:
+				lang = root.attrib["{%s}lang" % container.namespaces["xml"]]
+				if not lang:
+					lang = root.attrib["lang"]
+				if lang:
+					dictfile = os.path.join(self.configdir, "hyph_{0}.dic".format(lang))
+			if dictfile is None or not os.path.isfile(dictfile):
+				dictfile = os.path.join(self.configdir, "hyph.dic")
+			debug_print("KoboTouchExtended:_modify_epub:Hyphenation dictionary file - {0}".format(dictfile))
+			if dictfile is not None and os.path.isfile(dictfile):
+				debug_print("KoboTouchExtended:_modify_epub:Using hyphenation dictionary {0}".format(dictfile))
+				hyphenator = Hyphenator(dictfile)
+
 		for name in container.get_html_names():
 			debug_print("KoboTouchExtended:_modify_epub:Processing HTML {0}".format(name))
 			root = container.get(name)
@@ -277,31 +299,10 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 				debug_print("KoboTouchExtended:_modify_epub:Added Kobo tags to {0}".format(name))
 				container.set(name, root)
 
-			if opts.extra_customization[self.OPT_HYPHENATE]:
-				hyphenator = None
-				dictfile = None
-				for lang in metadata.languages:
-					if lang == 'und':
-						continue
-					dictfile = os.path.join(self.configdir, "hyph_{0}.dic".format(lang))
-					if os.path.isfile(dictfile):
-						break
-				if dictfile is None:
-					lang = root.attrib["{%s}lang" % container.namespaces["xml"]]
-					if not lang:
-						lang = root.attrib["lang"]
-					if lang:
-						dictfile = os.path.join(self.configdir, "hyph_{0}.dic".format(lang))
-						if os.path.isfile(dictfile):
-							break
-				if dictfile is None:
-					dictfile = os.path.join(self.configdir, "hyph.dic")
-				if dictfile is not None and os.path.isfile(dictfile):
-					debug_print("KoboTouchExtended:_modify_epub:Using hyphenation dictionary {0}".format(dictfile))
-					hyphenator = Hyphenator(dictfile)
-					for node in root.xpath("./xhtml:body//xhtml:span[starts-with(@id, 'kobo.')]", namespaces = container.namespaces):
-						node = self._hyphenate_node(node, hyphenator)
-					container.set(name, root)
+			if opts.extra_customization[self.OPT_HYPHENATE] and hyphenator is not None:
+				for node in root.xpath("./xhtml:body//xhtml:span[starts-with(@id, 'kobo.')]", namespaces = container.namespaces):
+					node = self._hyphenate_node(node, hyphenator)
+				container.set(name, root)
 
 		os.unlink(file)
 		container.write(file)
