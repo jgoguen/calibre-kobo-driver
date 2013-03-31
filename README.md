@@ -14,6 +14,7 @@ To install this plugin from source, you must create a ZIP file named `KoboTouchE
 1. \_\_init\_\_.py
 1. container.py
 1. driver.py
+1. hyphenator.py
 1. plugin-import-name-kobotouch\_extended.txt
 
 To create the ZIP file:
