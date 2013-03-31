@@ -12,6 +12,7 @@ import sys
 from calibre.constants import config_dir
 from calibre.devices.kobo.driver import KOBOTOUCH
 from calibre.devices.usbms.driver import debug_print
+from calibre.ebooks.metadata.book.base import NULL_VALUES
 from calibre_plugins.kobotouch_extended.container import Container
 from calibre_plugins.kobotouch_extended.container import ParseError
 
@@ -53,7 +54,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 	description = 'Communicate with the Kobo Touch, Glo, and Mini firmwares and enable extended Kobo ePub features.'
 	configdir = os.path.join(config_dir, 'plugins', 'KoboTouchExtended')
 
-	version = (1, 2, 2)
+	version = (1, 2, 3)
 
 	content_types = {
 		"main": 6,
@@ -121,7 +122,9 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 			':::' + _('Select this to add soft hyphens to uploaded ePub files. The language used will be the language defined for the book in calibre. '
 				' It is necessary to have a LibreOffice/OpenOffice hyphenation dictionary in ' + os.path.join(config_dir, 'plugins', 'KoboTouchExtended') + \
 				' named like hyph_{language}.dic, where {language} is the ISO 639 3-letter language code. For example, \'eng\' but not \'en_CA\'. The default dictionary to use '
-				' if none is found may be named \'hyph.dic\' instead.')
+				' if none is found may be named \'hyph.dic\' instead.'),
+		_('Replace Content Language Code') + \
+			':::' + _('Select this to replace the defined language in each content file inside the ePub.')
 	]
 
 	EXTRA_CUSTOMIZATION_DEFAULT = [
@@ -138,6 +141,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 		False,
 		u'',
 		True,
+		False,
 		False,
 		False,
 		False,
@@ -161,6 +165,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 	OPT_UPLOAD_ENCUMBERED = 14
 	OPT_SKIP_FAILED = 15
 	OPT_HYPHENATE = 16
+	OPT_REPLACE_LANG = 17
 
 	skip_renaming_files = []
 
@@ -250,7 +255,6 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 					dictfile = os.path.join(self.configdir, "hyph_{0}.dic".format(lang))
 			if dictfile is None or not os.path.isfile(dictfile):
 				dictfile = os.path.join(self.configdir, "hyph.dic")
-			debug_print("KoboTouchExtended:_modify_epub:Hyphenation dictionary file - {0}".format(dictfile))
 			if dictfile is not None and os.path.isfile(dictfile):
 				debug_print("KoboTouchExtended:_modify_epub:Using hyphenation dictionary {0}".format(dictfile))
 				hyphenator = Hyphenator(dictfile)
@@ -273,6 +277,10 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 						debug_print("KoboTouchExtended:_modify_epub:{0} is not a XML-based format".format(name))
 						continue
 			count = 0
+
+			if opts.extra_customization[self.OPT_REPLACE_LANG] and metadata.language != NULL_VALUES["language"]:
+				root.attrib["{%s}lang" % container.namespaces["xml"]] = metadata.language
+				root.attrib["lang"] = metadata.language
 
 			for node in root.xpath('./xhtml:body//xhtml:h1 | ./xhtml:body//xhtml:h2 | ./xhtml:body//xhtml:h3 | ./xhtml:body//xhtml:h4 | ./xhtml:body//xhtml:h5 | ./xhtml:body//xhtml:h6 | ./xhtml:body//xhtml:p', namespaces = container.namespaces):
 				children = node.xpath('node()')
