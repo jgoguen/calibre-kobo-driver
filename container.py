@@ -61,14 +61,6 @@ class Container(object):
 		'http://ns.adobe.com/pdf/enc#RC'
 	)
 
-	OCF_NS = 'urn:oasis:names:tc:opendocument:xmlns:container'
-	OPF_NS = 'http://www.idpf.org/2007/opf'
-	NCX_NS = "http://www.daisy.org/z3986/2005/ncx/"
-	DC_NS = "http://purl.org/dc/elements/1.1/"
-	XHTML_NS = "http://www.w3.org/1999/xhtml"
-	XMLENC_NS = "http://www.w3.org/2001/04/xmlenc#"
-	DIGEDENC_NS = "http://ns.adobe.com/digitaleditions/enc"
-
 	namespaces = {
 		'opf': 'http://www.idpf.org/2007/opf',
 		'ocf': 'urn:oasis:names:tc:opendocument:xmlns:container',
@@ -76,7 +68,8 @@ class Container(object):
 		'dc': 'http://purl.org/dc/elements/1.1/',
 		'xhtml': 'http://www.w3.org/1999/xhtml',
 		'enc': 'http://www.w3.org/2001/04/xmlenc#',
-		'deenc': 'http://ns.adobe.com/digitaleditions/enc'
+		'deenc': 'http://ns.adobe.com/digitaleditions/enc',
+		'xml': 'http://www.w3.org/XML/1998/namespace'
 	}
 
 	OPF_MIMETYPE = 'application/oebps-package+xml'

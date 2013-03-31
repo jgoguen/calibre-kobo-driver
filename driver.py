@@ -7,13 +7,16 @@ __docformat__ = 'markdown en'
 
 import os
 import sqlite3 as sqlite
+import sys
 
+from calibre.constants import config_dir
 from calibre.devices.kobo.driver import KOBOTOUCH
 from calibre.devices.usbms.driver import debug_print
 from calibre_plugins.kobotouch_extended.container import Container
 from calibre_plugins.kobotouch_extended.container import ParseError
 
 from copy import deepcopy
+from hyphenator import Hyphenator
 from lxml import etree
 
 EPUB_EXT = '.epub'
@@ -23,6 +26,15 @@ class DRMEncumberedEPub(ValueError):
 		self.name = name
 		self.author = author
 		ValueError.__init__(self, _("ePub '{0}' by '{1}' is encumbered by DRM").format(name, author))
+
+class InvalidEPub(ValueError):
+	def __init__(self, name, author, message, fname = None, lineno = None):
+		self.name = name
+		self.author = author
+		self.message = message
+		self.fname = fname
+		self.lineno = lineno
+		ValueError.__init__(self, _("Failed to parse '{0}' by '{1}' with error: '{2}' (file: {3}, line: {4})".format(name, author, message, fname, lineno)))
 
 class KOBOTOUCHEXTENDED(KOBOTOUCH):
 	'''Extended driver for Kobo Touch, Kobo Glo, and Kobo Mini devices.
@@ -39,8 +51,9 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 	gui_name = 'Kobo Touch/Glo/Mini'
 	author = 'Joel Goguen'
 	description = 'Communicate with the Kobo Touch, Glo, and Mini firmwares and enable extended Kobo ePub features.'
+	configdir = os.path.join(config_dir, 'plugins', 'KoboTouchExtended')
 
-	version = (1, 1, 1)
+	version = (1, 2, 0)
 
 	content_types = {
 		"main": 6,
@@ -103,7 +116,12 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 			':::' + _('Select this to upload ePub files encumbered by DRM. If this is not selected, it is a fatal error to upload an encumbered file'),
 		_('Silently Ignore Failed Conversions') + \
 			':::' + _('Select this to not upload any book that fails conversion to kepub. If this is not selected, the upload process '
-				'will be stopped at the first book that fails. If this is selected, failed books will be silently removed from the upload queue.')
+				'will be stopped at the first book that fails. If this is selected, failed books will be silently removed from the upload queue.'),
+		_('Hyphenate Files') + \
+			':::' + _('Select this to add soft hyphens to uploaded ePub files. The language used will be the language defined for the book in calibre. '
+				' It is necessary to have a LibreOffice/OpenOffice hyphenation dictionary in ' + os.path.join(config_dir, 'plugins', 'KoboTouchExtended') + \
+				' named like hyph_{language}.dic, where {language} is the ISO 639 3-letter language code. For example, \'eng\' but not \'en_CA\'. The default dictionary to use '
+				' if none is found may be named \'hyph.dic\' instead.')
 	]
 
 	EXTRA_CUSTOMIZATION_DEFAULT = [
@@ -120,6 +138,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 		False,
 		u'',
 		True,
+		False,
 		False,
 		False,
 		False
@@ -141,8 +160,31 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 	OPT_DELETE_UNMANIFESTED = 13
 	OPT_UPLOAD_ENCUMBERED = 14
 	OPT_SKIP_FAILED = 15
+	OPT_HYPHENATE = 16
 
-	encrypted_files = []
+	skip_renaming_files = []
+
+	hyphenator = None
+
+	def initialize(self):
+		if not os.path.isdir(self.configdir):
+			os.makedirs(self.configdir)
+
+		super(KOBOTOUCHEXTENDED, self).initialize()
+
+	def _hyphenate_node(self, elem, hyphenator, hyphen = u'\u00AD'):
+		if isinstance(elem, basestring):
+			newstr = []
+			for w in elem.split():
+				if '-' not in w and hyphen not in w:
+					w = hyphenator.inserted(w, hyphen = hyphen)
+				newstr.append(w)
+			return " ".join(newstr)
+		if elem is not None:
+			elem.text = self._hyphenate_node(elem.text, hyphenator)
+			elem.tail = self._hyphenate_node(elem.tail, hyphenator)
+		return elem
+
 
 	def _modify_epub(self, file, metadata):
 		opts = self.settings()
@@ -154,43 +196,42 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 		else:
 			debug_print("KoboTouchExtended:_modify_epub:Failed conversions will raise exceptions")
 
-		changed = False
 		container = Container(file)
 		if container.is_drm_encumbered:
 			debug_print("KoboTouchExtended:_modify_epub:ERROR: ePub is DRM-encumbered, not modifying")
-			self.encrypted_files.append(metadata.uuid)
+			self.skip_renaming_files.append(metadata.uuid)
 			if opts.extra_customization[self.OPT_UPLOAD_ENCUMBERED]:
 				raise DRMEncumberedEPub(metadata.title, ", ".join(metadata.authors))
 			else:
 				return False
 
+		found_cover = False
 		opf = container.opf
-		cover_meta_node = opf.xpath('./ns:metadata/ns:meta[@name="cover"]', namespaces = {"ns": container.OPF_NS})
+		cover_meta_node = opf.xpath('./opf:metadata/opf:meta[@name="cover"]', namespaces = container.namespaces)
 		if len(cover_meta_node) > 0:
 			cover_meta_node = cover_meta_node[0]
 			cover_id = cover_meta_node.attrib["content"] if "content" in cover_meta_node.attrib else None
 			if cover_id is not None:
 				debug_print("KoboTouchExtended:_modify_epub:Found cover image id {0}".format(cover_id))
-				cover_node = opf.xpath('./ns:manifest/ns:item[@id="{0}"]'.format(cover_id), namespaces = {"ns": container.OPF_NS})
+				cover_node = opf.xpath('./opf:manifest/opf:item[@id="{0}"]'.format(cover_id), namespaces = container.namespaces)
 				if len(cover_node) > 0:
 					cover_node = cover_node[0]
 					if "properties" not in cover_node.attrib or cover_node.attrib["properties"] != "cover-image":
 						debug_print("KoboTouchExtended:_modify_epub:Setting cover-image")
 						cover_node.set("properties", "cover-image")
 						container.set(container.opf_name, opf)
-						changed = True
+						found_cover = True
 
 		# It's possible that the cover image can't be detected this way. Try looking for the cover image ID in the OPF manifest.
-		if not changed:
+		if not found_cover:
 			debug_print("KoboTouchExtended:_modify_epub:Looking for cover image in OPF manifest")
-			node_list = opf.xpath('./ns:manifest/ns:item[@id="cover" or starts-with(@id, "cover") and not(substring(@id, string-length(@id) - string-length("html") + 1)) and starts-with(@media-type, "image")]', namespaces = {"ns": container.OPF_NS})
+			node_list = opf.xpath('./opf:manifest/opf:item[@id="cover" or starts-with(@id, "cover") and not(substring(@id, string-length(@id) - string-length("html") + 1)) and starts-with(@media-type, "image")]', namespaces = container.namespaces)
 			if len(node_list) > 0:
 				node = node_list[0]
 				if "properties" not in node.attrib or node.attrib["properties"] != 'cover-image':
 					debug_print("KoboTouchExtended:_modify_epub:Setting cover-image")
 					node.set("properties", "cover-image")
 					container.set(container.opf_name, opf)
-					changed = True
 
 		for name in container.get_html_names():
 			debug_print("KoboTouchExtended:_modify_epub:Processing HTML {0}".format(name))
@@ -211,17 +252,17 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 						continue
 			count = 0
 
-			for node in root.xpath('./xhtml:body//xhtml:h1 | ./xhtml:body//xhtml:h2 | ./xhtml:body//xhtml:h3 | ./xhtml:body//xhtml:h4 | ./xhtml:body//xhtml:h5 | ./xhtml:body//xhtml:h6 | ./xhtml:body//xhtml:p', namespaces = {"xhtml": container.XHTML_NS}):
+			for node in root.xpath('./xhtml:body//xhtml:h1 | ./xhtml:body//xhtml:h2 | ./xhtml:body//xhtml:h3 | ./xhtml:body//xhtml:h4 | ./xhtml:body//xhtml:h5 | ./xhtml:body//xhtml:h6 | ./xhtml:body//xhtml:p', namespaces = container.namespaces):
 				children = node.xpath('node()')
 				if not len(children):
 					node.getparent().remove(node)
 					continue
-				if not len(node.xpath("./xhtml:span[starts-with(@id, 'kobo.')]", namespaces = {"xhtml": container.XHTML_NS})):
+				if not len(node.xpath("./xhtml:span[starts-with(@id, 'kobo.')]", namespaces = {"xhtml": container.namespaces["xhtml"]})):
 					count += 1
 					attrs = {}
 					for key in node.attrib.keys():
 						attrs[key] = node.attrib[key]
-					new_span = etree.Element("{%s}span" % (container.XHTML_NS,), attrib = {"id": "kobo.{0}.1".format(count), "class": "koboSpan"})
+					new_span = etree.Element("{%s}span" % (container.namespaces["xhtml"],), attrib = {"id": "kobo.{0}.1".format(count), "class": "koboSpan"})
 					if isinstance(children[0], basestring):
 						new_span.text = unicode(deepcopy(children.pop(0)))
 					for child in children:
@@ -234,12 +275,38 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 
 			if count > 0:
 				debug_print("KoboTouchExtended:_modify_epub:Added Kobo tags to {0}".format(name))
-				changed = True
 				container.set(name, root)
-		if changed:
-			os.unlink(file)
-			container.write(file)
-		return changed
+
+			if opts.extra_customization[self.OPT_HYPHENATE]:
+				hyphenator = None
+				dictfile = None
+				for lang in metadata.languages:
+					if lang == 'und':
+						continue
+					dictfile = os.path.join(self.configdir, "hyph_{0}.dic".format(lang))
+					if os.path.isfile(dictfile):
+						break
+				if dictfile is None:
+					lang = root.attrib["{%s}lang" % container.namespaces["xml"]]
+					if not lang:
+						lang = root.attrib["lang"]
+					if lang:
+						dictfile = os.path.join(self.configdir, "hyph_{0}.dic".format(lang))
+						if os.path.isfile(dictfile):
+							break
+				if dictfile is None:
+					dictfile = os.path.join(self.configdir, "hyph.dic")
+				if dictfile is not None and os.path.isfile(dictfile):
+					debug_print("KoboTouchExtended:_modify_epub:Using hyphenation dictionary {0}".format(dictfile))
+					hyphenator = Hyphenator(dictfile)
+					for node in root.xpath("./xhtml:body//xhtml:span[starts-with(@id, 'kobo.')]", namespaces = container.namespaces):
+						node = self._hyphenate_node(node, hyphenator)
+					container.set(name, root)
+
+		os.unlink(file)
+		container.write(file)
+
+		return True
 
 	def upload_books(self, files, names, on_card = None, end_session = True, metadata = None):
 		opts = self.settings()
@@ -256,10 +323,17 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 					try:
 						self._modify_epub(file, mi)
 					except Exception as e:
+						(exc_type, exc_obj, exc_tb) = sys.exc_info()
+						if exc_tb.tb_next:
+							exc_tb = exc_tb.tb_next
+						fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
 						if not skip_failed:
-							raise ParseError("'{0}' by '{1}'".format(mi.title, " and ".join(mi.authors)), e.message)
+							raise InvalidEPub(mi.title, " and ".join(mi.authors), e.message, fname = fname, lineno = exc_tb.tb_lineno)
 						else:
 							errors.append("Failed to upload {0} with error: {1}".format("'{0}' by '{1}'".format(mi.title, " and ".join(mi.authors)), e.message))
+							if mi.uuid not in self.skip_renaming_files:
+								self.skip_renaming_files.append(mi.uuid)
+							debug_print("Failed to process {0} by {1} with error: {2} (file: {3}, lineno: {4})".format(mi.title, " and ".join(mi.authors), e.message, fname, exc_tb.tb_lineno))
 					else:
 						new_files.append(file)
 						new_names.append(n)
@@ -284,7 +358,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 
 			idx = path.rfind('.')
 			ext = path[idx:]
-			if ext == EPUB_EXT and mi.uuid not in self.encrypted_files:
+			if ext == EPUB_EXT and mi.uuid not in self.skip_renaming_files:
 				path = "{0}.kepub{1}".format(path[:idx], EPUB_EXT)
 				debug_print("KoboTouchExtended:filename_callback:New path - {0}".format(path))
 
