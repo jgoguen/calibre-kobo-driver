@@ -54,7 +54,8 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 	description = 'Communicate with the Kobo Touch, Glo, and Mini firmwares and enable extended Kobo ePub features.'
 	configdir = os.path.join(config_dir, 'plugins', 'KoboTouchExtended')
 
-	version = (1, 2, 3)
+	minimum_calibre_version = (0, 9, 25)
+	version = (1, 2, 4)
 
 	content_types = {
 		"main": 6,
@@ -247,12 +248,6 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 				dictfile = os.path.join(self.configdir, "hyph_{0}.dic".format(lang))
 				if os.path.isfile(dictfile):
 					break
-			if dictfile is None:
-				lang = root.attrib["{%s}lang" % container.namespaces["xml"]]
-				if not lang:
-					lang = root.attrib["lang"]
-				if lang:
-					dictfile = os.path.join(self.configdir, "hyph_{0}.dic".format(lang))
 			if dictfile is None or not os.path.isfile(dictfile):
 				dictfile = os.path.join(self.configdir, "hyph.dic")
 			if dictfile is not None and os.path.isfile(dictfile):
