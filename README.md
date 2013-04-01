@@ -39,6 +39,19 @@ To use this plugin after installing:
 1. Select the book(s) you want to send to your device.
 1. Click the **Send to device** button.
 
+## Hyphenation
+This plugin includes the ability to add soft hyphens to converted ePubs. Soft hyphens are just like regular hyphens except that soft hyphens are only visible where they occur as the last character of a line, giving you the nice hyphenation expected of professional books. Enabling hyphenation requires a little work:
+
+1. Download the LibreOffice (or OpenOffice) hyphenation dictionary for your language
+	1. This will be a file with the 'oxt' extension. This is just a ZIP archive with a different name.
+1. Unzip the OXT file and look for the file named as `hyph_[language].dic`.
+1. Copy the hyphenation dictionary to the KoboTouchExtended configuration directory
+	1. To find the configuration directory, open calibre's preferences, choose **Miscellaneous**, and click **Open calibre configuration directory**
+	1. Go to the **plugins** directory
+	1. Go to the **KoboTouchExtended** directory, creating it if it does not exist.
+1. Copy the hyphenation dictionary as `hyph.dic` for the default hyphenation dictionary if no other can be found
+1. Enable extra hyphenation languages by copying the hyphenation dictionaries as `hyph_[lang].dic`, where `[lang]` is the ISO 639 3-letter language code
+
 # Reporting a Bug
 Found a bug with this plugin? Great! Please use the Github issue tracker to send me reports of issues or questions. Under no circumstances should I be emailed directly unless I have asked to have something sent to me. Any emails I haven't asked for will be silently ignored. Everyone can benefit from a public bug tracker, but only one person benefits from a private email.
 
