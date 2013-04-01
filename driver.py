@@ -14,7 +14,6 @@ from calibre.devices.kobo.driver import KOBOTOUCH
 from calibre.devices.usbms.driver import debug_print
 from calibre.ebooks.metadata.book.base import NULL_VALUES
 from calibre_plugins.kobotouch_extended.container import Container
-from calibre_plugins.kobotouch_extended.container import ParseError
 
 from copy import deepcopy
 from hyphenator import Hyphenator
@@ -55,7 +54,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 	configdir = os.path.join(config_dir, 'plugins', 'KoboTouchExtended')
 
 	minimum_calibre_version = (0, 9, 25)
-	version = (1, 2, 4)
+	version = (1, 2, 5)
 
 	content_types = {
 		"main": 6,
@@ -321,7 +320,9 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 		errors = []
 		if opts.extra_customization[self.OPT_EXTRA_FEATURES]:
 			debug_print("KoboTouchExtended:upload_books:Enabling extra ePub features for Kobo devices")
+			i = 0
 			for file, n, mi in zip(files, names, metadata):
+				self.report_progress(i / float(len(files)), "Processing book: {0} by {1}".format(mi.title, " and ".join(mi.authors)))
 				ext = file[file.rfind('.'):]
 				if ext == EPUB_EXT:
 					try:
@@ -342,6 +343,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 						new_files.append(file)
 						new_names.append(n)
 						new_metadata.append(mi)
+				i += 1
 		else:
 			new_files = files
 			new_names = names
@@ -351,6 +353,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 			print("The following books could not be processed and will not be uploaded to your device:")
 			print("\n".join(errors))
 
+		self.report_progress(0, 'Working...')
 		result = super(KOBOTOUCHEXTENDED, self).upload_books(new_files, new_names, on_card, end_session, new_metadata)
 
 		return result

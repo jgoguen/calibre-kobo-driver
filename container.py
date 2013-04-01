@@ -9,9 +9,7 @@ import os
 import posixpath
 import re
 import sys
-import tempfile
 import time
-import urllib
 import zipfile
 
 from lxml import etree
@@ -20,21 +18,12 @@ from lxml.etree import XMLSyntaxError
 from calibre import guess_type
 from calibre import prepare_string_for_xml
 from calibre.constants import iswindows
-from calibre.ebooks.chardet import detect
-from calibre.ebooks.chardet import strip_encoding_declarations
 from calibre.ebooks.chardet import xml_to_unicode
 from calibre.ptempfile import PersistentTemporaryDirectory
 from calibre.utils.logging import Log
-from calibre.utils.unsmarten import unsmarten_text
-from calibre.utils.zipfile import ZipFile
-from calibre.utils.zipfile import ZIP_DEFLATED
-from calibre.utils.zipfile import ZIP_STORED
 
 from urllib import unquote
 
-exists, join = os.path.exists, os.path.join
-
-HTML_EXTENSIONS = ['.htm', '.html', '.xhtml']
 HTML_MIMETYPES = ['text/html', 'application/xhtml+xml']
 EXCLUDE_FROM_ZIP = ['mimetype', '.DS_Store', 'thumbs.db', '.directory']
 
@@ -232,7 +221,7 @@ class Container(object):
 		period_index = href.find('.')
 		if hash_index > 0 and hash_index > period_index:
 			href = href.partition('#')[0]
-		href = urllib.unquote(href)
+		href = unquote(href)
 		name = href
 		if base:
 			name = posixpath.join(base, href)
