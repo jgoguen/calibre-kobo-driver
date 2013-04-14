@@ -1,5 +1,3 @@
-**Looking for the `no-database` branch? It's gone now, the database code has been removed from `master` so this is the same as the old `no-database` branch.**
-
 # Calibre driver for Kobo Touch/Glo/Mini
 An extension of the existing KoboTouch driver provided with Calibre. This plugin allows modifying ePub files to enable 
 extra Kobo features.
@@ -7,6 +5,11 @@ extra Kobo features.
 **Please note**: Modified books are not saved back into your Calibre library to prevent issues with overwriting library 
 configurations unexpectedly, so books are processed in transit to your device every time. In most cases, the extra time 
 required should not be noticeable.
+
+#Download
+To download this plugin, either clone the repository or [download a snapshot of the `master` branch][zipdownload] by clicking on the big **ZIP** button near the top of the page.
+
+[zipdownload]: https://github.com/jgoguen/calibre-kobo-driver/archive/master.zip
 
 #Installation
 To install this plugin from source, you must create a ZIP file named `KoboTouchExtended.zip` and include these files:
@@ -73,3 +76,19 @@ If you have previously installed this plugin in calibre 0.9.18 or earlier, then 
 1. Open the calibre plugin directory.
 	1. Don't know where this is? Before you close calibre, open calibre's preferences, choose **Miscellaneous**, and click the **Open calibre configuration directory** button. The plugin directory is in there.
 1. Replace the file named **KoboTouchExtended.zip** with the new version you created. Please make sure the file name remains the same.
+
+If you get an error similar to the following:
+```
+Traceback (most recent call last):
+File "site-packages\calibre\gui2\preferences\plugins.py", line 310, in add_plugin
+File "site-packages\calibre\customize\ui.py", line 361, in add_plugin
+File "site-packages\calibre\customize\ui.py", line 53, in load_plugin
+File "site-packages\calibre\customize\zipplugin.py", line 169, in load
+File "importlib__init__.py", line 37, in import_module
+File "site-packages\calibre\customize\zipplugin.py", line 147, in load_module
+File "calibre_plugins.kobotouch_extended.__init__", line 4
+<!DOCTYPE html>
+^
+SyntaxError: invalid syntax
+```
+The solution is to go back to the top of this file and read it again.
