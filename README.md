@@ -49,8 +49,9 @@ This plugin includes the ability to add soft hyphens to converted ePubs. Soft hy
 	1. To find the configuration directory, open calibre's preferences, choose **Miscellaneous**, and click **Open calibre configuration directory**
 	1. Go to the **plugins** directory
 	1. Go to the **KoboTouchExtended** directory, creating it if it does not exist.
-1. Copy the hyphenation dictionary as `hyph.dic` for the default hyphenation dictionary if no other can be found
-1. Enable extra hyphenation languages by copying the hyphenation dictionaries as `hyph_[lang].dic`, where `[lang]` is the ISO 639 3-letter language code
+1. Copy the hyphenation dictionary as `hyph.dic` to use this as the default hyphenation dictionary if no  language-specific dictionary can be found
+	1. This is also a good choice if you only read in one language. You may still enable other languages if required using the directions in the next step.
+1. Enable extra hyphenation languages by copying the hyphenation dictionaries as `hyph_[lang].dic`, where `[lang]` is the ISO 639 3-letter language code (ISO 639-3, or ISO 639-2/T if no ISO 639-3 code exists)
 
 # Reporting a Bug
 Found a bug with this plugin? Great! Please use the Github issue tracker to send me reports of issues or questions. Under no circumstances should I be emailed directly unless I have asked to have something sent to me. Any emails I haven't asked for will be silently ignored. Everyone can benefit from a public bug tracker, but only one person benefits from a private email.
