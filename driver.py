@@ -54,7 +54,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 	configdir = os.path.join(config_dir, 'plugins', 'KoboTouchExtended')
 
 	minimum_calibre_version = (0, 9, 25)
-	version = (1, 2, 5)
+	version = (1, 2, 6)
 
 	content_types = {
 		"main": 6,
@@ -343,6 +343,10 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 						new_files.append(file)
 						new_names.append(n)
 						new_metadata.append(mi)
+				else:
+					new_files.append(file)
+					new_names.append(n)
+					new_metadata.append(mi)
 				i += 1
 		else:
 			new_files = files
