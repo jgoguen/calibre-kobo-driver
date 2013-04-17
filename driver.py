@@ -54,7 +54,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 	configdir = os.path.join(config_dir, 'plugins', 'KoboTouchExtended')
 
 	minimum_calibre_version = (0, 9, 25)
-	version = (1, 2, 6)
+	version = (1, 2, 7)
 
 	content_types = {
 		"main": 6,
@@ -187,9 +187,9 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 			return " ".join(newstr)
 		if elem is not None:
 			elem.text = self._hyphenate_node(elem.text, hyphenator)
-			if elem.text is not None:
-				elem.text += u' '
 			elem.tail = self._hyphenate_node(elem.tail, hyphenator)
+			if elem.text is not None and elem.tail is not None:
+				elem.text += u' '
 		return elem
 
 
@@ -281,7 +281,9 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 			for node in root.xpath('./xhtml:body//xhtml:h1 | ./xhtml:body//xhtml:h2 | ./xhtml:body//xhtml:h3 | ./xhtml:body//xhtml:h4 | ./xhtml:body//xhtml:h5 | ./xhtml:body//xhtml:h6 | ./xhtml:body//xhtml:p', namespaces = container.namespaces):
 				children = node.xpath('node()')
 				if not len(children):
-					node.getparent().remove(node)
+					parent = node.getparent()
+					if parent is not None:
+						parent.remove(node)
 					continue
 				if not len(node.xpath("./xhtml:span[starts-with(@id, 'kobo.')]", namespaces = {"xhtml": container.namespaces["xhtml"]})):
 					count += 1
