@@ -187,6 +187,8 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 			return " ".join(newstr)
 		if elem is not None:
 			elem.text = self._hyphenate_node(elem.text, hyphenator)
+			if elem.text is not None:
+				elem.text += u' '
 			elem.tail = self._hyphenate_node(elem.tail, hyphenator)
 		return elem
 
@@ -270,12 +272,12 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 					if item is not None or not hasattr(root, "xpath"):
 						debug_print("KoboTouchExtended:_modify_epub:{0} is not a XML-based format".format(name))
 						continue
-			count = 0
 
 			if opts.extra_customization[self.OPT_REPLACE_LANG] and metadata.language != NULL_VALUES["language"]:
 				root.attrib["{%s}lang" % container.namespaces["xml"]] = metadata.language
 				root.attrib["lang"] = metadata.language
 
+			count = 0
 			for node in root.xpath('./xhtml:body//xhtml:h1 | ./xhtml:body//xhtml:h2 | ./xhtml:body//xhtml:h3 | ./xhtml:body//xhtml:h4 | ./xhtml:body//xhtml:h5 | ./xhtml:body//xhtml:h6 | ./xhtml:body//xhtml:p', namespaces = container.namespaces):
 				children = node.xpath('node()')
 				if not len(children):
