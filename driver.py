@@ -62,7 +62,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 		"toc": 899
 	}
 
-	supported_dbversion = 75
+	supported_dbversion = 77
 	min_supported_dbversion = 65
 
 	EXTRA_CUSTOMIZATION_MESSAGE = [
