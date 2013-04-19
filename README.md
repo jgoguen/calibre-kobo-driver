@@ -68,6 +68,10 @@ When submitting a bug, I require the following information as a minimum, but any
 	1. To get the calibre debug log, click the arrow beside the "Preferences" menu, choose "Restart in debug mode", repeat the same action that caused the issue, and close calibre. The debug log will be automatically displayed to you.
 
 # Known Issues
+The hyphenation feature may cause the Kobo device to fail to properly recognize words when you tap and hold a word to search for it in the dictionary. This may manifest as the device only selecting part of a word, in which case you may drag the selection to encompass the entire word as a workaround. It may also manifest as the Kobo saying that "word" could not be found and the closest match is "word". To avoid this, do not enable hyphenation.
+
+Bookmarks, annotations, highlighting, and anything else that's highly dependent on your current position may work fine, may have slight issues, or may not work very well. You may find that some books work better or worse than others. This issue cannot be resolved unless Kobo releases their JavaScript code under a GPL3-compatible license.
+
 If you have previously installed this plugin in calibre 0.9.18 or earlier, then you upgrade to calibre 0.9.19 or later and can't update the plugin, you must manually replace the plugin ZIP file:
 
 1. Download the latest version of the code.
