@@ -36,6 +36,7 @@ nosetests.xml
 
 # IDE files
 .project
+.settings
 .pydevproject
 .includepath
 .classpath
