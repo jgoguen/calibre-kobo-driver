@@ -347,3 +347,27 @@ class Container(object):
 					epub.write(filepath)
 		epub.close()
 		os.chdir(cwd)
+
+	def __hyphenate_node(self, elem, hyphenator, hyphen = u'\u00AD'):
+		if isinstance(elem, basestring):
+			newstr = []
+			for w in elem.split():
+				if '-' not in w and hyphen not in w:
+					w = hyphenator.inserted(w, hyphen = hyphen)
+				newstr.append(w)
+			return " ".join(newstr)
+		if elem is not None:
+			elem.text = self._hyphenate_node(elem.text, hyphenator)
+			elem.tail = self._hyphenate_node(elem.tail, hyphenator)
+			if elem.text is not None and elem.tail is not None:
+				elem.text += u' '
+		return elem
+
+	def hyphenate(self, hyphenator, hyphen = u'\u00AD'):
+		for name in container.get_html_names():
+			debug_print("Container:hyphenate:Hyphenating file - {0}".format(name))
+			root = self.get(name)
+
+			for node in root.xpath("./xhtml:body/xhtml:div | ./xhtml:body/xhtml:span | ./xhtml:body/xhtml:p", namespaces = self.namespaces):
+				node = self.__hyphenate_node(node, hyphenator, hyphen)
+			self.set(name, root)

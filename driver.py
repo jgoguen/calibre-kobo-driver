@@ -54,7 +54,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 	configdir = os.path.join(config_dir, 'plugins', 'KoboTouchExtended')
 
 	minimum_calibre_version = (0, 9, 25)
-	version = (1, 2, 7)
+	version = (1, 2, 8)
 
 	content_types = {
 		"main": 6,
@@ -177,22 +177,6 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 
 		super(KOBOTOUCHEXTENDED, self).initialize()
 
-	def _hyphenate_node(self, elem, hyphenator, hyphen = u'\u00AD'):
-		if isinstance(elem, basestring):
-			newstr = []
-			for w in elem.split():
-				if '-' not in w and hyphen not in w:
-					w = hyphenator.inserted(w, hyphen = hyphen)
-				newstr.append(w)
-			return " ".join(newstr)
-		if elem is not None:
-			elem.text = self._hyphenate_node(elem.text, hyphenator)
-			elem.tail = self._hyphenate_node(elem.tail, hyphenator)
-			if elem.text is not None and elem.tail is not None:
-				elem.text += u' '
-		return elem
-
-
 	def _modify_epub(self, file, metadata):
 		opts = self.settings()
 		debug_print("KoboTouchExtended:_modify_epub:Processing {0}".format(metadata.title))
@@ -306,9 +290,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 				container.set(name, root)
 
 			if opts.extra_customization[self.OPT_HYPHENATE] and hyphenator is not None:
-				for node in root.xpath("./xhtml:body//xhtml:span[starts-with(@id, 'kobo.')]", namespaces = container.namespaces):
-					node = self._hyphenate_node(node, hyphenator)
-				container.set(name, root)
+				container.hyphenate(hyphenator)
 
 		os.unlink(file)
 		container.write(file)
