@@ -61,8 +61,9 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 		"toc": 899
 	}
 
-	supported_dbversion = 77
+	supported_dbversion = 80
 	min_supported_dbversion = 65
+	max_supported_fwversion = (2, 5, 1)
 
 	EXTRA_CUSTOMIZATION_MESSAGE = [
 		_('The Kobo Touch from firmware V2.0.0 supports bookshelves.') + \
