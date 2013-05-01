@@ -19,6 +19,7 @@ from calibre import guess_type
 from calibre import prepare_string_for_xml
 from calibre.constants import iswindows
 from calibre.ebooks.chardet import xml_to_unicode
+from calibre.ebooks.hyphenate import hyphenate_word
 from calibre.ptempfile import PersistentTemporaryDirectory
 from calibre.utils.logging import Log
 
@@ -348,26 +349,29 @@ class Container(object):
 		epub.close()
 		os.chdir(cwd)
 
-	def __hyphenate_node(self, elem, hyphenator, hyphen = u'\u00AD'):
+	def __hyphenate_node(self, elem, hyphen = u'\u00AD'):
+		if elem is None:
+			return None
+
 		if isinstance(elem, basestring):
 			newstr = []
 			for w in elem.split():
 				if '-' not in w and hyphen not in w:
-					w = hyphenator.inserted(w, hyphen = hyphen)
+					w = hyphen.join(hyphenate_word(w))
 				newstr.append(w)
-			return " ".join(newstr)
-		if elem is not None:
-			elem.text = self._hyphenate_node(elem.text, hyphenator)
-			elem.tail = self._hyphenate_node(elem.tail, hyphenator)
+			elem = " ".join(newstr)
+		else:
+			elem.text = self.__hyphenate_node(elem.text, hyphen)
+			elem.tail = self.__hyphenate_node(elem.tail, hyphen)
 			if elem.text is not None and elem.tail is not None:
 				elem.text += u' '
 		return elem
 
-	def hyphenate(self, hyphenator, hyphen = u'\u00AD'):
-		for name in container.get_html_names():
-			debug_print("Container:hyphenate:Hyphenating file - {0}".format(name))
+	def hyphenate(self, hyphen = u'\u00AD'):
+		for name in self.get_html_names():
+			print("Container:hyphenate:Hyphenating file - {0}".format(name))
 			root = self.get(name)
 
-			for node in root.xpath("./xhtml:body/xhtml:div | ./xhtml:body/xhtml:span | ./xhtml:body/xhtml:p", namespaces = self.namespaces):
-				node = self.__hyphenate_node(node, hyphenator, hyphen)
+			for node in root.xpath("./xhtml:body//xhtml:span[starts-with(@id, 'kobo.')]", namespaces = self.namespaces):
+				node = self.__hyphenate_node(node, hyphen)
 			self.set(name, root)

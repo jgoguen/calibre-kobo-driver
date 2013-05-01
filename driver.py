@@ -16,7 +16,6 @@ from calibre.ebooks.metadata.book.base import NULL_VALUES
 from calibre_plugins.kobotouch_extended.container import Container
 
 from copy import deepcopy
-from hyphenator import Hyphenator
 from lxml import etree
 
 EPUB_EXT = '.epub'
@@ -224,21 +223,6 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 					node.set("properties", "cover-image")
 					container.set(container.opf_name, opf)
 
-		hyphenator = None
-		if opts.extra_customization[self.OPT_HYPHENATE]:
-			dictfile = None
-			for lang in metadata.languages:
-				if lang == 'und':
-					continue
-				dictfile = os.path.join(self.configdir, "hyph_{0}.dic".format(lang))
-				if os.path.isfile(dictfile):
-					break
-			if dictfile is None or not os.path.isfile(dictfile):
-				dictfile = os.path.join(self.configdir, "hyph.dic")
-			if dictfile is not None and os.path.isfile(dictfile):
-				debug_print("KoboTouchExtended:_modify_epub:Using hyphenation dictionary {0}".format(dictfile))
-				hyphenator = Hyphenator(dictfile)
-
 		for name in container.get_html_names():
 			debug_print("KoboTouchExtended:_modify_epub:Processing HTML {0}".format(name))
 			root = container.get(name)
@@ -289,8 +273,8 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 				debug_print("KoboTouchExtended:_modify_epub:Added Kobo tags to {0}".format(name))
 				container.set(name, root)
 
-			if opts.extra_customization[self.OPT_HYPHENATE] and hyphenator is not None:
-				container.hyphenate(hyphenator)
+		if opts.extra_customization[self.OPT_HYPHENATE]:
+			container.hyphenate()
 
 		os.unlink(file)
 		container.write(file)
