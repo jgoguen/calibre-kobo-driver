@@ -8,6 +8,7 @@ __docformat__ = 'restructuredtext en'
 import os
 import posixpath
 import re
+import string
 import sys
 import time
 import zipfile
@@ -18,10 +19,12 @@ from lxml.etree import XMLSyntaxError
 from calibre import guess_type
 from calibre import prepare_string_for_xml
 from calibre.constants import iswindows
+from calibre.ebooks.chardet import substitute_entites
 from calibre.ebooks.chardet import xml_to_unicode
-from calibre.ebooks.hyphenate import hyphenate_word
+from calibre.ebooks.conversion.utils import HeuristicProcessor
 from calibre.ptempfile import PersistentTemporaryDirectory
 from calibre.utils.logging import Log
+from calibre.utils.smartypants import smartyPants
 
 from urllib import unquote
 
@@ -277,7 +280,10 @@ class Container(object):
 
 	def get(self, name):
 		if name in self.cache:
-			return self.cache[name]
+			val = self.cache[name]
+			if not hasattr(val, 'xpath'):
+				val = self._parse(val, self.mime_map[name])
+			return val
 		raw = self.get_raw(name)
 		raw = self.decode(raw)
 		if name in self.mime_map:
@@ -323,6 +329,7 @@ class Container(object):
 			data = self.cache[name]
 			if hasattr(data, 'xpath'):
 				data = etree.tostring(data, encoding = 'UTF-8', xml_declaration = True, pretty_print = True)
+			data = string.replace(data, u"\uFFFD", "")
 			f = open(self.name_map[name], "wb")
 			f.write(data)
 			f.close()
@@ -349,29 +356,70 @@ class Container(object):
 		epub.close()
 		os.chdir(cwd)
 
-	def __hyphenate_node(self, elem, hyphen = u'\u00AD'):
+	def __hyphenate_node(self, elem, hyphenator, hyphen = u'\u00AD'):
 		if elem is None:
 			return None
 
 		if isinstance(elem, basestring):
 			newstr = []
 			for w in elem.split():
-				if '-' not in w and hyphen not in w:
-					w = hyphen.join(hyphenate_word(w))
+				if len(w) > 4 and '-' not in w and hyphen not in w:
+					w = hyphenator.inserted(w, hyphen = hyphen)
 				newstr.append(w)
 			elem = " ".join(newstr)
 		else:
-			elem.text = self.__hyphenate_node(elem.text, hyphen)
-			elem.tail = self.__hyphenate_node(elem.tail, hyphen)
+			elem.text = self.__hyphenate_node(elem.text, hyphenator, hyphen)
+			elem.tail = self.__hyphenate_node(elem.tail, hyphenator, hyphen)
 			if elem.text is not None and elem.tail is not None:
 				elem.text += u' '
 		return elem
 
-	def hyphenate(self, hyphen = u'\u00AD'):
+	def hyphenate(self, hyphenator, hyphen = u'\u00AD'):
+		if hyphenator is None or hyphen is None or hyphen == '':
+			return False
 		for name in self.get_html_names():
-			print("Container:hyphenate:Hyphenating file - {0}".format(name))
 			root = self.get(name)
-
 			for node in root.xpath("./xhtml:body//xhtml:span[starts-with(@id, 'kobo.')]", namespaces = self.namespaces):
-				node = self.__hyphenate_node(node, hyphen)
+				node = self.__hyphenate_node(node, hyphenator, hyphen)
 			self.set(name, root)
+		return True
+
+	def smarten_punctuation(self):
+		preprocessor = HeuristicProcessor(log = self.log)
+
+		for name in self.get_html_names():
+			html = self.get_raw(name)
+			html = html.encode("UTF-8")
+
+			# Fix non-breaking space indents
+			html = preprocessor.fix_nbsp_indents(html)
+			# Smarten punctuation
+			html = smartyPants(html)
+			# Ellipsis to HTML entity
+			html = re.sub(r'(?u)(?<=\w)\s?(\.\s+?){2}\.', '&hellip;', html)
+			# Double-dash and unicode char code to em-dash
+			html = string.replace(html, '---', ' &#x2013; ')
+			html = string.replace(html, u"\x97", ' &#x2013; ')
+			html = string.replace(html, '--', ' &#x2014; ')
+			html = string.replace(html, u"\u2014", ' &#x2014; ')
+			html = string.replace(html, u"\u2013", ' &#x2013; ')
+
+			# Remove Unicode replacement characters
+			html = string.replace(html, u"\uFFFD", "")
+
+			self.set(name, html)
+
+	def clean_markup(self):
+		preprocessor = HeuristicProcessor(log = self.log)
+		for name in self.get_html_names():
+			html = self.get_raw(name)
+			html = html.encode("UTF-8")
+			html = string.replace(html, u"\u2014", ' -- ')
+			html = string.replace(html, u"\u2013", ' --- ')
+			html = string.replace(html, u"\x97", ' --- ')
+			html = preprocessor.cleanup_markup(html)
+
+			# Remove Unicode replacement characters
+			html = string.replace(html, u"\uFFFD", "")
+
+			self.set(name, html)

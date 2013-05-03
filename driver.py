@@ -14,6 +14,7 @@ from calibre.devices.kobo.driver import KOBOTOUCH
 from calibre.devices.usbms.driver import debug_print
 from calibre.ebooks.metadata.book.base import NULL_VALUES
 from calibre_plugins.kobotouch_extended.container import Container
+from calibre_plugins.kobotouch_extended.hyphenator import Hyphenator
 
 from copy import deepcopy
 from lxml import etree
@@ -124,7 +125,11 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 				' named like hyph_{language}.dic, where {language} is the ISO 639 3-letter language code. For example, \'eng\' but not \'en_CA\'. The default dictionary to use '
 				' if none is found may be named \'hyph.dic\' instead.'),
 		_('Replace Content Language Code') + \
-			':::' + _('Select this to replace the defined language in each content file inside the ePub.')
+			':::' + _('Select this to replace the defined language in each content file inside the ePub.'),
+		_('Smarten Punctuation') + \
+			':::' + _("Select this to smarten punctuation in the ePub"),
+		_('Clean up ePub Markup') + \
+			':::' + _("Select this to clean up the internal ePub markup.")
 	]
 
 	EXTRA_CUSTOMIZATION_DEFAULT = [
@@ -141,6 +146,8 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 		False,
 		u'',
 		True,
+		False,
+		False,
 		False,
 		False,
 		False,
@@ -166,6 +173,8 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 	OPT_SKIP_FAILED = 15
 	OPT_HYPHENATE = 16
 	OPT_REPLACE_LANG = 17
+	OPT_SMARTEN_PUNCTUATION = 18
+	OPT_CLEAN_MARKUP = 19
 
 	skip_renaming_files = []
 
@@ -195,6 +204,13 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 				raise DRMEncumberedEPub(metadata.title, ", ".join(metadata.authors))
 			else:
 				return False
+
+		# Because of the changes made to the markup here, cleanup needs to be done before anything else
+		if opts.extra_customization[self.OPT_CLEAN_MARKUP]:
+			container.clean_markup()
+		# ...same for punctuation
+		if opts.extra_customization[self.OPT_SMARTEN_PUNCTUATION]:
+			container.smarten_punctuation()
 
 		found_cover = False
 		opf = container.opf
@@ -275,7 +291,21 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 				container.set(name, root)
 
 		if opts.extra_customization[self.OPT_HYPHENATE]:
-			container.hyphenate()
+			hyphenator = None
+			dictfile = None
+			for lang in metadata.languages:
+				if lang == 'und':
+					continue
+				dictfile = os.path.join(self.configdir, "hyph_{0}.dic".format(lang))
+				if os.path.isfile(dictfile):
+					break
+			if dictfile is None or not os.path.isfile(dictfile):
+				dictfile = os.path.join(self.configdir, "hyph.dic")
+			if dictfile is not None and os.path.isfile(dictfile):
+				debug_print("KoboTouchExtended:_modify_epub:Using hyphenation dictionary {0}".format(dictfile))
+				hyphenator = Hyphenator(dictfile)
+			if hyphenator is not None:
+				container.hyphenate(hyphenator)
 
 		os.unlink(file)
 		container.write(file)
