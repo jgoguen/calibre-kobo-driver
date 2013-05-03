@@ -403,7 +403,7 @@ class Container(object):
 			html = string.replace(html, '--', ' &#x2014; ')
 			html = string.replace(html, u"\u2014", ' &#x2014; ')
 			html = string.replace(html, u"\u2013", ' &#x2013; ')
-			html = string.replace(html, u"\u2026", "&#x2026;")
+			html = string.replace(html, u"...", "&#x2026;")
 
 			# Remove Unicode replacement characters
 			html = string.replace(html, u"\uFFFD", "")
