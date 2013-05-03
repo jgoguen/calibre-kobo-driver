@@ -369,9 +369,9 @@ class Container(object):
 			elem = " ".join(newstr)
 		else:
 			elem.text = self.__hyphenate_node(elem.text, hyphenator, hyphen)
+			if elem.text is not None:
+				elem.text += u" "
 			elem.tail = self.__hyphenate_node(elem.tail, hyphenator, hyphen)
-			if elem.text is not None and elem.tail is not None:
-				elem.text += u' '
 		return elem
 
 	def hyphenate(self, hyphenator, hyphen = u'\u00AD'):
@@ -403,6 +403,7 @@ class Container(object):
 			html = string.replace(html, '--', ' &#x2014; ')
 			html = string.replace(html, u"\u2014", ' &#x2014; ')
 			html = string.replace(html, u"\u2013", ' &#x2013; ')
+			html = string.replace(html, u"\u2026", "&#x2026;")
 
 			# Remove Unicode replacement characters
 			html = string.replace(html, u"\uFFFD", "")
