@@ -330,7 +330,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 						self._modify_epub(file, mi)
 					except Exception as e:
 						(exc_type, exc_obj, exc_tb) = sys.exc_info()
-						if exc_tb.tb_next:
+						while exc_tb.tb_next and 'kobotouch_extended' in exc_tb.tb_frame.f_code.co_filename:
 							exc_tb = exc_tb.tb_next
 						fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
 						if not skip_failed:
