@@ -246,7 +246,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 			if not hasattr(root, 'xpath'):
 				if opts.extra_customization[self.OPT_DELETE_UNMANIFESTED]:
 					debug_print("KoboTouchExtended:_modify_epub:Removing unmanifested file {0}".format(name))
-					os.unlink(os.path.join(container.root, name).replace('/', os.sep))
+					os.unlink(os.path.join(container.root, name))
 					continue
 				else:
 					item = container.manifest_item_for_name(name)

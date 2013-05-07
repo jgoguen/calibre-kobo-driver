@@ -6,7 +6,6 @@ __copyright__ = '2010, Kovid Goyal <kovid@kovidgoyal.net>'
 __docformat__ = 'restructuredtext en'
 
 import os
-import posixpath
 import re
 import string
 import sys
@@ -112,7 +111,7 @@ class Container(object):
 		for item in opf.xpath('//opf:manifest/opf:item[@href and @media-type]', namespaces = self.namespaces):
 			href = unquote(item.get('href'))
 			item.set("href", href)
-			self.mime_map[self.href_to_name(href, posixpath.dirname(self.opf_name))] = item.get('media-type')
+			self.mime_map[self.href_to_name(href, os.path.dirname(self.opf_name).replace(os.sep, '/'))] = item.get('media-type')
 		self.set(self.opf_name, opf)
 
 	def get_html_names(self):
@@ -121,7 +120,7 @@ class Container(object):
 		"""
 		for node in self.opf.xpath('//opf:manifest/opf:item[@href and @media-type]', namespaces = self.namespaces):
 			if node.get("media-type") in HTML_MIMETYPES:
-				href = posixpath.join(posixpath.dirname(self.opf_name), node.get("href"))
+				href = os.path.join(os.path.dirname(self.opf_name), node.get("href"))
 				href = os.path.normpath(href).replace(os.sep, '/')
 				yield href
 
@@ -156,7 +155,7 @@ class Container(object):
 	def manifest_worthy_names(self):
 		for name in self.name_map:
 			if name.endswith('.opf'): continue
-			if name.startswith('META-INF') and posixpath.basename(name) in self.META_INF:
+			if name.startswith('META-INF') and os.path.basename(name) in self.META_INF:
 				continue
 			yield name
 
@@ -167,7 +166,7 @@ class Container(object):
 		self.name_map.pop(name)
 
 	def manifest_item_for_name(self, name):
-		href = self.name_to_href(name, posixpath.dirname(self.opf_name))
+		href = self.name_to_href(name, os.path.dirname(self.opf_name))
 		q = prepare_string_for_xml(href, attribute = True)
 		existing = self.opf.xpath('//opf:manifest/opf:item[@href="{0}"]'.format(q), namespaces = self.namespaces)
 		if not existing:
@@ -179,9 +178,9 @@ class Container(object):
 		if item is not None:
 			return
 		manifest = self.opf.xpath('//opf:manifest', namespaces = self.namespaces)[0]
-		item = manifest.makeelement('{%s}item' % self.OPF_NS, nsmap = {'opf': self.OPF_NS}, href = self.name_to_href(name, posixpath.dirname(self.opf_name)), id = self.generate_manifest_id())
+		item = manifest.makeelement('{%s}item' % self.OPF_NS, nsmap = {'opf': self.OPF_NS}, href = self.name_to_href(name, os.path.dirname(self.opf_name)), id = self.generate_manifest_id())
 		if not mt:
-			mt = guess_type(posixpath.basename(name))[0]
+			mt = guess_type(os.path.basename(name))[0]
 		if not mt:
 			mt = 'application/octest-stream'
 		item.set('media-type', mt)
@@ -228,8 +227,8 @@ class Container(object):
 		href = unquote(href)
 		name = href
 		if base:
-			name = posixpath.join(base, href)
-		name = os.path.normpath(name).replace('\\', '/')
+			name = os.path.join(base, href)
+		name = os.path.normpath(name).replace(os.sep, '/')
 		return name
 
 	def name_to_href(self, name, base):
@@ -240,7 +239,7 @@ class Container(object):
 		"""
 		if not base:
 			return name
-		href = posixpath.relpath(name, base)
+		href = os.path.relpath(name, base).replace(os.sep, '/')
 		if href == '.':
 			href = ''
 		return href
