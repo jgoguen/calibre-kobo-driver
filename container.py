@@ -7,6 +7,7 @@ __docformat__ = 'restructuredtext en'
 
 import os
 import re
+import shutil
 import string
 import sys
 import time
@@ -177,8 +178,9 @@ class Container(object):
 		item = self.manifest_item_for_name(name)
 		if item is not None:
 			return
+		self.log("Adding '{0}' to the manifest".format(name))
 		manifest = self.opf.xpath('//opf:manifest', namespaces = self.namespaces)[0]
-		item = manifest.makeelement('{%s}item' % self.OPF_NS, nsmap = {'opf': self.OPF_NS}, href = self.name_to_href(name, os.path.dirname(self.opf_name)), id = self.generate_manifest_id())
+		item = manifest.makeelement('{%s}item' % self.namespaces['opf'], href = self.name_to_href(name, os.path.dirname(self.opf_name)), id = self.generate_manifest_id())
 		if not mt:
 			mt = guess_type(os.path.basename(name))[0]
 		if not mt:
@@ -186,6 +188,9 @@ class Container(object):
 		item.set('media-type', mt)
 		manifest.append(item)
 		self.fix_tail(item)
+		self.set(self.opf_name, self.opf)
+		self.name_map[name] = os.path.join(self.root, name)
+		self.mime_map[name] = mt
 
 	def fix_tail(self, item):
 		'''
@@ -200,6 +205,59 @@ class Container(object):
 			item.tail = parent[idx - 1].tail
 			if idx == len(parent) - 1:
 				parent[idx - 1].tail = parent.text
+
+	def copy_file_to_container(self, path, name = None, mt = None):
+		'''Copy a file into this Container instance.
+
+		@param path: The path to the file to copy into this Container.
+		@param name: The name to give to the copied file, relative to the Container root. Set to None to use the basename of path.
+		@param mt: The MIME type of the file to set in the manifest. Set to None to auto-detect.
+
+		@return: The name of the file relative to the Container root
+		'''
+		if path is None or re.match(r'^\s*$', path, re.MULTILINE):
+			raise ValueError("A source path must be given")
+		if name is None:
+			name = os.path.basename(path)
+		self.log("Copying file '{0}' to '{1}'".format(path, os.path.join(self.root, name)))
+		shutil.copy(path, os.path.join(self.root, name))
+		self.add_name_to_manifest(name, mt)
+
+		return name
+
+	def add_content_file_reference(self, name):
+		'''Add a reference to the named file (from self.name_map) to all content files (self.get_html_names()). Currently
+		only CSS files with a MIME type of text/css and JavaScript files with a MIME type of application/x-javascript are
+		supported.
+		'''
+		if name not in self.name_map or name not in self.mime_map:
+			raise ValueError("A valid file name must be given (got: {0})".format(name))
+		for file in self.get_html_names():
+			root = self.get(file)
+			if not root:
+				self.log("Could not retrieve content file {0}".format(file))
+				continue
+			head = root.xpath('./xhtml:head', namespaces = self.namespaces)
+			if not head:
+				self.log("Could not find a <head> element in content file {0}".format(file))
+				continue
+			head = head[0]
+			if not head:
+				self.log("A <head> section was found but was undefined in content file {0}".format(file))
+				continue
+
+			if self.mime_map[name] == guess_type('a.css')[0]:
+				elem = head.makeelement("{%s}link" % self.namespaces['xhtml'], rel = 'stylesheet', href = os.path.relpath(name, os.path.dirname(file)).replace(os.sep, '/'))
+			elif self.mime_map[name] == guess_type('a.js')[0]:
+				elem = head.makeelement("{%s}script" % self.namespaces['xhtml'], type = 'text/javascript', src = os.path.relpath(name, os.path.dirname(file)).replace(os.sep, '/'))
+			else:
+				elem = None
+
+			if elem is not None:
+				head.append(elem)
+				if self.mime_map[name] == guess_type('a.css')[0]:
+					self.fix_tail(elem)
+				self.set(file, root)
 
 	def generate_manifest_id(self):
 		items = self.opf.xpath('//opf:manifest/opf:item[@id]', namespaces = self.namespaces)

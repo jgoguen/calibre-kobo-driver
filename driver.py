@@ -6,6 +6,7 @@ __copyright__ = '2012, Joel Goguen <jgoguen@jgoguen.ca>'
 __docformat__ = 'markdown en'
 
 import os
+import re
 import sqlite3 as sqlite
 import sys
 
@@ -52,9 +53,10 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 	author = 'Joel Goguen'
 	description = 'Communicate with the Kobo Touch, Glo, and Mini firmwares and enable extended Kobo ePub features.'
 	configdir = os.path.join(config_dir, 'plugins', 'KoboTouchExtended')
+	reference_kepub = os.path.join(configdir, 'reference.kepub.epub')
 
-	minimum_calibre_version = (0, 9, 25)
-	version = (1, 2, 8)
+	minimum_calibre_version = (0, 9, 29)
+	version = (1, 3, 0)
 
 	content_types = {
 		"main": 6,
@@ -177,8 +179,8 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 	OPT_CLEAN_MARKUP = 19
 
 	skip_renaming_files = []
-
 	hyphenator = None
+	kobo_js_re = re.compile(r'.*/?kobo.*\.js$', re.IGNORECASE)
 
 	def initialize(self):
 		if not os.path.isdir(self.configdir):
@@ -211,6 +213,14 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 		# ...same for punctuation
 		if opts.extra_customization[self.OPT_SMARTEN_PUNCTUATION]:
 			container.smarten_punctuation()
+
+		if os.path.isfile(self.reference_kepub):
+			reference_container = Container(self.reference_kepub)
+			for name in reference_container.name_map:
+				if self.kobo_js_re.match(name):
+					jsname = container.copy_file_to_container(os.path.join(reference_container.root, name), name = 'kobo.js')
+					container.add_content_file_reference(jsname)
+					break
 
 		found_cover = False
 		opf = container.opf
@@ -263,7 +273,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 				root.attrib["lang"] = metadata.language
 
 			count = 0
-			for node in root.xpath('./xhtml:body//xhtml:h1 | ./xhtml:body//xhtml:h2 | ./xhtml:body//xhtml:h3 | ./xhtml:body//xhtml:h4 | ./xhtml:body//xhtml:h5 | ./xhtml:body//xhtml:h6 | ./xhtml:body//xhtml:p', namespaces = container.namespaces):
+			for node in root.xpath('./xhtml:body//xhtml:h1 | ./xhtml:body//xhtml:h2 | ./xhtml:body//xhtml:h3 | ./xhtml:body//xhtml:h4 | ./xhtml:body//xhtml:h5 | ./xhtml:body//xhtml:h6 | ./xhtml:body//xhtml:p | ./xhtml:body//xhtml:div', namespaces = container.namespaces):
 				children = node.xpath('node()')
 				if not len(children):
 					parent = node.getparent()
@@ -330,7 +340,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 						self._modify_epub(file, mi)
 					except Exception as e:
 						(exc_type, exc_obj, exc_tb) = sys.exc_info()
-						while exc_tb.tb_next and 'kobotouch_extended' in exc_tb.tb_frame.f_code.co_filename:
+						while exc_tb.tb_next and 'kobotouch_extended' in exc_tb.tb_next.tb_frame.f_code.co_filename:
 							exc_tb = exc_tb.tb_next
 						fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
 						if not skip_failed:
