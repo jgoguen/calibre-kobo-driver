@@ -420,21 +420,27 @@ class Container(object):
 		if isinstance(elem, basestring):
 			newstr = []
 			for w in elem.split():
-				if len(w) > 4 and '-' not in w and hyphen not in w:
+				if len(w) > 3 and '-' not in w and hyphen not in w:
 					w = hyphenator.inserted(w, hyphen = hyphen)
 				newstr.append(w)
 			elem = " ".join(newstr)
 		else:
-			elem.text = self.__hyphenate_node(elem.text, hyphenator, hyphen)
-			if elem.text is not None:
-				elem.text += u" "
-			elem.tail = self.__hyphenate_node(elem.tail, hyphenator, hyphen)
+			if elem.text is None and elem.tail is None:
+				# If we get here, there's only child nodes
+				for node in elem.xpath('./node()'):
+					node = self.__hyphenate_node(node, hyphenator, hyphen)
+			else:
+				elem.text = self.__hyphenate_node(elem.text, hyphenator, hyphen)
+				if elem.text is not None:
+					elem.text += u" "
+				elem.tail = self.__hyphenate_node(elem.tail, hyphenator, hyphen)
 		return elem
 
 	def hyphenate(self, hyphenator, hyphen = u'\u00AD'):
 		if hyphenator is None or hyphen is None or hyphen == '':
 			return False
 		for name in self.get_html_names():
+			self.log("Hyphenating file {0}".format(name))
 			root = self.get(name)
 			for node in root.xpath("./xhtml:body//xhtml:span[starts-with(@id, 'kobo.')]", namespaces = self.namespaces):
 				node = self.__hyphenate_node(node, hyphenator, hyphen)
