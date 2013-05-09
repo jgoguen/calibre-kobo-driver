@@ -68,115 +68,53 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 	min_supported_dbversion = 65
 	max_supported_fwversion = (2, 5, 1)
 
-	EXTRA_CUSTOMIZATION_MESSAGE = [
-		_('The Kobo Touch from firmware V2.0.0 supports bookshelves.') + \
-					'These are created on the Kobo Touch. ' + \
-					_('Specify a tags type column for automatic management'),
-			_('Create Bookshelves') +
-			':::' + _('Create new bookshelves on the Kobo Touch if they do not exist. This is only for firmware V2.0.0 or later.'),
-			_('Delete Empty Bookshelves') +
-			':::' + _('Delete any empty bookshelves from the Kobo Touch when syncing is finished. This is only for firmware V2.0.0 or later.'),
-			_('Upload covers for books') +
-			':::' + _('Upload cover images from the calibre library when sending books to the device.'),
-			_('Upload Black and White Covers'),
-			_('Keep cover aspect ratio') +
-			':::' + _('When uploading covers, do not change the aspect ratio when resizing for the device.'
-					' This is for firmware versions 2.3.1 and later.'),
-			_('Show expired books') +
-			':::' + _('A bug in an earlier version left non kepubs book records'
-				' in the database.  With this option Calibre will show the '
-				'expired records and allow you to delete them with '
-				'the new delete logic.'),
-			_('Show Previews') +
-			':::' + _('Kobo previews are included on the Touch and some other versions'
-				' by default they are no longer displayed as there is no good reason to '
-				'see them.  Enable if you wish to see/delete them.'),
-			_('Show Recommendations') +
-			':::' + _('Kobo shows recommendations on the device.  In some cases these have '
-				'files but in other cases they are just pointers to the web site to buy. '
-				'Enable if you wish to see/delete them.'),
-			_('Set Series information') +
-			':::' + _('The book lists on the Kobo devices can display series information. '
-					'This is not read by the device from the sideloaded books. '
-					'Series information can only be added to the device after the book has been processed by the device. '
-					'Enable if you wish to set series information.'),
-			_('Attempt to support newer firmware') +
-			':::' + _('Kobo routinely updates the firmware and the '
-				'database version.  With this option Calibre will attempt '
-				'to perform full read-write functionality - Here be Dragons!! '
-				'Enable only if you are comfortable with restoring your kobo '
-				'to factory defaults and testing software. '
-				'This driver supports firmware V2.x.x and DBVersion up to ' + unicode(supported_dbversion)),
-			_('Title to test when debugging') +
-			':::' + _('Part of title of a book that can be used when doing some tests for debugging. '
-					'The test is to see if the string is contained in the title of a book. '
-					'The better the match, the less extraneous output.'),
-		_('Enable Extended Features') + \
-			':::' + _('Choose whether to enable extra customisations'),
-		_('Delete Files not in Manifest') + \
-			':::' + _('Select this to silently delete files that are not in the manifest if they are encountered during processing. '
-				'If this option is not selected, files not in the manifest will be silently added to the manifest and processed as if they always were in the manifest.'),
-		_('Upload DRM-encumbered ePub files') + \
-			':::' + _('Select this to upload ePub files encumbered by DRM. If this is not selected, it is a fatal error to upload an encumbered file'),
-		_('Silently Ignore Failed Conversions') + \
-			':::' + _('Select this to not upload any book that fails conversion to kepub. If this is not selected, the upload process '
-				'will be stopped at the first book that fails. If this is selected, failed books will be silently removed from the upload queue.'),
-		_('Hyphenate Files') + \
-			':::' + _('Select this to add soft hyphens to uploaded ePub files. The language used will be the language defined for the book in calibre. '
-				' It is necessary to have a LibreOffice/OpenOffice hyphenation dictionary in ' + os.path.join(config_dir, 'plugins', 'KoboTouchExtended') + \
-				' named like hyph_{language}.dic, where {language} is the ISO 639 3-letter language code. For example, \'eng\' but not \'en_CA\'. The default dictionary to use '
-				' if none is found may be named \'hyph.dic\' instead.'),
-		_('Replace Content Language Code') + \
-			':::' + _('Select this to replace the defined language in each content file inside the ePub.'),
-		_('Smarten Punctuation') + \
-			':::' + _("Select this to smarten punctuation in the ePub"),
-		_('Clean up ePub Markup') + \
-			':::' + _("Select this to clean up the internal ePub markup.")
-	]
+	EXTRA_CUSTOMIZATION_MESSAGE = KOBOTOUCH.EXTRA_CUSTOMIZATION_MESSAGE[:]
+	EXTRA_CUSTOMIZATION_DEFAULT = KOBOTOUCH.EXTRA_CUSTOMIZATION_DEFAULT[:]
 
-	EXTRA_CUSTOMIZATION_DEFAULT = [
-		u'',
-		False,
-		False,
-		False,
-		False,
-		False,
-		False,
-		False,
-		False,
-		False,
-		False,
-		u'',
-		True,
-		False,
-		False,
-		False,
-		False,
-		False,
-		False,
-		False
-	]
+	EXTRA_CUSTOMIZATION_MESSAGE.append(_('Enable Extended Features') + \
+		':::' + _('Choose whether to enable extra customisations'))
+	EXTRA_CUSTOMIZATION_DEFAULT.append(True)
+	OPT_EXTRA_FEATURES = len(EXTRA_CUSTOMIZATION_MESSAGE) - 1
 
-	OPT_COLLECTIONS = 0
-	OPT_CREATE_BOOKSHELVES = 1
-	OPT_DELETE_BOOKSHELVES = 2
-	OPT_UPLOAD_COVERS = 3
-	OPT_UPLOAD_GRAYSCALE_COVERS = 4
-	OPT_KEEP_COVER_ASPECT_RATIO = 5
-	OPT_SHOW_EXPIRED_BOOK_RECORDS = 6
-	OPT_SHOW_PREVIEWS = 7
-	OPT_SHOW_RECOMMENDATIONS = 8
-	OPT_UPDATE_SERIES_DETAILS = 9
-	OPT_SUPPORT_NEWER_FIRMWARE = 10
-	OPT_DEBUGGING_TITLE = 11
-	OPT_EXTRA_FEATURES = 12
-	OPT_DELETE_UNMANIFESTED = 13
-	OPT_UPLOAD_ENCUMBERED = 14
-	OPT_SKIP_FAILED = 15
-	OPT_HYPHENATE = 16
-	OPT_REPLACE_LANG = 17
-	OPT_SMARTEN_PUNCTUATION = 18
-	OPT_CLEAN_MARKUP = 19
+	EXTRA_CUSTOMIZATION_MESSAGE.append(_('Delete Files not in Manifest') + \
+		':::' + _('Select this to silently delete files that are not in the manifest if they are encountered during processing. '
+		'If this option is not selected, files not in the manifest will be silently added to the manifest and processed as if they always were in the manifest.'))
+	EXTRA_CUSTOMIZATION_DEFAULT.append(False)
+	OPT_DELETE_UNMANIFESTED = len(EXTRA_CUSTOMIZATION_MESSAGE) - 1
+
+	EXTRA_CUSTOMIZATION_MESSAGE.append(_('Upload DRM-encumbered ePub files') + \
+		':::' + _('Select this to upload ePub files encumbered by DRM. If this is not selected, it is a fatal error to upload an encumbered file'))
+	EXTRA_CUSTOMIZATION_DEFAULT.append(False)
+	OPT_UPLOAD_ENCUMBERED = len(EXTRA_CUSTOMIZATION_MESSAGE) - 1
+
+	EXTRA_CUSTOMIZATION_MESSAGE.append(_('Silently Ignore Failed Conversions') + \
+		':::' + _('Select this to not upload any book that fails conversion to kepub. If this is not selected, the upload process '
+		'will be stopped at the first book that fails. If this is selected, failed books will be silently removed from the upload queue.'))
+	EXTRA_CUSTOMIZATION_DEFAULT.append(False)
+	OPT_SKIP_FAILED = len(EXTRA_CUSTOMIZATION_MESSAGE) - 1
+
+	EXTRA_CUSTOMIZATION_MESSAGE.append(_('Hyphenate Files') + \
+		':::' + _('Select this to add soft hyphens to uploaded ePub files. The language used will be the language defined for the book in calibre. '
+		' It is necessary to have a LibreOffice/OpenOffice hyphenation dictionary in ' + os.path.join(config_dir, 'plugins', 'KoboTouchExtended') + \
+		' named like hyph_{language}.dic, where {language} is the ISO 639 3-letter language code. For example, \'eng\' but not \'en_CA\'. The default dictionary to use '
+		' if none is found may be named \'hyph.dic\' instead.'))
+	EXTRA_CUSTOMIZATION_DEFAULT.append(False)
+	OPT_HYPHENATE = len(EXTRA_CUSTOMIZATION_MESSAGE) - 1
+
+	EXTRA_CUSTOMIZATION_MESSAGE.append(_('Replace Content Language Code') + \
+		':::' + _('Select this to replace the defined language in each content file inside the ePub.'))
+	EXTRA_CUSTOMIZATION_DEFAULT.append(False)
+	OPT_REPLACE_LANG = len(EXTRA_CUSTOMIZATION_MESSAGE) - 1
+
+	EXTRA_CUSTOMIZATION_MESSAGE.append(_('Smarten Punctuation') + \
+		':::' + _("Select this to smarten punctuation in the ePub"))
+	EXTRA_CUSTOMIZATION_DEFAULT.append(False)
+	OPT_SMARTEN_PUNCTUATION = len(EXTRA_CUSTOMIZATION_MESSAGE) - 1
+
+	EXTRA_CUSTOMIZATION_MESSAGE.append(_('Clean up ePub Markup') + \
+		':::' + _("Select this to clean up the internal ePub markup."))
+	EXTRA_CUSTOMIZATION_DEFAULT.append(False)
+	OPT_CLEAN_MARKUP = len(EXTRA_CUSTOMIZATION_MESSAGE) - 1
 
 	skip_renaming_files = []
 	hyphenator = None
