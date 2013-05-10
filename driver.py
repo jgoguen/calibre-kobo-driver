@@ -56,7 +56,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 	reference_kepub = os.path.join(configdir, 'reference.kepub.epub')
 
 	minimum_calibre_version = (0, 9, 29)
-	version = (1, 3, 0)
+	version = (1, 3, 1)
 
 	content_types = {
 		"main": 6,
@@ -66,7 +66,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 
 	supported_dbversion = 80
 	min_supported_dbversion = 65
-	max_supported_fwversion = (2, 5, 1)
+	max_supported_fwversion = (2, 5, 2)
 
 	EXTRA_CUSTOMIZATION_MESSAGE = KOBOTOUCH.EXTRA_CUSTOMIZATION_MESSAGE[:]
 	EXTRA_CUSTOMIZATION_DEFAULT = KOBOTOUCH.EXTRA_CUSTOMIZATION_DEFAULT[:]
@@ -217,6 +217,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 					parent = node.getparent()
 					if parent is not None:
 						parent.remove(node)
+						container.set(name, root)
 					continue
 				if not len(node.xpath("./xhtml:span[starts-with(@id, 'kobo.')]", namespaces = {"xhtml": container.namespaces["xhtml"]})):
 					count += 1
