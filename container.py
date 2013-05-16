@@ -11,7 +11,6 @@ import shutil
 import string
 import sys
 import time
-import zipfile
 
 from lxml import etree
 from lxml.etree import XMLSyntaxError
@@ -23,9 +22,11 @@ from calibre.ebooks.chardet import substitute_entites
 from calibre.ebooks.chardet import xml_to_unicode
 from calibre.ebooks.conversion.utils import HeuristicProcessor
 from calibre.ptempfile import PersistentTemporaryDirectory
+from calibre.utils import zipfile
 from calibre.utils.logging import Log
 from calibre.utils.smartypants import smartyPants
 
+from copy import deepcopy
 from urllib import unquote
 
 HTML_MIMETYPES = ['text/html', 'application/xhtml+xml']
@@ -67,6 +68,9 @@ class Container(object):
 
 	OPF_MIMETYPE = 'application/oebps-package+xml'
 	NCX_MIMETYPE = "application/x-dtbncx+xml"
+
+	paragraph_counter = 0
+	segment_counter = 0
 
 	def __init__(self, path):
 		tmpdir = PersistentTemporaryDirectory("_kobo-driver-extended")
@@ -234,15 +238,15 @@ class Container(object):
 			raise ValueError("A valid file name must be given (got: {0})".format(name))
 		for file in self.get_html_names():
 			root = self.get(file)
-			if not root:
+			if root is None:
 				self.log("Could not retrieve content file {0}".format(file))
 				continue
 			head = root.xpath('./xhtml:head', namespaces = self.namespaces)
-			if not head:
+			if head is None:
 				self.log("Could not find a <head> element in content file {0}".format(file))
 				continue
 			head = head[0]
-			if not head:
+			if head is None:
 				self.log("A <head> section was found but was undefined in content file {0}".format(file))
 				continue
 
@@ -381,7 +385,7 @@ class Container(object):
 			return etree.fromstring(raw, parser = parser)
 		return raw
 
-	def write(self, path):
+	def flush_cache(self):
 		for name in self.dirtied:
 			data = self.cache[name]
 			if hasattr(data, 'xpath'):
@@ -391,10 +395,15 @@ class Container(object):
 			f.write(data)
 			f.close()
 		self.dirtied.clear()
+		self.cache.clear()
+
+	def write(self, path):
+		self.flush_cache()
+
 		if os.path.exists(path):
 			os.unlink(path)
 		epub = zipfile.ZipFile(path, 'w', compression = zipfile.ZIP_DEFLATED)
-		epub.writestr('mimetype', bytes(guess_type('a.epub')[0]), compress_type = zipfile.ZIP_STORED)
+		epub.writestr('mimetype', bytes(guess_type('a.epub')[0]), compression = zipfile.ZIP_STORED)
 
 		cwd = os.getcwdu()
 		os.chdir(self.root)
@@ -447,10 +456,93 @@ class Container(object):
 			self.set(name, root)
 		return True
 
+	def __add_kobo_spans_to_node(self, node):
+		if node is None:
+			return None
+
+		if isinstance(node, basestring):
+			self.segment_counter += 1
+			groups = re.split(ur'(\.|;|:|!|\?|,[^\'"\u201d\u2019])', node, flags = re.UNICODE | re.MULTILINE)
+
+			if len(groups) == 1 and not re.match(r'^\s*$', groups[0], flags = re.UNICODE | re.MULTILINE):
+				groups = [(groups[0], '')]
+			else:
+				text = [t.decode('utf-8') for t in groups[0::2] if t != '' and not re.match(r'^\s*$', t, flags = re.UNICODE | re.MULTILINE)]
+				punctuation = groups[1::2]
+
+				# HACK: Account for sentences that don't end with punctuation
+				if len(text) == (len(punctuation) + 1):
+					punctuation.append(u'')
+				# HACK: Account for cases where tags split things so that we end up starting with punctuation.
+				if len(punctuation) == (len(text) + 1):
+					p = punctuation.pop(0)
+				else:
+					p = None
+				assert len(text) == len(punctuation)
+				groups = zip(text, punctuation)
+				if p is not None:
+					groups.insert(0, (p, u''))
+
+
+			if len(groups) > 0:
+				text_container = etree.Element("{%s}span" % (self.namespaces["xhtml"],), attrib = {"id": "kobo.{0}.{1}".format(self.paragraph_counter, self.segment_counter), "class": "koboSpan"})
+				for tuple in groups:
+					self.segment_counter += 1
+					span = etree.Element("{%s}span" % (self.namespaces["xhtml"],), attrib = {"id": "kobo.{0}.{1}".format(self.paragraph_counter, self.segment_counter), "class": "koboSpan"})
+					span.text = tuple[0] + tuple[1].decode('utf-8')
+					text_container.append(span)
+				return text_container
+			return None
+		else:
+			# First process the text
+			newtext = None
+			if node.text is not None:
+				newtext = self.__add_kobo_spans_to_node(node.text)
+
+			# Clone the rest of the node, clear the node, and add the text node
+			children = deepcopy(node.getchildren())
+			nodeattrs = {}
+			for key in node.attrib.keys():
+				nodeattrs[key] = node.attrib[key]
+			node.clear()
+			for key in nodeattrs.keys():
+				node.set(key, nodeattrs[key])
+			if newtext is not None:
+				node.append(newtext)
+
+			# For each child, process the child and then process and append its tail
+			for elem in children:
+				newelem = self.__add_kobo_spans_to_node(elem)
+				if newelem is not None:
+					node.append(newelem)
+
+					newtail = None
+					if elem.tail is not None:
+						newtail = self.__add_kobo_spans_to_node(elem.tail)
+						if newtail is not None:
+							node.append(newtail)
+
+					self.paragraph_counter += 1
+					self.segment_counter = 1
+			return node
+		return None
+
+	def add_kobo_spans(self):
+		for name in self.get_html_names():
+			self.paragraph_counter = 1
+			self.segment_counter = 1
+			root = self.get(name)
+			body = root.xpath('./xhtml:body', namespaces = self.namespaces)[0]
+			body = self.__add_kobo_spans_to_node(body)
+			self.set(name, root)
+		self.flush_cache()
+		return True
+
 	def smarten_punctuation(self):
 		preprocessor = HeuristicProcessor(log = self.log)
 
 		for name in self.get_html_names():
+			self.log("Smartening punctuation for file {0}".format(name))
 			html = self.get_raw(name)
 			html = html.encode("UTF-8")
 
@@ -476,6 +568,7 @@ class Container(object):
 	def clean_markup(self):
 		preprocessor = HeuristicProcessor(log = self.log)
 		for name in self.get_html_names():
+			self.log("Cleaning markup for file {0}".format(name))
 			html = self.get_raw(name)
 			html = html.encode("UTF-8")
 			html = string.replace(html, u"\u2014", ' -- ')

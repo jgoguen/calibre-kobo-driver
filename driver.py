@@ -56,7 +56,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 	reference_kepub = os.path.join(configdir, 'reference.kepub.epub')
 
 	minimum_calibre_version = (0, 9, 29)
-	version = (1, 3, 1)
+	version = (1, 3, 2)
 
 	content_types = {
 		"main": 6,
@@ -148,9 +148,28 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 		# Because of the changes made to the markup here, cleanup needs to be done before anything else
 		if opts.extra_customization[self.OPT_CLEAN_MARKUP]:
 			container.clean_markup()
-		# ...same for punctuation
+		# Now add the Kobo span tags
+		container.add_kobo_spans()
+		# Now smarten punctuation -- must happen before hyphenation
 		if opts.extra_customization[self.OPT_SMARTEN_PUNCTUATION]:
 			container.smarten_punctuation()
+		# Hyphenate files -- must happen after smartening punctuation
+		if opts.extra_customization[self.OPT_HYPHENATE]:
+			hyphenator = None
+			dictfile = None
+			for lang in metadata.languages:
+				if lang == 'und':
+					continue
+				dictfile = os.path.join(self.configdir, "hyph_{0}.dic".format(lang))
+				if os.path.isfile(dictfile):
+					break
+			if dictfile is None or not os.path.isfile(dictfile):
+				dictfile = os.path.join(self.configdir, "hyph.dic")
+			if dictfile is not None and os.path.isfile(dictfile):
+				debug_print("KoboTouchExtended:_modify_epub:Using hyphenation dictionary {0}".format(dictfile))
+				hyphenator = Hyphenator(dictfile)
+			if hyphenator is not None:
+				container.hyphenate(hyphenator)
 
 		if os.path.isfile(self.reference_kepub):
 			reference_container = Container(self.reference_kepub)
@@ -209,52 +228,6 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 			if opts.extra_customization[self.OPT_REPLACE_LANG] and metadata.language != NULL_VALUES["language"]:
 				root.attrib["{%s}lang" % container.namespaces["xml"]] = metadata.language
 				root.attrib["lang"] = metadata.language
-
-			count = 0
-			for node in root.xpath('./xhtml:body//xhtml:h1 | ./xhtml:body//xhtml:h2 | ./xhtml:body//xhtml:h3 | ./xhtml:body//xhtml:h4 | ./xhtml:body//xhtml:h5 | ./xhtml:body//xhtml:h6 | ./xhtml:body//xhtml:p | ./xhtml:body//xhtml:div', namespaces = container.namespaces):
-				children = node.xpath('node()')
-				if not len(children):
-					parent = node.getparent()
-					if parent is not None:
-						parent.remove(node)
-						container.set(name, root)
-					continue
-				if not len(node.xpath("./xhtml:span[starts-with(@id, 'kobo.')]", namespaces = {"xhtml": container.namespaces["xhtml"]})):
-					count += 1
-					attrs = {}
-					for key in node.attrib.keys():
-						attrs[key] = node.attrib[key]
-					new_span = etree.Element("{%s}span" % (container.namespaces["xhtml"],), attrib = {"id": "kobo.{0}.1".format(count), "class": "koboSpan"})
-					if isinstance(children[0], basestring):
-						new_span.text = unicode(deepcopy(children.pop(0)))
-					for child in children:
-						if not isinstance(child, basestring):
-							new_span.append(deepcopy(child))
-					node.clear()
-					for key in attrs.keys():
-						node.set(key, attrs[key])
-					node.append(new_span)
-
-			if count > 0:
-				debug_print("KoboTouchExtended:_modify_epub:Added Kobo tags to {0}".format(name))
-				container.set(name, root)
-
-		if opts.extra_customization[self.OPT_HYPHENATE]:
-			hyphenator = None
-			dictfile = None
-			for lang in metadata.languages:
-				if lang == 'und':
-					continue
-				dictfile = os.path.join(self.configdir, "hyph_{0}.dic".format(lang))
-				if os.path.isfile(dictfile):
-					break
-			if dictfile is None or not os.path.isfile(dictfile):
-				dictfile = os.path.join(self.configdir, "hyph.dic")
-			if dictfile is not None and os.path.isfile(dictfile):
-				debug_print("KoboTouchExtended:_modify_epub:Using hyphenation dictionary {0}".format(dictfile))
-				hyphenator = Hyphenator(dictfile)
-			if hyphenator is not None:
-				container.hyphenate(hyphenator)
 
 		os.unlink(file)
 		container.write(file)

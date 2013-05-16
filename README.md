@@ -95,6 +95,11 @@ When submitting a bug, I require the following information as a minimum, but any
 # Known Issues
 The hyphenation feature may cause the Kobo device to fail to properly recognize words when you tap and hold a word to search for it in the dictionary. This may manifest as the device only selecting part of a word, in which case you may drag the selection to encompass the entire word as a workaround. It may also manifest as the Kobo saying that "word" could not be found and the closest match is "word". To avoid this, do not enable hyphenation.
 
+The hyphenation feature frequently causes some display issues. The workaround is to not use hyphenation; it is a known issue that KePub files with soft hyphens are not always properly displayed. Most commonly noticed are:
+
+1. There may be extra space, possibly a lot of extra space, when formatting changes (e.g. normal font to italics) or after punctuation.
+1. There may be extra space at the end of a line. The amount of space appears to be proportional to the number of soft hyphens on that line, but is not always present even when there are a large number of soft hyphens.
+
 Bookmarks, annotations, highlighting, and anything else that's highly dependent on your current position may work fine or may have slight issues. You may find that some books work better or worse than others. This issue is pending investigation.
 
 If you have previously installed this plugin in calibre 0.9.18 or earlier, then you upgrade to calibre 0.9.19 or later and can't update the plugin, you must manually replace the plugin ZIP file:
