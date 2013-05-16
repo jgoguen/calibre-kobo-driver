@@ -81,8 +81,21 @@ Once this file is in place and correctly named this plugin will automatically ex
 [kobofreebooks]: http://www.kobobooks.com/lists/freeebooks/RYnbq2Rd7kSXf7MOhDofOQ-1.html
 [winshowext]: http://support.microsoft.com/kb/865219
 
+# Contributing
+Decided you want to contribute to the development of this plugin? Awesome! You have many options:
+
+1. **Contribute code**, whether for existing bug reports, for new bugs that you found, or for new features that you really want to see implemented. To contribute code, you may fork the repository and send a GitHub pull request, or you may send me a PM here with a git patch file. A tutorial on creating a git patch can be found [here][gittutorial]
+1. **Submit bug reports** on GitHub. GitHub bug reports are my to-do list for this plugin; any requests anywhere else are likely to get missed and forgotten and direct emails **will be silently ignored**. Although I'm happy to discuss the plugin here, I may still ask you to create a bug report; this is so I actually remember to investigate your request!
+1. **Test pre-released code** from GitHub. Between releases, new code is committed to the GitHub repository and may be installed using directions provided in ths file. Based on your testing, you may submit bug reports, provide feedback, think of new feature requests, or just generally enjoy early access (and not necessarily stable code!) to upcoming versions of the plugin.
+
+You may also prefer to contribute in some other way. You may [donate to me via PayPal][paypaldonate], [contribute to my fundraiser][driverfundraiser], or you may also contribute by answering questions from other people who may have issues, purchasing items from my wishlists (not yet linked, I'll get on that soon-ish), continuing to use this plugin and providing feedback, and probably a few other ways I haven't thought of yet.
+
+[gittutorial]: http://ariejan.net/2009/10/26/how-to-create-and-apply-a-patch-with-git/
+[paypaldonate]: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=UXNT7PRVZ5HGA
+[driverfundraiser]: http://gogetfunding.com/project/kobo-touch-extended-driver-development
+
 # Reporting a Bug
-Found a bug with this plugin? Great! Please use the Github issue tracker to send me reports of issues or questions. Under no circumstances should I be emailed directly unless I have asked to have something sent to me. Any emails I haven't asked for will be silently ignored. Everyone can benefit from a public bug tracker, but only one person benefits from a private email.
+Found a bug with this plugin? Great! Please use the Github issue tracker to send me reports of issues or questions. Under no circumstances should I be emailed directly unless I have asked to have something sent to me. Any emails I haven't asked for **will be silently ignored**. Everyone can benefit from a public bug tracker, but only one person benefits from a private email.
 
 When submitting a bug, I require the following information as a minimum, but any additional information is good to include:
 
