@@ -463,33 +463,14 @@ class Container(object):
 		if isinstance(node, basestring):
 			self.segment_counter += 1
 			groups = re.split(ur'(\.|;|:|!|\?|,[^\'"\u201d\u2019])', node, flags = re.UNICODE | re.MULTILINE)
-
-			if len(groups) == 1 and not re.match(r'^\s*$', groups[0], flags = re.UNICODE | re.MULTILINE):
-				groups = [(groups[0], '')]
-			else:
-				text = [t.decode('utf-8') for t in groups[0::2] if t != '' and not re.match(r'^\s*$', t, flags = re.UNICODE | re.MULTILINE)]
-				punctuation = groups[1::2]
-
-				# HACK: Account for sentences that don't end with punctuation
-				if len(text) == (len(punctuation) + 1):
-					punctuation.append(u'')
-				# HACK: Account for cases where tags split things so that we end up starting with punctuation.
-				if len(punctuation) == (len(text) + 1):
-					p = punctuation.pop(0)
-				else:
-					p = None
-				assert len(text) == len(punctuation)
-				groups = zip(text, punctuation)
-				if p is not None:
-					groups.insert(0, (p, u''))
-
+			groups = [g.decode("utf-8") for g in groups if not re.match(r'^\s*$', g, re.UNICODE | re.MULTILINE)]
 
 			if len(groups) > 0:
 				text_container = etree.Element("{%s}span" % (self.namespaces["xhtml"],), attrib = {"id": "kobo.{0}.{1}".format(self.paragraph_counter, self.segment_counter), "class": "koboSpan"})
-				for tuple in groups:
+				for g in groups:
 					self.segment_counter += 1
 					span = etree.Element("{%s}span" % (self.namespaces["xhtml"],), attrib = {"id": "kobo.{0}.{1}".format(self.paragraph_counter, self.segment_counter), "class": "koboSpan"})
-					span.text = tuple[0] + tuple[1].decode('utf-8')
+					span.text = g
 					text_container.append(span)
 				return text_container
 			return None
@@ -512,18 +493,19 @@ class Container(object):
 
 			# For each child, process the child and then process and append its tail
 			for elem in children:
+				elemtail = deepcopy(elem.tail) if elem.tail is not None else None
 				newelem = self.__add_kobo_spans_to_node(elem)
 				if newelem is not None:
 					node.append(newelem)
 
-					newtail = None
-					if elem.tail is not None:
-						newtail = self.__add_kobo_spans_to_node(elem.tail)
-						if newtail is not None:
-							node.append(newtail)
+				newtail = None
+				if elemtail is not None:
+					newtail = self.__add_kobo_spans_to_node(elemtail)
+					if newtail is not None:
+						node.append(newtail)
 
-					self.paragraph_counter += 1
-					self.segment_counter = 1
+				self.paragraph_counter += 1
+				self.segment_counter = 1
 			return node
 		return None
 
@@ -532,6 +514,9 @@ class Container(object):
 			self.paragraph_counter = 1
 			self.segment_counter = 1
 			root = self.get(name)
+			if len(root.xpath('.//xhtml:span[class=koboSpan]', namespaces = self.namespaces)) > 0:
+				continue
+			self.log("Adding Kobo spans to {0}".format(name))
 			body = root.xpath('./xhtml:body', namespaces = self.namespaces)[0]
 			body = self.__add_kobo_spans_to_node(body)
 			self.set(name, root)
