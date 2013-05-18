@@ -81,6 +81,14 @@ Once this file is in place and correctly named this plugin will automatically ex
 [kobofreebooks]: http://www.kobobooks.com/lists/freeebooks/RYnbq2Rd7kSXf7MOhDofOQ-1.html
 [winshowext]: http://support.microsoft.com/kb/865219
 
+## Generated KePub File Copying
+On occasion, such as for debugging purposes, you may wish to have easy access to the generated KePub file. There is an option which allows you to enter the full, absolute path to a directory where all generated files will be copied to once they have been converted. This directory must:
+
+1. Already exist
+1. Be writable (you can put files in it)
+1. Contain no variables
+	1. OS X and Linux users may use a tilde (~) to refer to their home directory instead of typing it in full (/home/jgoguen/calibre-debug may be entered as ~/calibre-debug). Windows users must always enter a full path.
+
 # Contributing
 Decided you want to contribute to the development of this plugin? Awesome! You have many options:
 

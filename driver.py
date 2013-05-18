@@ -7,6 +7,7 @@ __docformat__ = 'markdown en'
 
 import os
 import re
+import shutil
 import sqlite3 as sqlite
 import sys
 
@@ -56,7 +57,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 	reference_kepub = os.path.join(configdir, 'reference.kepub.epub')
 
 	minimum_calibre_version = (0, 9, 29)
-	version = (1, 3, 2)
+	version = (1, 3, 3)
 
 	content_types = {
 		"main": 6,
@@ -115,6 +116,11 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 		':::' + _("Select this to clean up the internal ePub markup."))
 	EXTRA_CUSTOMIZATION_DEFAULT.append(False)
 	OPT_CLEAN_MARKUP = len(EXTRA_CUSTOMIZATION_MESSAGE) - 1
+
+	EXTRA_CUSTOMIZATION_MESSAGE.append(_("Copy generated KePub files to a directory") + \
+		':::' + _("Enter an absolute directory path to copy all generated KePub files into for debugging purposes."))
+	EXTRA_CUSTOMIZATION_DEFAULT.append(u'')
+	OPT_FILE_COPY_DIR = len(EXTRA_CUSTOMIZATION_MESSAGE) - 1
 
 	skip_renaming_files = []
 	hyphenator = None
@@ -266,6 +272,13 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 						new_files.append(file)
 						new_names.append(n)
 						new_metadata.append(mi)
+
+						dpath = opts.extra_customization[self.OPT_FILE_COPY_DIR]
+						dpath = os.path.expanduser(dpath)
+						if dpath.strip() != '' and os.path.isabs(dpath) and os.path.isdir(dpath):
+							dstpath = os.path.join(dpath, "{0} - {1}.kepub.epub".format(mi.title_sort, mi.authors[0]))
+							debug_print("KoboTouchExtended:upload_books:Copying generated KePub file to {0}".format(dstpath))
+							shutil.copy(file, dstpath)
 				else:
 					new_files.append(file)
 					new_names.append(n)
