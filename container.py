@@ -457,7 +457,7 @@ class Container(object):
 		return True
 
 	def __add_kobo_spans_to_node(self, node):
-		if node is None:
+		if node is None or isinstance(node, etree._Comment):
 			return None
 
 		if isinstance(node, basestring):
