@@ -304,6 +304,17 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 	def sync_booklists(self, booklists, end_session = True):
 		debug_print("KoboTouchExtended:sync_booklists:Setting ImageId fields")
 
+		titles = []
+		for booklist in booklists:
+			for b in booklist:
+				if b.application_id is not None and b.title not in titles:
+					titles.append(b.title)
+
+		select_query = "SELECT ContentId FROM content WHERE ContentType = ? AND (ImageId IS NULL OR ImageId = '')"
+		if len(titles) > 0:
+			s = ['?'] * len(titles)
+			select_query += " AND Title IN (" + ", ".join(s) + ")"
+
 		db = sqlite.connect(os.path.join(self._main_prefix, ".kobo", "KoboReader.sqlite"), isolation_level = None)
 		db.text_factory = lambda x: unicode(x, "utf-8", "ignore")
 
@@ -312,7 +323,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 			in the database that require an image ID.
 			"""
 			c = db.cursor()
-			c.execute("SELECT ContentId FROM content WHERE ContentType = ? AND (ImageId IS NULL OR ImageId = '')", (self.content_types["main"],))
+			c.execute(select_query, (self.content_types["main"],) + tuple(titles))
 			for row in c:
 				yield (self.imageid_from_contentid(row[0]), row[0])
 
