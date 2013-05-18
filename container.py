@@ -1,7 +1,7 @@
 # vim:fileencoding=UTF-8:ts=4:sw=4:sta:et:sts=4:ai
 
 __license__ = 'GPL v3'
-__copyright__ = '2010, Kovid Goyal <kovid@kovidgoyal.net>'
+__copyright__ = '2010, Kovid Goyal <kovid@kovidgoyal.net>; 2013, Joel Goguen <jgoguen@jgoguen.ca>'
 __docformat__ = 'restructuredtext en'
 
 import os
