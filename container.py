@@ -562,7 +562,22 @@ class Container(object):
 			html = string.replace(html, u"\u2014", ' -- ')
 			html = string.replace(html, u"\u2013", ' --- ')
 			html = string.replace(html, u"\x97", ' --- ')
-			html = preprocessor.cleanup_markup(html)
+			# html = preprocessor.cleanup_markup(html)
+
+			# XXX: These following regexes come from calibre.ebooks.conversion.utils.HeuristicProcessor.cleanup_markup.
+			# XXX: Remove these and uncomment the call to cleanup_markup() above when LP bug #1181873 is fixed
+			self.log.debug("HTML before markup substitutions:\n{0}".format(html))
+			html = re.sub(ur'\u00a0', ' ', html)
+			html = re.sub(ur'\s*<o:p>\s*</o:p>', ' ', html)
+			html = re.sub('(?i)</?st1:\w+>', '', html)
+			html = re.sub('<p[^>/]*/>', '<p> </p>', html)
+			html = re.sub(r"\s*<span[^>]*>\s*(<span[^>]*>\s*</span>){0,2}\s*</span>\s*", " ", html)
+			# html = re.sub(r"\s*<(font|[ibu]|em|strong)[^>]*>\s*(<(font|[ibu]|em|strong)[^>]*>\s*</(font|[ibu]|em|strong)>\s*){0,2}\s*</(font|[ibu]|em|strong)>", " ", html)
+			html = re.sub(r"\s*<span[^>]*>\s*(<span[^>]>\s*</span>){0,2}\s*</span>\s*", " ", html)
+			# html = re.sub(r"\s*<(font|[ibu]|em|strong)[^>]*>\s*(<(font|[ibu]|em|strong)[^>]*>\s*</(font|[ibu]|em|strong)>\s*){0,2}\s*</(font|[ibu]|em|strong)>", " ", html)
+			html = re.sub('<div[^>]*>\s*<p[^>]*>\s*</p>\s*</div>', '<p> </p>', html)
+			html = re.sub(r'(?i)<h\d+>\s*</h\d+>', '', html)
+			self.log.debug("HTML after markup substitutions:\n{0}".format(html))
 
 			# Remove Unicode replacement characters
 			html = string.replace(html, u"\uFFFD", "")
