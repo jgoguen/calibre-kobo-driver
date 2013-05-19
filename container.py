@@ -16,13 +16,14 @@ from lxml.etree import XMLSyntaxError
 
 from calibre import guess_type
 from calibre import prepare_string_for_xml
+from calibre.constants import DEBUG
 from calibre.constants import iswindows
 from calibre.ebooks.chardet import substitute_entites
 from calibre.ebooks.chardet import xml_to_unicode
 from calibre.ebooks.conversion.utils import HeuristicProcessor
 from calibre.ptempfile import PersistentTemporaryDirectory
+from calibre.utils import logging
 from calibre.utils import zipfile
-from calibre.utils.logging import Log
 from calibre.utils.smartypants import smartyPants
 
 from copy import deepcopy
@@ -77,7 +78,7 @@ class Container(object):
 		zf.extractall(tmpdir)
 
 		self.root = os.path.abspath(tmpdir)
-		self.log = Log()
+		self.log = logging.Log(level = logging.DEBUG if DEBUG else logging.WARN)
 		self.dirtied = set([])
 		self.cache = {}
 		self.mime_map = {}
@@ -181,7 +182,7 @@ class Container(object):
 		item = self.manifest_item_for_name(name)
 		if item is not None:
 			return
-		self.log("Adding '{0}' to the manifest".format(name))
+		self.log.debug("Adding '{0}' to the manifest".format(name))
 		manifest = self.opf.xpath('//opf:manifest', namespaces = self.namespaces)[0]
 		item = manifest.makeelement('{%s}item' % self.namespaces['opf'], href = self.name_to_href(name, os.path.dirname(self.opf_name)), id = self.generate_manifest_id())
 		if not mt:
@@ -222,7 +223,7 @@ class Container(object):
 			raise ValueError("A source path must be given")
 		if name is None:
 			name = os.path.basename(path)
-		self.log("Copying file '{0}' to '{1}'".format(path, os.path.join(self.root, name)))
+		self.log.debug("Copying file '{0}' to '{1}'".format(path, os.path.join(self.root, name)))
 		shutil.copy(path, os.path.join(self.root, name))
 		self.add_name_to_manifest(name, mt)
 
@@ -238,15 +239,15 @@ class Container(object):
 		for file in self.get_html_names():
 			root = self.get(file)
 			if root is None:
-				self.log("Could not retrieve content file {0}".format(file))
+				self.log.error("Could not retrieve content file {0}".format(file))
 				continue
 			head = root.xpath('./xhtml:head', namespaces = self.namespaces)
 			if head is None:
-				self.log("Could not find a <head> element in content file {0}".format(file))
+				self.log.error("Could not find a <head> element in content file {0}".format(file))
 				continue
 			head = head[0]
 			if head is None:
-				self.log("A <head> section was found but was undefined in content file {0}".format(file))
+				self.log.error("A <head> section was found but was undefined in content file {0}".format(file))
 				continue
 
 			if self.mime_map[name] == guess_type('a.css')[0]:
@@ -448,7 +449,7 @@ class Container(object):
 		if hyphenator is None or hyphen is None or hyphen == '':
 			return False
 		for name in self.get_html_names():
-			self.log("Hyphenating file {0}".format(name))
+			self.log.debug("Hyphenating file {0}".format(name))
 			root = self.get(name)
 			for node in root.xpath("./xhtml:body//xhtml:span[starts-with(@id, 'kobo.')]", namespaces = self.namespaces):
 				node = self.__hyphenate_node(node, hyphenator, hyphen)
@@ -518,7 +519,7 @@ class Container(object):
 			root = self.get(name)
 			if len(root.xpath('.//xhtml:span[class=koboSpan]', namespaces = self.namespaces)) > 0:
 				continue
-			self.log("Adding Kobo spans to {0}".format(name))
+			self.log.debug("Adding Kobo spans to {0}".format(name))
 			body = root.xpath('./xhtml:body', namespaces = self.namespaces)[0]
 			body = self.__add_kobo_spans_to_node(body)
 			self.set(name, root)
@@ -529,7 +530,7 @@ class Container(object):
 		preprocessor = HeuristicProcessor(log = self.log)
 
 		for name in self.get_html_names():
-			self.log("Smartening punctuation for file {0}".format(name))
+			self.log.debug("Smartening punctuation for file {0}".format(name))
 			html = self.get_raw(name)
 			html = html.encode("UTF-8")
 
@@ -555,7 +556,7 @@ class Container(object):
 	def clean_markup(self):
 		preprocessor = HeuristicProcessor(log = self.log)
 		for name in self.get_html_names():
-			self.log("Cleaning markup for file {0}".format(name))
+			self.log.debug("Cleaning markup for file {0}".format(name))
 			html = self.get_raw(name)
 			html = html.encode("UTF-8")
 			html = string.replace(html, u"\u2014", ' -- ')
