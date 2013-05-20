@@ -566,7 +566,6 @@ class Container(object):
 
 			# XXX: These following regexes come from calibre.ebooks.conversion.utils.HeuristicProcessor.cleanup_markup.
 			# XXX: Remove these and uncomment the call to cleanup_markup() above when LP bug #1181873 is fixed
-			self.log.debug("HTML before markup substitutions:\n{0}".format(html))
 			html = re.sub(ur'\u00a0', ' ', html)
 			html = re.sub(ur'\s*<o:p>\s*</o:p>', ' ', html)
 			html = re.sub('(?i)</?st1:\w+>', '', html)
@@ -577,7 +576,6 @@ class Container(object):
 			# html = re.sub(r"\s*<(font|[ibu]|em|strong)[^>]*>\s*(<(font|[ibu]|em|strong)[^>]*>\s*</(font|[ibu]|em|strong)>\s*){0,2}\s*</(font|[ibu]|em|strong)>", " ", html)
 			html = re.sub('<div[^>]*>\s*<p[^>]*>\s*</p>\s*</div>', '<p> </p>', html)
 			html = re.sub(r'(?i)<h\d+>\s*</h\d+>', '', html)
-			self.log.debug("HTML after markup substitutions:\n{0}".format(html))
 
 			# Remove Unicode replacement characters
 			html = string.replace(html, u"\uFFFD", "")
