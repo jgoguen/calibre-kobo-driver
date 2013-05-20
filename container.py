@@ -466,7 +466,7 @@ class Container(object):
 		if isinstance(node, basestring):
 			self.segment_counter += 1
 			groups = re.split(ur'(\.|;|:|!|\?|,[^\'"\u201d\u2019])', node, flags = re.UNICODE | re.MULTILINE)
-			groups = [g.decode("utf-8") for g in groups if not re.match(r'^\s*$', g, re.UNICODE | re.MULTILINE)]
+			groups = [g.decode("utf-8") for g in groups if not re.match(r'^\s*$', g.strip(), re.UNICODE | re.MULTILINE)]
 
 			if len(groups) > 0:
 				text_container = etree.Element("{%s}span" % (self.namespaces["xhtml"],), attrib = {"id": "kobo.{0}.{1}".format(self.paragraph_counter, self.segment_counter), "class": "koboSpan"})
@@ -559,22 +559,23 @@ class Container(object):
 			self.log.debug("Cleaning markup for file {0}".format(name))
 			html = self.get_raw(name)
 			html = html.encode("UTF-8")
+
+			# Replace unicode dashes with ASCII representations - smarten punctuation picks this up if asked for
 			html = string.replace(html, u"\u2014", ' -- ')
 			html = string.replace(html, u"\u2013", ' --- ')
 			html = string.replace(html, u"\x97", ' --- ')
-			# html = preprocessor.cleanup_markup(html)
 
-			# XXX: These following regexes come from calibre.ebooks.conversion.utils.HeuristicProcessor.cleanup_markup.
-			# XXX: Remove these and uncomment the call to cleanup_markup() above when LP bug #1181873 is fixed
-			html = re.sub(ur'\u00a0', ' ', html)
+			# Strip out non-breaking spaces
+			html = string.replace(html, u"\u00a0", " ")
+
+			# Get rid of Microsoft cruft
 			html = re.sub(ur'\s*<o:p>\s*</o:p>', ' ', html)
 			html = re.sub('(?i)</?st1:\w+>', '', html)
+
+			# Re-open self-closing paragraph tags
 			html = re.sub('<p[^>/]*/>', '<p> </p>', html)
-			html = re.sub(r"\s*<span[^>]*>\s*(<span[^>]*>\s*</span>){0,2}\s*</span>\s*", " ", html)
-			# html = re.sub(r"\s*<(font|[ibu]|em|strong)[^>]*>\s*(<(font|[ibu]|em|strong)[^>]*>\s*</(font|[ibu]|em|strong)>\s*){0,2}\s*</(font|[ibu]|em|strong)>", " ", html)
-			html = re.sub(r"\s*<span[^>]*>\s*(<span[^>]>\s*</span>){0,2}\s*</span>\s*", " ", html)
-			# html = re.sub(r"\s*<(font|[ibu]|em|strong)[^>]*>\s*(<(font|[ibu]|em|strong)[^>]*>\s*</(font|[ibu]|em|strong)>\s*){0,2}\s*</(font|[ibu]|em|strong)>", " ", html)
-			html = re.sub('<div[^>]*>\s*<p[^>]*>\s*</p>\s*</div>', '<p> </p>', html)
+
+			# Remove empty headings
 			html = re.sub(r'(?i)<h\d+>\s*</h\d+>', '', html)
 
 			# Remove Unicode replacement characters
