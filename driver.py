@@ -316,31 +316,35 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 	def sync_booklists(self, booklists, end_session = True):
 		debug_print("KoboTouchExtended:sync_booklists:Setting ImageId fields")
 
-		books = []
-		for booklist in booklists:
-			for b in booklist:
-				if b.application_id is not None and b.title not in books:
-					books.append(b.contentID)
-
 		select_query = "SELECT ContentId FROM content WHERE ContentType = ? AND (ImageId IS NULL OR ImageId = '')"
-		if len(books) > 0:
-			s = ['?'] * len(books)
-			select_query += " AND ContentID IN (" + ", ".join(s) + ")"
-
+		update_query = "UPDATE content SET ImageId = ? WHERE ContentId = ?"
 		db = sqlite.connect(os.path.join(self._main_prefix, ".kobo", "KoboReader.sqlite"), isolation_level = None)
 		db.text_factory = lambda x: unicode(x, "utf-8", "ignore")
 
-		def _rows_needing_imageid():
-			"""A generator function returning a 2-tuple (ImageId, ContentId) for rows
-			in the database that require an image ID.
+		def __rows_needing_imageid():
+			"""Returns a dict object with keys being the ContentID of a row without an ImageID.
 			"""
 			c = db.cursor()
-			c.execute(select_query, (self.content_types["main"],) + tuple(books))
+			d = {}
+			c.execute(select_query, (self.content_types['main'],))
 			for row in c:
-				yield (self.imageid_from_contentid(row[0]), row[0])
+				d[row[0]] = 1
+			return d
+
+		all_nulls = __rows_needing_imageid()
+		debug_print("KoboTouchExtended:sync_booklists:Got {0} rows to update".format(str(len(all_nulls.keys()))))
+		nulls = []
+		for booklist in booklists:
+			for b in booklist:
+				if b.application_id is not None and b.contentID in all_nulls:
+					nulls.append((self.imageid_from_contentid(b.contentID), b.contentID))
+		del(all_nulls)
 
 		cursor = db.cursor()
-		cursor.executemany("UPDATE content SET ImageId = ? WHERE ContentId = ?", _rows_needing_imageid())
+		while nulls[:100]:
+			debug_print("KoboTouchExtended:sync_booklists:Updating {0} ImageIDs...".format(str(len(nulls[:100]))))
+			cursor.executemany(update_query, nulls[:100])
+			del(nulls[:100])
 		cursor.close()
 		db.close()
 		debug_print("KoboTouchExtended:sync_booklists:done setting ImageId fields")
