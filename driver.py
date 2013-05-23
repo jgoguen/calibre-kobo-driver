@@ -56,7 +56,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 	reference_kepub = os.path.join(configdir, 'reference.kepub.epub')
 
 	minimum_calibre_version = (0, 9, 29)
-	version = (1, 3, 3)
+	version = (1, 3, 4)
 
 	content_types = {
 		"main": 6,
@@ -346,6 +346,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 			while nulls[:100]:
 				debug_print("KoboTouchExtended:sync_booklists:Updating {0} ImageIDs...".format(str(len(nulls[:100]))))
 				cursor.executemany(update_query, nulls[:100])
+				cursor.commit()
 				del(nulls[:100])
 			cursor.close()
 			db.close()
