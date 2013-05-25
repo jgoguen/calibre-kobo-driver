@@ -471,8 +471,7 @@ class Container(object):
 
 			# HACK: Account for nodes that have a whitespace-only text node
 			if len(groups) == 0 and re.match(ur'^\s+$', node, flags = re.UNICODE | re.MULTILINE):
-				self.log.debug("Returning whitespace-only text node")
-				return node
+				groups.append(node)
 
 			self.log.debug("Got text groups:\n{0}".format(str(groups)))
 
