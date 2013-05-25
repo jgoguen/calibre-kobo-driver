@@ -346,7 +346,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 			while nulls[:100]:
 				debug_print("KoboTouchExtended:sync_booklists:Updating {0} ImageIDs...".format(str(len(nulls[:100]))))
 				cursor.executemany(update_query, nulls[:100])
-				cursor.commit()
+				db.commit()
 				del(nulls[:100])
 			cursor.close()
 			db.close()
