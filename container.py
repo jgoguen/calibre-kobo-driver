@@ -565,9 +565,6 @@ class Container(object):
 			html = string.replace(html, u"\u2013", ' --- ')
 			html = string.replace(html, u"\x97", ' --- ')
 
-			# Strip out non-breaking spaces
-			html = string.replace(html, u"\u00a0", " ")
-
 			# Get rid of Microsoft cruft
 			html = re.sub(ur'\s*<o:p>\s*</o:p>', ' ', html)
 			html = re.sub('(?i)</?st1:\w+>', '', html)
