@@ -464,23 +464,37 @@ class Container(object):
 			return node
 
 		if isinstance(node, basestring):
+			self.log.debug("Processing text node:\n{0}".format(node))
 			self.segment_counter += 1
 			groups = re.split(ur'(\.|;|:|!|\?|,[^\'"\u201d\u2019])', node, flags = re.UNICODE | re.MULTILINE)
 			groups = [g.decode("utf-8") for g in groups if not re.match(r'^\s*$', g.strip(), re.UNICODE | re.MULTILINE)]
 
+			# HACK: Account for nodes that have a whitespace-only text node
+			if len(groups) == 0 and re.match(ur'^\s+$', node, flags = re.UNICODE | re.MULTILINE):
+				self.log.debug("Returning whitespace-only text node")
+				return node
+
+			self.log.debug("Got text groups:\n{0}".format(str(groups)))
+
 			if len(groups) > 0:
 				text_container = etree.Element("{%s}span" % (self.namespaces["xhtml"],), attrib = {"id": "kobo.{0}.{1}".format(self.paragraph_counter, self.segment_counter), "class": "koboSpan"})
 				for g in groups:
-					self.segment_counter += 1
-					span = etree.Element("{%s}span" % (self.namespaces["xhtml"],), attrib = {"id": "kobo.{0}.{1}".format(self.paragraph_counter, self.segment_counter), "class": "koboSpan"})
-					span.text = g
-					text_container.append(span)
+					if text_container.text is None and re.match(ur'^\s+$', g, flags = re.UNICODE | re.MULTILINE):
+						text_container.text = g
+					else:
+						self.segment_counter += 1
+						span = etree.Element("{%s}span" % (self.namespaces["xhtml"],), attrib = {"id": "kobo.{0}.{1}".format(self.paragraph_counter, self.segment_counter), "class": "koboSpan"})
+						span.text = g
+						text_container.append(span)
+				self.log.debug("Returning text container:\n{0}".format(etree.tostring(text_container, pretty_print = True)))
 				return text_container
 			return None
 		else:
+			self.log.debug("Processing XML node:\n{0}".format(etree.tostring(node, pretty_print = True)))
 			# First process the text
 			newtext = None
 			if node.text is not None:
+				self.log.debug("About to process text:\n{0}".format(node.text))
 				newtext = self.__add_kobo_spans_to_node(node.text)
 
 			# Clone the rest of the node, clear the node, and add the text node
@@ -496,19 +510,24 @@ class Container(object):
 
 			# For each child, process the child and then process and append its tail
 			for elem in children:
+				self.log.debug("Processing child node:\n{0}".format(etree.tostring(elem, pretty_print = True)))
 				elemtail = deepcopy(elem.tail) if elem.tail is not None else None
 				newelem = self.__add_kobo_spans_to_node(elem)
 				if newelem is not None:
+					self.log.debug("Got new child element:\n{0}".format(etree.tostring(newelem, pretty_print = True)))
 					node.append(newelem)
 
 				newtail = None
 				if elemtail is not None:
+					self.log.debug("Processing element tail:\n{0}".format(elemtail))
 					newtail = self.__add_kobo_spans_to_node(elemtail)
 					if newtail is not None:
+						self.log.debug("Got new element tail:\n{0}".format(etree.tostring(newtail, pretty_print = True)))
 						node.append(newtail)
 
 				self.paragraph_counter += 1
 				self.segment_counter = 1
+			self.log.debug("New node:\n{0}".format(etree.tostring(node, pretty_print = True)))
 			return node
 		return None
 
@@ -522,6 +541,9 @@ class Container(object):
 			self.log.debug("Adding Kobo spans to {0}".format(name))
 			body = root.xpath('./xhtml:body', namespaces = self.namespaces)[0]
 			body = self.__add_kobo_spans_to_node(body)
+			root = etree.tostring(root, pretty_print = True)
+			# Re-open self-closing paragraph tags
+			root = re.sub(r'<p[^>/]*/>', '<p></p>', root)
 			self.set(name, root)
 		self.flush_cache()
 		return True
@@ -567,10 +589,10 @@ class Container(object):
 
 			# Get rid of Microsoft cruft
 			html = re.sub(ur'\s*<o:p>\s*</o:p>', ' ', html)
-			html = re.sub('(?i)</?st1:\w+>', '', html)
+			html = re.sub(r'(?i)</?st1:\w+>', '', html)
 
 			# Re-open self-closing paragraph tags
-			html = re.sub('<p[^>/]*/>', '<p> </p>', html)
+			html = re.sub(r'<p[^>/]*/>', '<p></p>', html)
 
 			# Remove empty headings
 			html = re.sub(r'(?i)<h\d+>\s*</h\d+>', '', html)
