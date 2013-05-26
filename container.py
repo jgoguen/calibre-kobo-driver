@@ -465,7 +465,7 @@ class Container(object):
 
 		if isinstance(node, basestring):
 			self.segment_counter += 1
-			groups = re.split(ur'(.*?[\.\!\?\;\:][\'"\u201d\u2019]?\s*)', node, flags = re.UNICODE | re.MULTILINE)
+			groups = re.split(ur'(.*?[\.\!\?\:][\'"\u201d\u2019]?\s*)', node, flags = re.UNICODE | re.MULTILINE)
 			groups = [g.decode("utf-8") for g in groups if not re.match(r'^\s*$', g.strip(), re.UNICODE | re.MULTILINE)]
 
 			# HACK: Account for nodes that have a whitespace-only text node
@@ -513,10 +513,8 @@ class Container(object):
 				node.set(key, nodeattrs[key])
 			if newtext is not None:
 				if isinstance(newtext, basestring):
-					# node.text = newtext + u" "
 					node.text = newtext
 				else:
-					# newtext.tail = newtext.tail + u" " if newtext.tail is not None else u" "
 					node.append(newtext)
 
 			# For each child, process the child and then process and append its tail
@@ -533,12 +531,7 @@ class Container(object):
 						if isinstance(newtail, basestring):
 							node.getchildren()[-1].tail = newtail
 						else:
-							# newtail.tail = newtail.tail + u" " if newtail.tail is not None else u" "
 							node.append(newtail)
-# 				else:
-# 					node_children = node.getchildren()
-# 					if len(node_children) > 0:
-# 						node_children[-1].tail = u" "
 
 				self.paragraph_counter += 1
 				self.segment_counter = 1
