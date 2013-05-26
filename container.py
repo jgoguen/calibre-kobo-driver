@@ -464,36 +464,40 @@ class Container(object):
 			return node
 
 		if isinstance(node, basestring):
-			self.log.debug("Processing text node:\n{0}".format(node))
 			self.segment_counter += 1
-			groups = re.split(ur'(\.|;|:|!|\?|,[^\'"\u201d\u2019])', node, flags = re.UNICODE | re.MULTILINE)
+			groups = re.split(ur'(.*?[\.\!\?\;][\'"\u201d\u2019]?)', node, flags = re.UNICODE | re.MULTILINE)
 			groups = [g.decode("utf-8") for g in groups if not re.match(r'^\s*$', g.strip(), re.UNICODE | re.MULTILINE)]
 
 			# HACK: Account for nodes that have a whitespace-only text node
 			if len(groups) == 0 and re.match(ur'^\s+$', node, flags = re.UNICODE | re.MULTILINE):
-				groups.append(node)
+				return node
 
-			self.log.debug("Got text groups:\n{0}".format(str(groups)))
-
-			if len(groups) > 0:
+			ngroups = len(groups)
+			if ngroups > 0:
+				cur_group = 0
 				text_container = etree.Element("{%s}span" % (self.namespaces["xhtml"],), attrib = {"id": "kobo.{0}.{1}".format(self.paragraph_counter, self.segment_counter), "class": "koboSpan"})
 				for g in groups:
-					if text_container.text is None and re.match(ur'^\s+$', g, flags = re.UNICODE | re.MULTILINE):
+					cur_group += 1
+					if text_container.text is None:
 						text_container.text = g
-					else:
+					elif cur_group < ngroups:
 						self.segment_counter += 1
 						span = etree.Element("{%s}span" % (self.namespaces["xhtml"],), attrib = {"id": "kobo.{0}.{1}".format(self.paragraph_counter, self.segment_counter), "class": "koboSpan"})
 						span.text = g
 						text_container.append(span)
-				self.log.debug("Returning text container:\n{0}".format(etree.tostring(text_container, pretty_print = True)))
+					else:
+						text_children = text_container.getchildren()
+						if len(text_children) > 0 and text_children[-1] is not None:
+							text_children[-1].tail = g
+						else:
+							text_container.text += " " + g
+
 				return text_container
 			return None
 		else:
-			self.log.debug("Processing XML node:\n{0}".format(etree.tostring(node, pretty_print = True)))
 			# First process the text
 			newtext = None
 			if node.text is not None:
-				self.log.debug("About to process text:\n{0}".format(node.text))
 				newtext = self.__add_kobo_spans_to_node(node.text)
 
 			# Clone the rest of the node, clear the node, and add the text node
@@ -505,28 +509,33 @@ class Container(object):
 			for key in nodeattrs.keys():
 				node.set(key, nodeattrs[key])
 			if newtext is not None:
-				node.append(newtext)
+				if isinstance(newtext, basestring):
+					node.text = newtext + u" "
+				else:
+					newtext.tail = newtext.tail + u" " if newtext.tail is not None else u" "
+					node.append(newtext)
 
 			# For each child, process the child and then process and append its tail
 			for elem in children:
-				self.log.debug("Processing child node:\n{0}".format(etree.tostring(elem, pretty_print = True)))
 				elemtail = deepcopy(elem.tail) if elem.tail is not None else None
 				newelem = self.__add_kobo_spans_to_node(elem)
 				if newelem is not None:
-					self.log.debug("Got new child element:\n{0}".format(etree.tostring(newelem, pretty_print = True)))
 					node.append(newelem)
 
 				newtail = None
 				if elemtail is not None:
-					self.log.debug("Processing element tail:\n{0}".format(elemtail))
 					newtail = self.__add_kobo_spans_to_node(elemtail)
 					if newtail is not None:
-						self.log.debug("Got new element tail:\n{0}".format(etree.tostring(newtail, pretty_print = True)))
-						node.append(newtail)
+						if isinstance(newtail, basestring):
+							node.getchildren()[-1].tail = newtail
+						else:
+							newtail.tail = newtail.tail + u" " if newtail.tail is not None else u" "
+							node.append(newtail)
+				else:
+					node.getchildren()[-1].tail = u" "
 
 				self.paragraph_counter += 1
 				self.segment_counter = 1
-			self.log.debug("New node:\n{0}".format(etree.tostring(node, pretty_print = True)))
 			return node
 		return None
 
