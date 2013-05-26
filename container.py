@@ -503,8 +503,8 @@ class Container(object):
 			# Clone the rest of the node, clear the node, and add the text node
 			children = deepcopy(node.getchildren())
 			nodeattrs = {}
-			for key in node.attrib.keys():
-				nodeattrs[key] = node.attrib[key]
+			for key in node.keys():
+				nodeattrs[key] = node.get(key)
 			node.clear()
 			for key in nodeattrs.keys():
 				node.set(key, nodeattrs[key])
