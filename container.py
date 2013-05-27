@@ -529,7 +529,14 @@ class Container(object):
 					newtail = self.__add_kobo_spans_to_node(elemtail)
 					if newtail is not None:
 						if isinstance(newtail, basestring):
-							node.getchildren()[-1].tail = newtail
+							node_children = node.getchildren()
+							if len(node_children) > 0 and node_children[-1] is not None:
+								node_children[-1].tail = newtail
+							else:
+								if re.match(ur'^\s+$', newtail, flags = re.UNICODE | re.MULTILINE):
+									node.text += newtail
+								else:
+									node.text += u" " + newtail
 						else:
 							node.append(newtail)
 
