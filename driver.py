@@ -275,7 +275,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 						dpath = opts.extra_customization[self.OPT_FILE_COPY_DIR]
 						dpath = os.path.expanduser(dpath)
 						if dpath.strip() != '' and os.path.isabs(dpath) and os.path.isdir(dpath):
-							dstpath = os.path.join(dpath, "{0} - {1}.kepub.epub".format(mi.title_sort, mi.authors[0]))
+							dstpath = os.path.join(dpath, "{0} - {1}.kepub.epub".format(mi.title_sort.replace('\\', '_').replace('/', '_'), mi.authors[0]))
 							debug_print("KoboTouchExtended:upload_books:Copying generated KePub file to {0}".format(dstpath))
 							shutil.copy(file, dstpath)
 				else:
@@ -311,7 +311,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 		return path
 
 	def sanitize_path_components(self, components):
-		return [x.replace('!', '_') for x in components]
+		return [x.replace('!', '_').replace('\\', '_').replace('/', '_') for x in components]
 
 	def sync_booklists(self, booklists, end_session = True):
 		opts = self.settings()
