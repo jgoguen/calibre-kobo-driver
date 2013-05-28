@@ -534,9 +534,15 @@ class Container(object):
 								node_children[-1].tail = newtail
 							else:
 								if re.match(ur'^\s+$', newtail, flags = re.UNICODE | re.MULTILINE):
-									node.text += newtail
+									if node.text is not None:
+										node.text += newtail
+									else:
+										node.text = newtail
 								else:
-									node.text += u" " + newtail
+									if node.text is not None:
+										node.text += u" " + newtail
+									else:
+										node.text = newtail
 						else:
 							node.append(newtail)
 
