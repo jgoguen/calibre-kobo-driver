@@ -56,7 +56,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 	reference_kepub = os.path.join(configdir, 'reference.kepub.epub')
 
 	minimum_calibre_version = (0, 9, 29)
-	version = (1, 4, 0)
+	version = (1, 4, 1)
 
 	content_types = {
 		"main": 6,
