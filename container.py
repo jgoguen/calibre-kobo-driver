@@ -461,9 +461,12 @@ class Container(object):
 			return None
 		# Don't munge Processing Instruction nodes
 		if isinstance(node, etree._ProcessingInstruction):
+			if node.tail is not None:
+				node.tail = None
 			return node
 
 		if isinstance(node, basestring):
+			self.log.debug("Processing text node:\n{0}".format(node))
 			self.segment_counter += 1
 			groups = re.split(ur'(.*?[\.\!\?\:][\'"\u201d\u2019]?\s*)', node, flags = re.UNICODE | re.MULTILINE)
 			groups = [g.decode("utf-8") for g in groups if not re.match(r'^\s*$', g.strip(), re.UNICODE | re.MULTILINE)]
@@ -473,6 +476,7 @@ class Container(object):
 				return node
 
 			ngroups = len(groups)
+			self.log.debug("Got {0} text groups:\n{1}".format(str(ngroups), str(groups)))
 			if ngroups > 0:
 				cur_group = 0
 				text_container = etree.Element("{%s}span" % (self.namespaces["xhtml"],), attrib = {"id": "kobo.{0}.{1}".format(self.paragraph_counter, self.segment_counter), "class": "koboSpan"})
@@ -494,13 +498,15 @@ class Container(object):
 								text_container.text += g
 							else:
 								text_container.text += " " + g
-
+				self.log.debug("Returning text node:\n{0}".format(etree.tostring(text_container, pretty_print = True)))
 				return text_container
 			return None
 		else:
+			self.log.debug("Processing node:\n{0}".format(etree.tostring(node, pretty_print = True)))
 			# First process the text
 			newtext = None
 			if node.text is not None:
+				self.log.debug("Processing node text:\n{0}".format(node.text))
 				newtext = self.__add_kobo_spans_to_node(node.text)
 
 			# Clone the rest of the node, clear the node, and add the text node
@@ -519,6 +525,7 @@ class Container(object):
 
 			# For each child, process the child and then process and append its tail
 			for elem in children:
+				self.log.debug("Processing child node:\n{0}".format(etree.tostring(elem, pretty_print = True)))
 				elemtail = deepcopy(elem.tail) if elem.tail is not None else None
 				newelem = self.__add_kobo_spans_to_node(elem)
 				if newelem is not None:
@@ -526,9 +533,11 @@ class Container(object):
 
 				newtail = None
 				if elemtail is not None:
+					self.log.debug("Processing node tail:\n{0}".format(elemtail))
 					newtail = self.__add_kobo_spans_to_node(elemtail)
 					if newtail is not None:
 						if isinstance(newtail, basestring):
+							self.log.debug("Got new node tail:\n{0}".format(newtail))
 							node_children = node.getchildren()
 							if len(node_children) > 0 and node_children[-1] is not None:
 								node_children[-1].tail = newtail
@@ -544,10 +553,12 @@ class Container(object):
 									else:
 										node.text = newtail
 						else:
+							self.log.debug("Got new node tail as element:\n{0}".format(etree.tostring(newtail, pretty_print = True)))
 							node.append(newtail)
 
 				self.paragraph_counter += 1
 				self.segment_counter = 1
+			self.log.debug("Created new node:\n{0}".format(etree.tostring(node, pretty_print = True)))
 			return node
 		return None
 
