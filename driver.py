@@ -56,7 +56,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 	reference_kepub = os.path.join(configdir, 'reference.kepub.epub')
 
 	minimum_calibre_version = (0, 9, 29)
-	version = (1, 4, 1)
+	version = (1, 4, 2)
 
 	content_types = {
 		"main": 6,
@@ -124,6 +124,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 	skip_renaming_files = []
 	hyphenator = None
 	kobo_js_re = re.compile(r'.*/?kobo.*\.js$', re.IGNORECASE)
+	invalid_filename_chars_re = re.compile(r'[\/\\\?%\*:;\|\"\'><\$]', re.IGNORECASE | re.UNICODE)
 
 	def initialize(self):
 		if not os.path.isdir(self.configdir):
@@ -275,7 +276,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 						dpath = opts.extra_customization[self.OPT_FILE_COPY_DIR]
 						dpath = os.path.expanduser(dpath)
 						if dpath.strip() != '' and os.path.isabs(dpath) and os.path.isdir(dpath):
-							dstpath = os.path.join(dpath, "{0} - {1}.kepub.epub".format(mi.title_sort.replace('\\', '_').replace('/', '_'), mi.authors[0]))
+							dstpath = os.path.join(dpath, "{0} - {1}.kepub.epub".format(self.invalid_filename_chars_re.sub('_', mi.title_sort), mi.authors[0]))
 							debug_print("KoboTouchExtended:upload_books:Copying generated KePub file to {0}".format(dstpath))
 							shutil.copy(file, dstpath)
 				else:
@@ -311,7 +312,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 		return path
 
 	def sanitize_path_components(self, components):
-		return [x.replace('!', '_').replace('\\', '_').replace('/', '_') for x in components]
+		return [self.invalid_filename_chars_re.sub('_', x) for x in components]
 
 	def sync_booklists(self, booklists, end_session = True):
 		opts = self.settings()
