@@ -361,7 +361,7 @@ class Container(object):
 
 	def _parse(self, raw, mimetype):
 		mt = mimetype.lower()
-		if mt.endswith('xml'):
+		if mt in HTML_MIMETYPES:
 			parser = etree.XMLParser(no_network = True, huge_tree = not iswindows)
 			raw = xml_to_unicode(raw,
 				strip_encoding_pats = True, assume_utf8 = True,
