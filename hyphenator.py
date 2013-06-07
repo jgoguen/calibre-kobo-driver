@@ -27,6 +27,7 @@ hdcache = {}
 parse_hex = re.compile(r'\^{2}([0-9a-f]{2})').sub
 parse = re.compile(r'(\d?)(\D?)').findall
 
+
 def hexrepl(matchObj):
     return unichr(int(matchObj.group(1), 16))
 
@@ -87,7 +88,8 @@ class Hyph_dict(object):
 
         for pat in f:
             pat = pat.decode(charset).strip()
-            if not pat or pat[0] == '%': continue
+            if not pat or pat[0] == '%':
+                continue
             # replace ^^hh with the real character
             pat = parse_hex(hexrepl, pat)
             # read nonstandard hyphen alternatives
@@ -98,11 +100,14 @@ class Hyph_dict(object):
                 factory = int
             tag, value = zip(*[(s, factory(i or "0")) for i, s in parse(pat)])
             # if only zeros, skip this pattern
-            if max(value) == 0: continue
+            if max(value) == 0:
+                continue
             # chop zeros from beginning and end, and store start offset.
             start, end = 0, len(value)
-            while not value[start]: start += 1
-            while not value[end-1]: end -= 1
+            while not value[start]:
+                start += 1
+            while not value[end - 1]:
+                end -= 1
             self.patterns[''.join(tag)] = start, value[start:end]
         f.close()
         self.cache = {}
@@ -159,7 +164,7 @@ class Hyphenator(object):
       h.left = 1
     """
     def __init__(self, filename, left=2, right=2, cache=True):
-        self.left  = left
+        self.left = left
         self.right = right
         if not cache or filename not in hdcache:
             hdcache[filename] = Hyph_dict(filename)
@@ -187,7 +192,7 @@ class Hyphenator(object):
                 if word.isupper():
                     change = change.upper()
                 c1, c2 = change.split('=')
-                yield word[:p+index] + c1, c2 + word[p+index+cut:]
+                yield word[:p + index] + c1, c2 + word[p + index + cut:]
             else:
                 yield word[:p], word[p:]
 
@@ -219,7 +224,7 @@ class Hyphenator(object):
                 change, index, cut = p.data
                 if word.isupper():
                     change = change.upper()
-                l[p + index : p + index + cut] = change.replace('=', hyphen)
+                l[p + index:p + index + cut] = change.replace('=', hyphen)
             else:
                 l.insert(p, hyphen)
         return ''.join(l)
@@ -236,4 +241,3 @@ if __name__ == "__main__":
 
     for i in h(word):
         print i
-
