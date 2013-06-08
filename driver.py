@@ -69,7 +69,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 
     supported_dbversion = 80
     min_supported_dbversion = 65
-    max_supported_fwversion = (2, 5, 2)
+    max_supported_fwversion = (2, 6, 1)
 
     EXTRA_CUSTOMIZATION_MESSAGE = KOBOTOUCH.EXTRA_CUSTOMIZATION_MESSAGE[:]
     EXTRA_CUSTOMIZATION_DEFAULT = KOBOTOUCH.EXTRA_CUSTOMIZATION_DEFAULT[:]
