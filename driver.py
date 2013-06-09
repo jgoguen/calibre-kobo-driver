@@ -180,13 +180,20 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
             if hyphenator is not None:
                 container.hyphenate(hyphenator)
 
-        if os.path.isfile(self.reference_kepub):
-            reference_container = Container(self.reference_kepub)
-            for name in reference_container.name_map:
-                if self.kobo_js_re.match(name):
-                    jsname = container.copy_file_to_container(os.path.join(reference_container.root, name), name='kobo.js')
-                    container.add_content_file_reference(jsname)
-                    break
+        skip_js = False
+        # Check to see if there's already a kobo*.js in the ePub
+        for name in container.name_map:
+            if self.kobo_js_re.match(name):
+                skip_js = True
+                break
+        if not skip_js:
+            if os.path.isfile(self.reference_kepub):
+                reference_container = Container(self.reference_kepub)
+                for name in reference_container.name_map:
+                    if self.kobo_js_re.match(name):
+                        jsname = container.copy_file_to_container(os.path.join(reference_container.root, name), name='kobo.js')
+                        container.add_content_file_reference(jsname)
+                        break
 
         found_cover = False
         opf = container.opf
