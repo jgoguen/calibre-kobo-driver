@@ -555,12 +555,13 @@ class Container(object):
 
     def add_kobo_spans(self):
         for name in self.get_html_names():
+            self.log.debug("Adding Kobo spans to {0}".format(name))
+            root = self.get(name)
+            if len(root.xpath('.//xhtml:span[@class="koboSpan"]', namespaces=self.namespaces)) > 0:
+                self.log.debug("\tSkipping file")
+                continue
             self.paragraph_counter = 1
             self.segment_counter = 1
-            root = self.get(name)
-            if len(root.xpath('.//xhtml:span[class=koboSpan]', namespaces=self.namespaces)) > 0:
-                continue
-            self.log.debug("Adding Kobo spans to {0}".format(name))
             body = root.xpath('./xhtml:body', namespaces=self.namespaces)[0]
             body = self.__add_kobo_spans_to_node(body)
             root = etree.tostring(root, pretty_print=True)
@@ -583,22 +584,24 @@ class Container(object):
             # Smarten punctuation
             html = smartyPants(html)
             # Ellipsis to HTML entity
-            html = re.sub(r'(?u)(?<=\w)\s?(\.\s+?){2}\.', '&hellip;', html)
+            html = re.sub(ur'(?u)(?<=\w)\s?(\.\s+?){2}\.', '&hellip;', html, flags=re.UNICODE | re.MULTILINE)
             # Double-dash and unicode char code to em-dash
             html = string.replace(html, '---', ' &#x2013; ')
             html = string.replace(html, u"\x97", ' &#x2013; ')
             html = string.replace(html, '--', ' &#x2014; ')
             html = string.replace(html, u"\u2014", ' &#x2014; ')
             html = string.replace(html, u"\u2013", ' &#x2013; ')
-            html = string.replace(html, u"...", "&#x2026;")
+
+            # Fix comment nodes that got mangled
+            html = re.sub(ur'<! &#x2014; (.+) &#x2014; >', ur'<!-- \1 -->', html, flags=re.UNICODE | re.MULTILINE)
 
             # Remove Unicode replacement characters
             html = string.replace(html, u"\uFFFD", "")
 
             self.set(name, html)
+        self.flush_cache()
 
     def clean_markup(self):
-        preprocessor = HeuristicProcessor(log=self.log)
         for name in self.get_html_names():
             self.log.debug("Cleaning markup for file {0}".format(name))
             html = self.get_raw(name)
@@ -610,16 +613,38 @@ class Container(object):
             html = string.replace(html, u"\x97", ' --- ')
 
             # Get rid of Microsoft cruft
-            html = re.sub(ur'\s*<o:p>\s*</o:p>', ' ', html)
-            html = re.sub(r'(?i)</?st1:\w+>', '', html)
-
-            # Re-open self-closing paragraph tags
-            html = re.sub(r'<p[^>/]*/>', '<p></p>', html)
+            html = re.sub(ur'\s*<o:p>\s*</o:p>', ' ', html, flags=re.UNICODE | re.MULTILINE)
+            html = re.sub(r'(?i)</?st1:\w+>', '', html, flags=re.UNICODE | re.MULTILINE)
 
             # Remove empty headings
-            html = re.sub(r'(?i)<h\d+>\s*</h\d+>', '', html)
+            html = re.sub(r'(?i)<h\d+>\s*</h\d+>', '', html, flags=re.UNICODE | re.MULTILINE)
 
             # Remove Unicode replacement characters
             html = string.replace(html, u"\uFFFD", "")
 
             self.set(name, html)
+        self.flush_cache()
+
+    def forced_cleanup(self):
+        for name in self.get_html_names():
+            self.log.debug("Forcing cleanup for file {0}".format(name))
+            html = self.get_raw(name)
+            html = html.encode("UTF-8")
+
+            # Force meta and link tags to be self-closing
+            html = re.sub(ur'<(meta|link) ([^>]+)></(?:meta|link)>', ur'<\1 \2 />', html, flags=re.UNICODE | re.MULTILINE)
+
+            if name == 'index_split_000.xhtml':
+                self.log.debug("HTML after meta/link replacement:\n{0}".format(html))
+
+            # Force open script tags
+            html = re.sub(ur'<script (.+) ?/>', ur'<script \1></script>', html, flags=re.UNICODE | re.MULTILINE)
+
+            # Force open self-closing paragraph tags
+            html = re.sub(ur'<p[^>/]*/>', ur'<p></p>', html, flags=re.UNICODE | re.MULTILINE)
+
+            # Force open self-closing script tags
+            html = re.sub(ur'<script (.+) ?/>', ur'<script \1></script>', html, flags=re.UNICODE | re.MULTILINE)
+
+            self.set(name, html)
+        self.flush_cache()

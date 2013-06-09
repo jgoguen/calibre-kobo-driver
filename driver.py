@@ -155,6 +155,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
                 return False
 
         # Because of the changes made to the markup here, cleanup needs to be done before anything else
+        container.forced_cleanup();
         if opts.extra_customization[self.OPT_CLEAN_MARKUP]:
             container.clean_markup()
         # Now add the Kobo span tags
