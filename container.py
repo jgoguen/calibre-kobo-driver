@@ -241,6 +241,7 @@ class Container(object):
         if name not in self.name_map or name not in self.mime_map:
             raise ValueError("A valid file name must be given (got: {0})".format(name))
         for file in self.get_html_names():
+            self.log.debug("Adding reference to {0} to file {1}".format(name, file))
             root = self.get(file)
             if root is None:
                 self.log.error("Could not retrieve content file {0}".format(file))
@@ -593,7 +594,8 @@ class Container(object):
             html = string.replace(html, u"\u2013", ' &#x2013; ')
 
             # Fix comment nodes that got mangled
-            html = re.sub(ur'<! &#x2014; (.+) &#x2014; >', ur'<!-- \1 -->', html, flags=re.UNICODE | re.MULTILINE)
+            html = string.replace(html, u'<! &#x2014; ', u'<!-- ')
+            html = string.replace(html, u' &#x2014; >', u' -->')
 
             # Remove Unicode replacement characters
             html = string.replace(html, u"\uFFFD", "")
