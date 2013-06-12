@@ -29,8 +29,9 @@ from calibre.utils.smartypants import smartyPants
 from copy import deepcopy
 from urllib import unquote
 
-HTML_MIMETYPES = ['text/html', 'application/xhtml+xml']
-EXCLUDE_FROM_ZIP = ['mimetype', '.DS_Store', 'thumbs.db', '.directory']
+HTML_MIMETYPES = frozenset(['text/html', 'application/xhtml+xml'])
+EXCLUDE_FROM_ZIP = frozenset(['mimetype', '.DS_Store', 'thumbs.db', '.directory'])
+NO_SPACE_BEFORE_CHARS = frozenset([c for c in string.punctuation + u'\xbb'])
 
 
 class InvalidEpub(ValueError):
@@ -494,7 +495,7 @@ class Container(object):
                         if len(text_children) > 0 and text_children[-1] is not None:
                             text_children[-1].tail = g
                         else:
-                            if re.match(ur'^\s+$', g, flags=re.UNICODE | re.MULTILINE):
+                            if re.match(ur'^\s+$', g, flags=re.UNICODE | re.MULTILINE) or g[0] in NO_SPACE_BEFORE_CHARS:
                                 text_container.text += g
                             else:
                                 text_container.text += " " + g
@@ -562,7 +563,7 @@ class Container(object):
                 self.log.debug("\tSkipping file")
                 continue
             self.paragraph_counter = 1
-            self.segment_counter = 1
+            self.segment_counter = 0
             body = root.xpath('./xhtml:body', namespaces=self.namespaces)[0]
             body = self.__add_kobo_spans_to_node(body)
             root = etree.tostring(root, pretty_print=True)
