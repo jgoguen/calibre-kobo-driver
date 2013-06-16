@@ -31,7 +31,7 @@ from urllib import unquote
 
 HTML_MIMETYPES = frozenset(['text/html', 'application/xhtml+xml'])
 EXCLUDE_FROM_ZIP = frozenset(['mimetype', '.DS_Store', 'thumbs.db', '.directory'])
-NO_SPACE_BEFORE_CHARS = frozenset([c for c in string.punctuation + u'\xbb'])
+NO_SPACE_BEFORE_CHARS = frozenset([c for c in string.punctuation] + [u'\xbb'])
 
 
 class InvalidEpub(ValueError):
