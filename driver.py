@@ -74,53 +74,44 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
     EXTRA_CUSTOMIZATION_MESSAGE = KOBOTOUCH.EXTRA_CUSTOMIZATION_MESSAGE[:]
     EXTRA_CUSTOMIZATION_DEFAULT = KOBOTOUCH.EXTRA_CUSTOMIZATION_DEFAULT[:]
 
-    EXTRA_CUSTOMIZATION_MESSAGE.append(_('Enable Extended Features') +
-                                       ':::' + _('Choose whether to enable extra customisations'))
+    EXTRA_CUSTOMIZATION_MESSAGE.append('Enable Extended Features:::Choose whether to enable extra customisations')
     EXTRA_CUSTOMIZATION_DEFAULT.append(True)
     OPT_EXTRA_FEATURES = len(EXTRA_CUSTOMIZATION_MESSAGE) - 1
 
-    EXTRA_CUSTOMIZATION_MESSAGE.append(_('Delete Files not in Manifest') +
-                                       ':::' + _('Select this to silently delete files that are not in the manifest if they are encountered during processing. '
-                                                 'If this option is not selected, files not in the manifest will be silently added to the manifest and processed as if they always were in the manifest.'))
+    EXTRA_CUSTOMIZATION_MESSAGE.append('Delete Files not in Manifest:::Select this to silently delete files that are not in the manifest if they are encountered during processing. '
+                                                 'If this option is not selected, files not in the manifest will be silently added to the manifest and processed as if they always were in the manifest.')
     EXTRA_CUSTOMIZATION_DEFAULT.append(False)
     OPT_DELETE_UNMANIFESTED = len(EXTRA_CUSTOMIZATION_MESSAGE) - 1
 
-    EXTRA_CUSTOMIZATION_MESSAGE.append(_('Upload DRM-encumbered ePub files') +
-                                       ':::' + _('Select this to upload ePub files encumbered by DRM. If this is not selected, it is a fatal error to upload an encumbered file'))
+    EXTRA_CUSTOMIZATION_MESSAGE.append('Upload DRM-encumbered ePub files:::Select this to upload ePub files encumbered by DRM. If this is not selected, it is a fatal error to upload an encumbered file')
     EXTRA_CUSTOMIZATION_DEFAULT.append(False)
     OPT_UPLOAD_ENCUMBERED = len(EXTRA_CUSTOMIZATION_MESSAGE) - 1
 
-    EXTRA_CUSTOMIZATION_MESSAGE.append(_('Silently Ignore Failed Conversions') +
-                                       ':::' + _('Select this to not upload any book that fails conversion to kepub. If this is not selected, the upload process '
-                                                 'will be stopped at the first book that fails. If this is selected, failed books will be silently removed from the upload queue.'))
+    EXTRA_CUSTOMIZATION_MESSAGE.append('Silently Ignore Failed Conversions:::Select this to not upload any book that fails conversion to kepub. If this is not selected, the upload process '
+                                                 'will be stopped at the first book that fails. If this is selected, failed books will be silently removed from the upload queue.')
     EXTRA_CUSTOMIZATION_DEFAULT.append(False)
     OPT_SKIP_FAILED = len(EXTRA_CUSTOMIZATION_MESSAGE) - 1
 
-    EXTRA_CUSTOMIZATION_MESSAGE.append(_('Hyphenate Files') +
-                                       ':::' + _('Select this to add soft hyphens to uploaded ePub files. The language used will be the language defined for the book in calibre. '
+    EXTRA_CUSTOMIZATION_MESSAGE.append('Hyphenate Files:::Select this to add soft hyphens to uploaded ePub files. The language used will be the language defined for the book in calibre. '
                                                  ' It is necessary to have a LibreOffice/OpenOffice hyphenation dictionary in ' + os.path.join(config_dir, 'plugins', 'KoboTouchExtended') +
                                                  ' named like hyph_{language}.dic, where {language} is the ISO 639 3-letter language code. For example, \'eng\' but not \'en_CA\'. The default dictionary to use '
-                                                 ' if none is found may be named \'hyph.dic\' instead.'))
+                                                 ' if none is found may be named \'hyph.dic\' instead.')
     EXTRA_CUSTOMIZATION_DEFAULT.append(False)
     OPT_HYPHENATE = len(EXTRA_CUSTOMIZATION_MESSAGE) - 1
 
-    EXTRA_CUSTOMIZATION_MESSAGE.append(_('Replace Content Language Code') +
-                                       ':::' + _('Select this to replace the defined language in each content file inside the ePub.'))
+    EXTRA_CUSTOMIZATION_MESSAGE.append('Replace Content Language Code:::Select this to replace the defined language in each content file inside the ePub.')
     EXTRA_CUSTOMIZATION_DEFAULT.append(False)
     OPT_REPLACE_LANG = len(EXTRA_CUSTOMIZATION_MESSAGE) - 1
 
-    EXTRA_CUSTOMIZATION_MESSAGE.append(_('Smarten Punctuation') +
-                                       ':::' + _("Select this to smarten punctuation in the ePub"))
+    EXTRA_CUSTOMIZATION_MESSAGE.append('Smarten Punctuation:::Select this to smarten punctuation in the ePub')
     EXTRA_CUSTOMIZATION_DEFAULT.append(False)
     OPT_SMARTEN_PUNCTUATION = len(EXTRA_CUSTOMIZATION_MESSAGE) - 1
 
-    EXTRA_CUSTOMIZATION_MESSAGE.append(_('Clean up ePub Markup') +
-                                       ':::' + _("Select this to clean up the internal ePub markup."))
+    EXTRA_CUSTOMIZATION_MESSAGE.append('Clean up ePub Markup:::Select this to clean up the internal ePub markup.')
     EXTRA_CUSTOMIZATION_DEFAULT.append(False)
     OPT_CLEAN_MARKUP = len(EXTRA_CUSTOMIZATION_MESSAGE) - 1
 
-    EXTRA_CUSTOMIZATION_MESSAGE.append(_("Copy generated KePub files to a directory") +
-                                       ':::' + _("Enter an absolute directory path to copy all generated KePub files into for debugging purposes."))
+    EXTRA_CUSTOMIZATION_MESSAGE.append('Copy generated KePub files to a directory:::Enter an absolute directory path to copy all generated KePub files into for debugging purposes.')
     EXTRA_CUSTOMIZATION_DEFAULT.append(u'')
     OPT_FILE_COPY_DIR = len(EXTRA_CUSTOMIZATION_MESSAGE) - 1
 
