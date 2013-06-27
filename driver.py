@@ -1,4 +1,5 @@
 # vim:fileencoding=UTF-8:ts=4:sw=4:sta:et:sts=4:ai
+from contextlib import closing
 
 __license__ = 'GPL v3'
 __copyright__ = '2013, Joel Goguen <jgoguen@jgoguen.ca>'
@@ -12,6 +13,7 @@ import sys
 
 from calibre.constants import config_dir
 from calibre.devices.kobo.driver import KOBOTOUCH
+from calibre.devices.usbms.deviceconfig import DeviceConfig
 from calibre.devices.usbms.driver import debug_print
 from calibre.ebooks.metadata.book.base import NULL_VALUES
 from calibre_plugins.kobotouch_extended.container import Container
@@ -59,7 +61,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
     reference_kepub = os.path.join(configdir, 'reference.kepub.epub')
 
     minimum_calibre_version = (0, 9, 29)
-    version = (1, 4, 3)
+    version = (1, 4, 4)
 
     content_types = {
         "main": 6,
@@ -70,6 +72,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
     supported_dbversion = 80
     min_supported_dbversion = 65
     max_supported_fwversion = (2, 6, 1)
+    min_fwversion_tiles = (2, 6, 1)
 
     EXTRA_CUSTOMIZATION_MESSAGE = KOBOTOUCH.EXTRA_CUSTOMIZATION_MESSAGE[:]
     EXTRA_CUSTOMIZATION_DEFAULT = KOBOTOUCH.EXTRA_CUSTOMIZATION_DEFAULT[:]
@@ -115,6 +118,11 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
     EXTRA_CUSTOMIZATION_DEFAULT.append(u'')
     OPT_FILE_COPY_DIR = len(EXTRA_CUSTOMIZATION_MESSAGE) - 1
 
+    EXTRA_CUSTOMIZATION_MESSAGE.append('Dismiss New Book Tiles:::Firmware 2.6.1 introduced the Aura-style home screen. Select this option to dismiss the New Book tiles normally added '
+                                       'when new books are loaded. Unplug and plug back in the device for this to take effect. Only applies to books added after doing this.')
+    EXTRA_CUSTOMIZATION_DEFAULT.append(False)
+    OPT_HIDE_NEW_BOOK_TILES = len(EXTRA_CUSTOMIZATION_MESSAGE) - 1
+
     skip_renaming_files = []
     hyphenator = None
     kobo_js_re = re.compile(r'.*/?kobo.*\.js$', re.IGNORECASE)
@@ -123,8 +131,28 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
     def initialize(self):
         if not os.path.isdir(self.configdir):
             os.makedirs(self.configdir)
-
         super(KOBOTOUCHEXTENDED, self).initialize()
+
+    def books(self, oncard=None, end_session=True):
+        bl = super(KOBOTOUCHEXTENDED, self).books(oncard=oncard, end_session=end_session)
+
+        # Only process database triggers on the main device run
+        opts = self.settings()
+        if oncard is None:
+            with closing(sqlite.connect(self.device_database_path())) as conn:
+                if isinstance(self.fwversion, tuple) and self.fwversion >= self.min_fwversion_tiles and opts.extra_customization[self.OPT_HIDE_NEW_BOOK_TILES]:
+                    sql = get_resources('sql/DismissNewBookTiles.sql')
+                    if sql:
+                        debug_print("KoboTouchExtended - Adding DismissNewBookTiles database trigger")
+                        sql = unicode(sql)
+                        conn.execute(sql)
+                    else:
+                        debug_print("KoboTouchExtended - Could not fetch DismissNewBookTiles trigger SQL definition!")
+                else:
+                    debug_print("KoboTouchExtended - Dropping DismissNewBookTiles database trigger")
+                    conn.execute("DROP TRIGGER IF EXISTS KTE_Activity_DismissNewBookTiles")
+
+        return bl
 
     def _modify_epub(self, file, metadata):
         opts = self.settings()
