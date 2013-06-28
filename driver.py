@@ -1,5 +1,4 @@
 # vim:fileencoding=UTF-8:ts=4:sw=4:sta:et:sts=4:ai
-from contextlib import closing
 
 __license__ = 'GPL v3'
 __copyright__ = '2013, Joel Goguen <jgoguen@jgoguen.ca>'
@@ -19,6 +18,7 @@ from calibre.ebooks.metadata.book.base import NULL_VALUES
 from calibre_plugins.kobotouch_extended.container import Container
 from calibre_plugins.kobotouch_extended.hyphenator import Hyphenator
 
+from contextlib import closing
 from copy import deepcopy
 from lxml import etree
 
@@ -123,6 +123,11 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
     EXTRA_CUSTOMIZATION_DEFAULT.append(False)
     OPT_HIDE_NEW_BOOK_TILES = len(EXTRA_CUSTOMIZATION_MESSAGE) - 1
 
+    EXTRA_CUSTOMIZATION_MESSAGE.append('Block Kobo Analytics DB:::Kobo Analytics events are stored in the database. Select this option to delete any current events and block the '
+                                       'addition of new events.')
+    EXTRA_CUSTOMIZATION_DEFAULT.append(False)
+    OPT_BLOCK_ANALYTICS_DB_EVENTS = len(EXTRA_CUSTOMIZATION_MESSAGE) - 1
+
     skip_renaming_files = []
     hyphenator = None
     kobo_js_re = re.compile(r'.*/?kobo.*\.js$', re.IGNORECASE)
@@ -151,6 +156,22 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
                 else:
                     debug_print("KoboTouchExtended - Dropping DismissNewBookTiles database trigger")
                     conn.execute("DROP TRIGGER IF EXISTS KTE_Activity_DismissNewBookTiles")
+
+                # Put this in a try-catch block. It's OK if this fails.
+                try:
+                    if opts.extra_customization[self.OPT_BLOCK_ANALYTICS_DB_EVENTS]:
+                        sql = get_resources('sql/BlockAnalyticsEvents.sql')
+                        if sql:
+                            debug_print("KoboTouchExtended - Adding BlockAnalyticsEvents database trigger")
+                            sql = unicode(sql)
+                            conn.executescript(sql)
+                        else:
+                            debug_print("KoboTouchExtended - Could not fetch BlockAnalyticsEvents trigger SQL definition")
+                    else:
+                        debug_print("KoboTouchExtended - Dropping BlockAnalyticsEvents database trigger")
+                        conn.execute("DROP TRIGGER IF EXISTS KTE_BlockAnalyticsEvents")
+                except Exception as e:
+                    debug_print("KoboTouchExtended - Exception raised while processing BlockAnalyticsEvents database trigger: {0}".format(str(e)))
 
         return bl
 
