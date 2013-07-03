@@ -103,7 +103,9 @@ You may also prefer to contribute in some other way. You may [donate to me via P
 [driverfundraiser]: http://gogetfunding.com/project/kobo-touch-extended-driver-development
 
 # Reporting a Bug
-Found a bug with this plugin? Great! Please use the Github issue tracker to send me reports of issues or questions. Under no circumstances should I be emailed directly unless I have asked to have something sent to me. Any emails I haven't asked for **will be silently ignored**. Everyone can benefit from a public bug tracker, but only one person benefits from a private email.
+Found a bug with this plugin? Great! Please use the [Launchpad issue tracker][lp-bugs] to send me reports of issues or questions. Under no circumstances should I be emailed directly unless I have asked to have something sent to me. Any emails I haven't asked for **may be silently ignored** at my sole discretion. Everyone can benefit from a public bug tracker, but only one person benefits from a private email.
+
+[lp-bugs]: https://bugs.launchpad.net/calibre-kobo-driver
 
 When submitting a bug, I require the following information as a minimum, but any additional information is good to include:
 
