@@ -10,6 +10,7 @@ import shutil
 import sqlite3 as sqlite
 import sys
 
+from PyQt4.Qt import QScrollArea
 from calibre.constants import config_dir
 from calibre.devices.kobo.driver import KOBOTOUCH
 from calibre.devices.usbms.deviceconfig import DeviceConfig
@@ -61,7 +62,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
     reference_kepub = os.path.join(configdir, 'reference.kepub.epub')
 
     minimum_calibre_version = (0, 9, 29)
-    version = (1, 5, 0)
+    version = (1, 5, 1)
 
     content_types = {
         "main": 6,
@@ -132,6 +133,18 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
     hyphenator = None
     kobo_js_re = re.compile(r'.*/?kobo.*\.js$', re.IGNORECASE)
     invalid_filename_chars_re = re.compile(r'[\/\\\?%\*:;\|\"\'><\$]', re.IGNORECASE | re.UNICODE)
+
+    @classmethod
+    def config_widget(cls):
+        cw = super(KOBOTOUCHEXTENDED, cls).config_widget()
+        qsa = QScrollArea()
+        qsa.setWidgetResizable(True)
+        qsa.setWidget(cw)
+        return qsa
+
+    @classmethod
+    def save_settings(cls, config_widget):
+        super(KOBOTOUCHEXTENDED, cls).save_settings(config_widget.widget())
 
     def initialize(self):
         if not os.path.isdir(self.configdir):
