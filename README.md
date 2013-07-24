@@ -1,9 +1,9 @@
 # Calibre driver for Kobo Touch/Glo/Mini
-An extension of the existing KoboTouch driver provided with Calibre. This plugin allows modifying ePub files to enable 
+An extension of the existing KoboTouch driver provided with Calibre. This plugin allows modifying ePub files to enable
 extra Kobo features.
 
-**Please note**: Modified books are not saved back into your Calibre library to prevent issues with overwriting library 
-configurations unexpectedly, so books are processed in transit to your device every time. In most cases, the extra time 
+**Please note**: Modified books are not saved back into your Calibre library to prevent issues with overwriting library
+configurations unexpectedly, so books are processed in transit to your device every time. In most cases, the extra time
 required should not be noticeable.
 
 #Download
@@ -84,10 +84,11 @@ Once this file is in place and correctly named this plugin will automatically ex
 ## Generated KePub File Copying
 On occasion, such as for debugging purposes, you may wish to have easy access to the generated KePub file. There is an option which allows you to enter the full, absolute path to a directory where all generated files will be copied to once they have been converted. This directory must:
 
-1. Already exist
-1. Be writable (you can put files in it)
+1. Be somewhere you can write to
 1. Contain no variables
 	1. OS X and Linux users may use a tilde (~) to refer to their home directory instead of typing it in full (/home/jgoguen/calibre-debug may be entered as ~/calibre-debug). Windows users must always enter a full path.
+
+The final path will be a combination of this path and the save template for the plugin. If your debug path is ```/home/jgoguen/calibre-debug``` and your same template is ```{author_sort}/{title}``` then a KePub file would be copied to, for example, ```/home/jgoguen/calibre-debug/Camerata, Jo/A History of Vanguard Industries.kepub.epub```. Directories will be created as needed.
 
 # Contributing
 Decided you want to contribute to the development of this plugin? Awesome! You have many options:
@@ -150,4 +151,4 @@ SyntaxError: invalid syntax
 ```
 The solution is to go back to the top of this file and read it again.
 
-In some circumstances people have reported that while reading a book uploaded with this plugin they suddenly realize that a large amount of time (two hours or more) has passed without their awareness of the passage of time. The only known solution is to finish reading your current book. Voracious readers tend to report this issue more frequently. Please note, sleep is only a temporary resolution. 
+In some circumstances people have reported that while reading a book uploaded with this plugin they suddenly realize that a large amount of time (two hours or more) has passed without their awareness of the passage of time. The only known solution is to finish reading your current book. Voracious readers tend to report this issue more frequently. Please note, sleep is only a temporary resolution.
