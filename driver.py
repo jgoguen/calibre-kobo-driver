@@ -62,7 +62,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
     reference_kepub = os.path.join(configdir, 'reference.kepub.epub')
 
     minimum_calibre_version = (0, 9, 29)
-    version = (1, 5, 1)
+    version = (1, 6, 0)
 
     content_types = {
         "main": 6,
@@ -129,7 +129,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
     EXTRA_CUSTOMIZATION_DEFAULT.append(False)
     OPT_BLOCK_ANALYTICS_DB_EVENTS = len(EXTRA_CUSTOMIZATION_MESSAGE) - 1
 
-    skip_renaming_files = []
+    skip_renaming_files = set([])
     hyphenator = None
     kobo_js_re = re.compile(r'.*/?kobo.*\.js$', re.IGNORECASE)
     invalid_filename_chars_re = re.compile(r'[\/\\\?%\*:;\|\"\'><\$]', re.IGNORECASE | re.UNICODE)
@@ -311,7 +311,6 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
         new_files = []
         new_names = []
         new_metadata = []
-        errors = []
         if opts.extra_customization[self.OPT_EXTRA_FEATURES]:
             debug_print("KoboTouchExtended:upload_books:Enabling extra ePub features for Kobo devices")
             i = 0
@@ -329,9 +328,10 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
                         if not skip_failed:
                             raise InvalidEPub(mi.title, " and ".join(mi.authors), e.message, fname=fname, lineno=exc_tb.tb_lineno)
                         else:
-                            errors.append("Failed to upload {0} with error: {1}".format("'{0}' by '{1}'".format(mi.title, " and ".join(mi.authors)), e.message))
-                            if mi.uuid not in self.skip_renaming_files:
-                                self.skip_renaming_files.append(mi.uuid)
+                            self.skip_renaming_files.add(mi.uuid)
+                            new_files.append(file)
+                            new_names.append(n)
+                            new_metadata.append(mi)
                             debug_print("Failed to process {0} by {1} with error: {2} (file: {3}, lineno: {4})".format(mi.title, " and ".join(mi.authors), e.message, fname, exc_tb.tb_lineno))
                     else:
                         new_files.append(file)
@@ -353,10 +353,6 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
             new_files = files
             new_names = names
             new_metadata = metadata
-
-        if metadata and new_metadata and len(metadata) != len(new_metadata) and len(new_metadata) > 0:
-            print("The following books could not be processed and will not be uploaded to your device:")
-            print("\n".join(errors))
 
         self.report_progress(0, 'Working...')
         result = super(KOBOTOUCHEXTENDED, self).upload_books(new_files, new_names, on_card, end_session, new_metadata)
