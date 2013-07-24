@@ -10,6 +10,7 @@ import shutil
 import sqlite3 as sqlite
 import sys
 
+from PyQt4.Qt import QCoreApplication
 from PyQt4.Qt import QScrollArea
 from calibre.constants import config_dir
 from calibre.devices.kobo.driver import KOBOTOUCH
@@ -140,6 +141,9 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
         qsa = QScrollArea()
         qsa.setWidgetResizable(True)
         qsa.setWidget(cw)
+        desktop_geom = QCoreApplication.instance().desktop().availableGeometry()
+        if desktop_geom.height() < 800:
+            qsa.setBaseSize(qsa.size().width(), desktop_geom.height() - 100)
         return qsa
 
     @classmethod
