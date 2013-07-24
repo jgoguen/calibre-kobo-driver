@@ -72,7 +72,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 
     supported_dbversion = 80
     min_supported_dbversion = 65
-    max_supported_fwversion = (2, 6, 1)
+    max_supported_fwversion = (2, 8, 1)
     min_fwversion_tiles = (2, 6, 1)
 
     EXTRA_CUSTOMIZATION_MESSAGE = KOBOTOUCH.EXTRA_CUSTOMIZATION_MESSAGE[:]
@@ -340,10 +340,10 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 
                         dpath = opts.extra_customization[self.OPT_FILE_COPY_DIR]
                         dpath = os.path.expanduser(dpath)
-                        if dpath.strip() != '' and os.path.isabs(dpath) and os.path.isdir(dpath):
-                            dstpath = os.path.join(dpath, "{0} - {1}.kepub.epub".format(self.invalid_filename_chars_re.sub('_', mi.title_sort), mi.authors[0]))
-                            debug_print("KoboTouchExtended:upload_books:Copying generated KePub file to {0}".format(dstpath))
-                            shutil.copy(file, dstpath)
+                        if dpath.strip() != '':
+                            dpath = self.create_upload_path(dpath, mi, n)
+                            debug_print("KoboTouchExtended:upload_books:Generated KePub file copy path: {0}".format(dpath))
+                            shutil.copy(file, dpath)
                 else:
                     new_files.append(file)
                     new_names.append(n)
