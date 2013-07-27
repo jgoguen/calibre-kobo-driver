@@ -14,17 +14,17 @@ from PyQt4.Qt import QCoreApplication
 from PyQt4.Qt import QScrollArea
 from calibre.constants import config_dir
 from calibre.devices.kobo.driver import KOBOTOUCH
-from calibre.devices.usbms.deviceconfig import DeviceConfig
 from calibre.devices.usbms.driver import debug_print
 from calibre.ebooks.metadata.book.base import NULL_VALUES
-from calibre_plugins.kobotouch_extended.container import Container
+from calibre.ebooks.oeb.polish.container import OPF_NAMESPACES
+from calibre.utils.logging import default_log
+from calibre_plugins.kobotouch_extended.container import KEPubContainer
 from calibre_plugins.kobotouch_extended.hyphenator import Hyphenator
-
 from contextlib import closing
-from copy import deepcopy
-from lxml import etree
+
 
 EPUB_EXT = '.epub'
+XML_NAMESPACE = 'http://www.w3.org/XML/1998/namespace'
 
 
 class DRMEncumberedEPub(ValueError):
@@ -62,7 +62,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
     configdir = os.path.join(config_dir, 'plugins', 'KoboTouchExtended')
     reference_kepub = os.path.join(configdir, 'reference.kepub.epub')
 
-    minimum_calibre_version = (0, 9, 29)
+    minimum_calibre_version = (0, 9, 41)
     version = (1, 6, 0)
 
     content_types = {
@@ -192,9 +192,14 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 
         return bl
 
-    def _modify_epub(self, file, metadata):
+    def _modify_epub(self, file, metadata, container=None):
         opts = self.settings()
-        debug_print("KoboTouchExtended:_modify_epub:Processing {0}".format(metadata.title))
+
+        if not opts.extra_customization[self.OPT_EXTRA_FEATURES] or not file.endswith(EPUB_EXT):
+            # Just skip it all if extended features are disabled
+            return True
+
+        debug_print("KoboTouchExtended:_modify_epub:Adding extended Kobo features to {0} by {1}".format(metadata.title, ' and '.join(metadata.authors)))
 
         skip_failed = opts.extra_customization[self.OPT_SKIP_FAILED]
         if skip_failed:
@@ -202,164 +207,139 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
         else:
             debug_print("KoboTouchExtended:_modify_epub:Failed conversions will raise exceptions")
 
-        container = Container(file)
-        if container.is_drm_encumbered:
-            debug_print("KoboTouchExtended:_modify_epub:ERROR: ePub is DRM-encumbered, not modifying")
-            self.skip_renaming_files.append(metadata.uuid)
-            if opts.extra_customization[self.OPT_UPLOAD_ENCUMBERED]:
-                raise DRMEncumberedEPub(metadata.title, ", ".join(metadata.authors))
-            else:
-                return False
+        try:
+            if container is None:
+                container = KEPubContainer(file, default_log)
+            if container.is_drm_encumbered:
+                debug_print("KoboTouchExtended:_modify_epub:ERROR: ePub is DRM-encumbered, not modifying")
+                self.skip_renaming_files.append(metadata.uuid)
+                if opts.extra_customization[self.OPT_UPLOAD_ENCUMBERED]:
+                    raise DRMEncumberedEPub(metadata.title, ", ".join(metadata.authors))
+                else:
+                    return False
 
-        # Because of the changes made to the markup here, cleanup needs to be done before anything else
-        container.forced_cleanup();
-        if opts.extra_customization[self.OPT_CLEAN_MARKUP]:
-            container.clean_markup()
-        # Now add the Kobo span tags
-        container.add_kobo_spans()
-        # Now smarten punctuation -- must happen before hyphenation
-        if opts.extra_customization[self.OPT_SMARTEN_PUNCTUATION]:
-            container.smarten_punctuation()
-        # Hyphenate files -- must happen after smartening punctuation
-        if opts.extra_customization[self.OPT_HYPHENATE]:
-            hyphenator = None
-            dictfile = None
-            for lang in metadata.languages:
-                if lang == 'und':
-                    continue
-                dictfile = os.path.join(self.configdir, "hyph_{0}.dic".format(lang))
-                if os.path.isfile(dictfile):
-                    break
-            if dictfile is None or not os.path.isfile(dictfile):
-                dictfile = os.path.join(self.configdir, "hyph.dic")
-            if dictfile is not None and os.path.isfile(dictfile):
-                debug_print("KoboTouchExtended:_modify_epub:Using hyphenation dictionary {0}".format(dictfile))
-                hyphenator = Hyphenator(dictfile)
-            if hyphenator is not None:
-                container.hyphenate(hyphenator)
-
-        skip_js = False
-        # Check to see if there's already a kobo*.js in the ePub
-        for name in container.name_map:
-            if self.kobo_js_re.match(name):
-                skip_js = True
-                break
-        if not skip_js:
-            if os.path.isfile(self.reference_kepub):
-                reference_container = Container(self.reference_kepub)
-                for name in reference_container.name_map:
-                    if self.kobo_js_re.match(name):
-                        jsname = container.copy_file_to_container(os.path.join(reference_container.root, name), name='kobo.js')
-                        container.add_content_file_reference(jsname)
+            # Because of the changes made to the markup here, cleanup needs to be done before anything else
+            container.forced_cleanup();
+            if opts.extra_customization[self.OPT_CLEAN_MARKUP]:
+                container.clean_markup()
+            # Now add the Kobo span tags
+            container.add_kobo_spans()
+            # Now smarten punctuation -- must happen before hyphenation
+            if opts.extra_customization[self.OPT_SMARTEN_PUNCTUATION]:
+                container.smarten_punctuation()
+            # Hyphenate files -- must happen after smartening punctuation
+            if opts.extra_customization[self.OPT_HYPHENATE]:
+                hyphenator = None
+                dictfile = None
+                for lang in metadata.languages:
+                    if lang == 'und':
+                        continue
+                    dictfile = os.path.join(self.configdir, "hyph_{0}.dic".format(lang))
+                    if os.path.isfile(dictfile):
                         break
+                if dictfile is None or not os.path.isfile(dictfile):
+                    dictfile = os.path.join(self.configdir, "hyph.dic")
+                if dictfile is not None and os.path.isfile(dictfile):
+                    debug_print("KoboTouchExtended:_modify_epub:Using hyphenation dictionary {0}".format(dictfile))
+                    hyphenator = (dictfile)
+                if hyphenator is not None:
+                    container.hyphenate(hyphenator)
 
-        found_cover = False
-        opf = container.opf
-        cover_meta_node = opf.xpath('./opf:metadata/opf:meta[@name="cover"]', namespaces=container.namespaces)
-        if len(cover_meta_node) > 0:
-            cover_meta_node = cover_meta_node[0]
-            cover_id = cover_meta_node.attrib["content"] if "content" in cover_meta_node.attrib else None
-            if cover_id is not None:
-                debug_print("KoboTouchExtended:_modify_epub:Found cover image id {0}".format(cover_id))
-                cover_node = opf.xpath('./opf:manifest/opf:item[@id="{0}"]'.format(cover_id), namespaces=container.namespaces)
-                if len(cover_node) > 0:
-                    cover_node = cover_node[0]
-                    if "properties" not in cover_node.attrib or cover_node.attrib["properties"] != "cover-image":
+            skip_js = False
+            # Check to see if there's already a kobo*.js in the ePub
+            for name in container.name_path_map:
+                if self.kobo_js_re.match(name):
+                    skip_js = True
+                    break
+            if not skip_js:
+                if os.path.isfile(self.reference_kepub):
+                    reference_container = KEPubContainer(self.reference_kepub, default_log)
+                    for name in reference_container.name_path_map:
+                        if self.kobo_js_re.match(name):
+                            jsname = container.copy_file_to_container(os.path.join(reference_container.root, name), name='kobo.js')
+                            container.add_content_file_reference(jsname)
+                            break
+
+            found_cover = False
+            opf = container.opf
+            cover_meta_node = opf.xpath('./opf:metadata/opf:meta[@name="cover"]', namespaces=OPF_NAMESPACES)
+            if len(cover_meta_node) > 0:
+                cover_meta_node = cover_meta_node[0]
+                cover_id = cover_meta_node.attrib["content"] if "content" in cover_meta_node.attrib else None
+                if cover_id is not None:
+                    debug_print("KoboTouchExtended:_modify_epub:Found cover image ID '{0}'".format(cover_id))
+                    cover_node = opf.xpath('./opf:manifest/opf:item[@id="{0}"]'.format(cover_id), namespaces=OPF_NAMESPACES)
+                    if len(cover_node) > 0:
+                        cover_node = cover_node[0]
+                        if "properties" not in cover_node.attrib or cover_node.attrib["properties"] != "cover-image":
+                            debug_print("KoboTouchExtended:_modify_epub:Setting cover-image property")
+                            cover_node.set("properties", "cover-image")
+                            container.dirty(container.opf_name)
+                            found_cover = True
+
+            # It's possible that the cover image can't be detected this way. Try looking for the cover image ID in the OPF manifest.
+            if not found_cover:
+                debug_print("KoboTouchExtended:_modify_epub:Looking for cover image in OPF manifest")
+                node_list = opf.xpath('./opf:manifest/opf:item[(@id="cover" or starts-with(@id, "cover")) and starts-with(@media-type, "image")]', namespaces=OPF_NAMESPACES)
+                if len(node_list) > 0:
+                    node = node_list[0]
+                    if "properties" not in node.attrib or node.attrib["properties"] != 'cover-image':
                         debug_print("KoboTouchExtended:_modify_epub:Setting cover-image")
-                        cover_node.set("properties", "cover-image")
-                        container.set(container.opf_name, opf)
+                        node.set("properties", "cover-image")
+                        container.dirty(container.opf_name)
                         found_cover = True
 
-        # It's possible that the cover image can't be detected this way. Try looking for the cover image ID in the OPF manifest.
-        if not found_cover:
-            debug_print("KoboTouchExtended:_modify_epub:Looking for cover image in OPF manifest")
-            node_list = opf.xpath('./opf:manifest/opf:item[(@id="cover" or starts-with(@id, "cover")) and starts-with(@media-type, "image")]', namespaces=container.namespaces)
-            if len(node_list) > 0:
-                node = node_list[0]
-                if "properties" not in node.attrib or node.attrib["properties"] != 'cover-image':
-                    debug_print("KoboTouchExtended:_modify_epub:Setting cover-image")
-                    node.set("properties", "cover-image")
-                    container.set(container.opf_name, opf)
-                    found_cover = True
-
-        for name in container.get_html_names():
-            debug_print("KoboTouchExtended:_modify_epub:Processing HTML {0}".format(name))
-            root = container.get(name)
-            if not hasattr(root, 'xpath'):
-                if opts.extra_customization[self.OPT_DELETE_UNMANIFESTED]:
-                    debug_print("KoboTouchExtended:_modify_epub:Removing unmanifested file {0}".format(name))
-                    os.unlink(os.path.join(container.root, name))
-                    continue
-                else:
-                    item = container.manifest_item_for_name(name)
-                    if item is None:
-                        debug_print("KoboTouchExtended:_modify_epub:Adding unmanifested item {0} to the manifest".format(name))
-                        container.add_name_to_manifest(name)
-                        root = container.get(name)
-                    if item is not None or not hasattr(root, "xpath"):
-                        debug_print("KoboTouchExtended:_modify_epub:{0} is not a XML-based format".format(name))
+            for name in container.get_html_names():
+                debug_print("KoboTouchExtended:_modify_epub:Processing HTML {0}".format(name))
+                root = container.parsed(name)
+                if not hasattr(root, 'xpath'):
+                    if opts.extra_customization[self.OPT_DELETE_UNMANIFESTED]:
+                        debug_print("KoboTouchExtended:_modify_epub:Removing unmanifested file {0}".format(name))
+                        os.unlink(os.path.join(container.root, name))
                         continue
+                    else:
+                        if not container.has_name(name):
+                            debug_print("KoboTouchExtended:_modify_epub:Adding unmanifested item {0} to the manifest".format(name))
+                            container.generate_item(name)
+                            root = container.parsed(name)
 
-            if opts.extra_customization[self.OPT_REPLACE_LANG] and metadata.language != NULL_VALUES["language"]:
-                root.attrib["{%s}lang" % container.namespaces["xml"]] = metadata.language
-                root.attrib["lang"] = metadata.language
+                if opts.extra_customization[self.OPT_REPLACE_LANG] and metadata.language != NULL_VALUES["language"]:
+                    root.attrib["{%s}lang" % XML_NAMESPACE] = metadata.language
+                    root.attrib["lang"] = metadata.language
 
-        os.unlink(file)
-        container.write(file)
+            os.unlink(file)
+            container.commit(file)
 
+            dpath = opts.extra_customization[self.OPT_FILE_COPY_DIR]
+            dpath = os.path.expanduser(dpath).strip()
+            if dpath != "":
+                dpath = self.create_upload_path(dpath, metadata, metadata.kte_calibre_name)
+                debug_print("KoboTouchExtended:_modify_epub:Generated KePub file copy path: {0}".format(dpath))
+                shutil.copy(file, dpath)
+        except Exception as e:
+            (exc_type, exc_obj, exc_tb) = sys.exc_info()
+            while exc_tb.tb_next and 'kobotouch_extended' in exc_tb.tb_next.tb_frame.f_code.co_filename:
+                exc_tb = exc_tb.tb_next
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            if not skip_failed:
+                raise InvalidEPub(mi.title, " and ".join(mi.authors), e.message, fname=fname, lineno=exc_tb.tb_lineno)
+            else:
+                self.skip_renaming_files.add(metadata.uuid)
+                debug_print("Failed to process {0} by {1} with error: {2} (file: {3}, lineno: {4})".format(metadata.title, " and ".join(metadata.authors), e.message, fname, exc_tb.tb_lineno))
+                return True
         return True
 
     def upload_books(self, files, names, on_card=None, end_session=True, metadata=None):
-        opts = self.settings()
-        skip_failed = opts.extra_customization[self.OPT_SKIP_FAILED]
-        new_files = []
-        new_names = []
-        new_metadata = []
-        if opts.extra_customization[self.OPT_EXTRA_FEATURES]:
-            debug_print("KoboTouchExtended:upload_books:Enabling extra ePub features for Kobo devices")
-            i = 0
-            for file, n, mi in zip(files, names, metadata):
-                self.report_progress(i / float(len(files)), "Processing book: {0} by {1}".format(mi.title, " and ".join(mi.authors)))
-                ext = file[file.rfind('.'):]
-                if ext == EPUB_EXT:
-                    try:
-                        self._modify_epub(file, mi)
-                    except Exception as e:
-                        (exc_type, exc_obj, exc_tb) = sys.exc_info()
-                        while exc_tb.tb_next and 'kobotouch_extended' in exc_tb.tb_next.tb_frame.f_code.co_filename:
-                            exc_tb = exc_tb.tb_next
-                        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-                        if not skip_failed:
-                            raise InvalidEPub(mi.title, " and ".join(mi.authors), e.message, fname=fname, lineno=exc_tb.tb_lineno)
-                        else:
-                            self.skip_renaming_files.add(mi.uuid)
-                            new_files.append(file)
-                            new_names.append(n)
-                            new_metadata.append(mi)
-                            debug_print("Failed to process {0} by {1} with error: {2} (file: {3}, lineno: {4})".format(mi.title, " and ".join(mi.authors), e.message, fname, exc_tb.tb_lineno))
-                    else:
-                        new_files.append(file)
-                        new_names.append(n)
-                        new_metadata.append(mi)
-
-                        dpath = opts.extra_customization[self.OPT_FILE_COPY_DIR]
-                        dpath = os.path.expanduser(dpath)
-                        if dpath.strip() != '':
-                            dpath = self.create_upload_path(dpath, mi, n)
-                            debug_print("KoboTouchExtended:upload_books:Generated KePub file copy path: {0}".format(dpath))
-                            shutil.copy(file, dpath)
-                else:
-                    new_files.append(file)
-                    new_names.append(n)
-                    new_metadata.append(mi)
-                i += 1
-        else:
-            new_files = files
-            new_names = names
-            new_metadata = metadata
+        debug_print("KoboTouchExtended:upload_books:Enabling extra ePub features for Kobo devices")
+        i = 0
+        for file, n, mi in zip(files, names, metadata):
+            self.report_progress(i / float(len(files)), "Processing book: {0} by {1}".format(mi.title, " and ".join(mi.authors)))
+            mi.kte_calibre_name = n
+            self._modify_epub(file, mi)
+            i += 1
 
         self.report_progress(0, 'Working...')
-        result = super(KOBOTOUCHEXTENDED, self).upload_books(new_files, new_names, on_card, end_session, new_metadata)
+        result = super(KOBOTOUCHEXTENDED, self).upload_books(files, names, on_card, end_session, metadata)
 
         return result
 

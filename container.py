@@ -20,11 +20,16 @@ from calibre.constants import DEBUG
 from calibre.constants import iswindows
 from calibre.ebooks.chardet import substitute_entites
 from calibre.ebooks.chardet import xml_to_unicode
+from calibre.ebooks.conversion.plugins.epub_input import ADOBE_OBFUSCATION
+from calibre.ebooks.conversion.plugins.epub_input import IDPF_OBFUSCATION
 from calibre.ebooks.conversion.utils import HeuristicProcessor
 from calibre.ptempfile import PersistentTemporaryDirectory
 from calibre.utils import logging
 from calibre.utils import zipfile
 from calibre.utils.smartypants import smartyPants
+
+from calibre.ebooks.oeb.polish.container import OPF_NAMESPACES
+from calibre.ebooks.oeb.polish.container import EpubContainer
 
 from copy import deepcopy
 from urllib import unquote
@@ -32,6 +37,8 @@ from urllib import unquote
 HTML_MIMETYPES = frozenset(['text/html', 'application/xhtml+xml'])
 EXCLUDE_FROM_ZIP = frozenset(['mimetype', '.DS_Store', 'thumbs.db', '.directory'])
 NO_SPACE_BEFORE_CHARS = frozenset([c for c in string.punctuation] + [u'\xbb'])
+ENCRYPTION_NAMESPACES = {'enc': 'http://www.w3.org/2001/04/xmlenc#', 'deenc': 'http://ns.adobe.com/digitaleditions/enc'}
+XHTML_NAMESPACE = 'http://www.w3.org/1999/xhtml'
 
 
 class InvalidEpub(ValueError):
@@ -45,89 +52,15 @@ class ParseError(ValueError):
         ValueError.__init__(self, _('Failed to parse: {0} with error: {1}').format(name, desc))
 
 
-class Container(object):
-    META_INF = {
-        'container.xml': True,
-        'manifest.xml': False,
-        'encryption.xml': False,
-        'metadata.xml': False,
-        'signatures.xml': False,
-        'rights.xml': False,
-    }
-
-    acceptable_encryption_algorithms = (
-        'http://ns.adobe.com/pdf/enc#RC'
-    )
-
-    namespaces = {
-        'opf': 'http://www.idpf.org/2007/opf',
-        'ocf': 'urn:oasis:names:tc:opendocument:xmlns:container',
-        'ncx': 'http://www.daisy.org/z3986/2005/ncx/',
-        'dc': 'http://purl.org/dc/elements/1.1/',
-        'xhtml': 'http://www.w3.org/1999/xhtml',
-        'enc': 'http://www.w3.org/2001/04/xmlenc#',
-        'deenc': 'http://ns.adobe.com/digitaleditions/enc',
-        'xml': 'http://www.w3.org/XML/1998/namespace'
-    }
-
-    OPF_MIMETYPE = 'application/oebps-package+xml'
-    NCX_MIMETYPE = "application/x-dtbncx+xml"
-
+class KEPubContainer(EpubContainer):
     paragraph_counter = 0
     segment_counter = 0
-
-    def __init__(self, path):
-        tmpdir = PersistentTemporaryDirectory("_kobo-driver-extended")
-        zf = zipfile.ZipFile(path)
-        zf.extractall(tmpdir)
-
-        self.root = os.path.abspath(tmpdir)
-        self.log = logging.Log(level=logging.DEBUG if DEBUG else logging.WARN)
-        self.dirtied = set([])
-        self.cache = {}
-        self.mime_map = {}
-
-        print("Container:__init__:Got container path {0}".format(self.root))
-
-        if os.path.exists(os.path.join(self.root, 'mimetype')):
-            os.remove(os.path.join(self.root, 'mimetype'))
-
-        container_path = os.path.join(self.root, 'META-INF', 'container.xml')
-        if not os.path.exists(container_path):
-            raise InvalidEpub('No META-INF/container.xml in epub')
-        self.container = etree.fromstring(open(container_path, 'rb').read())
-        opf_files = self.container.xpath((r'child::ocf:rootfiles/ocf:rootfile[@media-type="{0}" and @full-path]'.format(guess_type('a.opf')[0])), namespaces=self.namespaces)
-        if not opf_files:
-            raise InvalidEpub('META-INF/container.xml contains no link to OPF file')
-        opf_path = os.path.join(self.root, *opf_files[0].get('full-path').split('/'))
-        if not os.path.exists(opf_path):
-            raise InvalidEpub('OPF file does not exist at location pointed to by META-INF/container.xml')
-
-        # Map of relative paths with / separators to absolute
-        # paths on filesystem with os separators
-        self.name_map = {}
-        for dirpath, dirnames, filenames in os.walk(self.root):
-            for f in filenames:
-                path = os.path.join(dirpath, f)
-                name = os.path.relpath(path, self.root).replace(os.sep, '/')
-                self.name_map[name] = path
-                self.mime_map[name] = guess_type(f)[0]
-                if path == opf_path:
-                    self.opf_name = name
-                    self.mime_map[name] = guess_type('a.opf')[0]
-
-        opf = self.opf
-        for item in opf.xpath('//opf:manifest/opf:item[@href and @media-type]', namespaces=self.namespaces):
-            href = unquote(item.get('href'))
-            item.set("href", href)
-            self.mime_map[self.href_to_name(href, os.path.dirname(self.opf_name).replace(os.sep, '/'))] = item.get('media-type')
-        self.set(self.opf_name, opf)
 
     def get_html_names(self):
         """A generator function that yields only HTML file names from
         the ePub.
         """
-        for node in self.opf.xpath('//opf:manifest/opf:item[@href and @media-type]', namespaces=self.namespaces):
+        for node in self.opf_xpath('//opf:manifest/opf:item[@href and @media-type]'):
             if node.get("media-type") in HTML_MIMETYPES:
                 href = os.path.join(os.path.dirname(self.opf_name), node.get("href"))
                 href = os.path.normpath(href).replace(os.sep, '/')
@@ -143,63 +76,23 @@ class Container(object):
         files cannot be edited.
         """
         is_encumbered = False
-        if 'META-INF/encryption.xml' in self.name_map:
+        if 'META-INF/encryption.xml' in self.name_path_map:
             try:
-                xml = self.get('META-INF/encryption.xml')
+                xml = self.parsed('META-INF/encryption.xml')
                 if xml is None:
                     return True  # If encryption.xml can't be parsed, assume its presence means an encumbered file
-                for elem in xml.xpath('./enc:EncryptedData/enc:EncryptionMethod[@Algorithm]', namespaces=self.namespaces):
+                for elem in xml.xpath('./enc:EncryptedData/enc:EncryptionMethod[@Algorithm]', namespaces=ENCRYPTION_NAMESPACES):
                     alg = elem.get('Algorithm')
 
                     # Anything not in acceptable_encryption_algorithms is a sign of an
                     # encumbered file.
-                    if alg not in self.acceptable_encryption_algorithms:
+                    if alg not in {ADOBE_OBFUSCATION, IDPF_OBFUSCATION}:
                         is_encumbered = True
             except Exception as e:
                 self.log.error("Could not parse encryption.xml: " + e.message)
                 raise
 
         return is_encumbered
-
-    def manifest_worthy_names(self):
-        for name in self.name_map:
-            if name.endswith('.opf'):
-                continue
-            if name.startswith('META-INF') and os.path.basename(name) in self.META_INF:
-                continue
-            yield name
-
-    def delete_name(self, name):
-        self.mime_map.pop(name, None)
-        path = self.name_map[name]
-        os.remove(path)
-        self.name_map.pop(name)
-
-    def manifest_item_for_name(self, name):
-        href = self.name_to_href(name, os.path.dirname(self.opf_name))
-        q = prepare_string_for_xml(href, attribute=True)
-        existing = self.opf.xpath('//opf:manifest/opf:item[@href="{0}"]'.format(q), namespaces=self.namespaces)
-        if not existing:
-            return None
-        return existing[0]
-
-    def add_name_to_manifest(self, name, mt=None):
-        item = self.manifest_item_for_name(name)
-        if item is not None:
-            return
-        self.log.debug("Adding '{0}' to the manifest".format(name))
-        manifest = self.opf.xpath('//opf:manifest', namespaces=self.namespaces)[0]
-        item = manifest.makeelement('{%s}item' % self.namespaces['opf'], href=self.name_to_href(name, os.path.dirname(self.opf_name)), id=self.generate_manifest_id())
-        if not mt:
-            mt = guess_type(os.path.basename(name))[0]
-        if not mt:
-            mt = 'application/octest-stream'
-        item.set('media-type', mt)
-        manifest.append(item)
-        self.fix_tail(item)
-        self.set(self.opf_name, self.opf)
-        self.name_map[name] = os.path.join(self.root, name)
-        self.mime_map[name] = mt
 
     def fix_tail(self, item):
         '''
@@ -228,26 +121,26 @@ class Container(object):
             raise ValueError("A source path must be given")
         if name is None:
             name = os.path.basename(path)
-        self.log.debug("Copying file '{0}' to '{1}'".format(path, os.path.join(self.root, name)))
+        self.log.info("Copying file '{0}' to '{1}'".format(path, self.root))
         shutil.copy(path, os.path.join(self.root, name))
-        self.add_name_to_manifest(name, mt)
+        item = self.generate_item(name, media_type=mt)
 
-        return name
+        return item.get('href')
 
     def add_content_file_reference(self, name):
-        '''Add a reference to the named file (from self.name_map) to all content files (self.get_html_names()). Currently
+        '''Add a reference to the named file (from self.name_path_map) to all content files (self.get_html_names()). Currently
         only CSS files with a MIME type of text/css and JavaScript files with a MIME type of application/x-javascript are
         supported.
         '''
-        if name not in self.name_map or name not in self.mime_map:
+        if name not in self.name_path_map or name not in self.mime_map:
             raise ValueError("A valid file name must be given (got: {0})".format(name))
         for file in self.get_html_names():
-            self.log.debug("Adding reference to {0} to file {1}".format(name, file))
-            root = self.get(file)
+            self.log.info("Adding reference to {0} to file {1}".format(name, file))
+            root = self.parsed(file)
             if root is None:
                 self.log.error("Could not retrieve content file {0}".format(file))
                 continue
-            head = root.xpath('./xhtml:head', namespaces=self.namespaces)
+            head = root.xpath('./xhtml:head', namespaces={'xhtml': XHTML_NAMESPACE})
             if head is None:
                 self.log.error("Could not find a <head> element in content file {0}".format(file))
                 continue
@@ -257,9 +150,9 @@ class Container(object):
                 continue
 
             if self.mime_map[name] == guess_type('a.css')[0]:
-                elem = head.makeelement("{%s}link" % self.namespaces['xhtml'], rel='stylesheet', href=os.path.relpath(name, os.path.dirname(file)).replace(os.sep, '/'))
+                elem = head.makeelement("{%s}link" % XHTML_NAMESPACE, rel='stylesheet', href=os.path.relpath(name, os.path.dirname(file)).replace(os.sep, '/'))
             elif self.mime_map[name] == guess_type('a.js')[0]:
-                elem = head.makeelement("{%s}script" % self.namespaces['xhtml'], type='text/javascript', src=os.path.relpath(name, os.path.dirname(file)).replace(os.sep, '/'))
+                elem = head.makeelement("{%s}script" % XHTML_NAMESPACE, type='text/javascript', src=os.path.relpath(name, os.path.dirname(file)).replace(os.sep, '/'))
             else:
                 elem = None
 
@@ -267,163 +160,18 @@ class Container(object):
                 head.append(elem)
                 if self.mime_map[name] == guess_type('a.css')[0]:
                     self.fix_tail(elem)
-                self.set(file, root)
-
-    def generate_manifest_id(self):
-        items = self.opf.xpath('//opf:manifest/opf:item[@id]', namespaces=self.namespaces)
-        ids = set([x.get('id') for x in items])
-        for x in xrange(sys.maxint):
-            c = 'id{0}'.format(x)
-            if c not in ids:
-                return c
-
-    @property
-    def opf(self):
-        return self.get(self.opf_name)
-
-    def href_to_name(self, href, base=''):
-        """Changed to fix a bug which incorrectly splits the href on
-        '#' when '#' is part of the file name. Also normalizes the
-        path.
-
-        Taken from the calibre Modify Epub plugin's Container implementation.
-        """
-        hash_index = href.find('#')
-        period_index = href.find('.')
-        if hash_index > 0 and hash_index > period_index:
-            href = href.partition('#')[0]
-        href = unquote(href)
-        name = href
-        if base:
-            name = os.path.join(base, href)
-        name = os.path.normpath(name).replace(os.sep, '/')
-        return name
-
-    def name_to_href(self, name, base):
-        """Changed to ensure that blank href names are referenced as the
-        empty string instead of '.'.
-
-        Taken from the calibre Modify Epub plugin's Container implementation.
-        """
-        if not base:
-            return name
-        href = os.path.relpath(name, base).replace(os.sep, '/')
-        if href == '.':
-            href = ''
-        return href
-
-    def decode(self, data):
-        """Automatically decode :param:`data` into a `unicode` object."""
-        def fix_data(d):
-            return d.replace('\r\n', '\n').replace('\r', '\n')
-        if isinstance(data, unicode):
-            return fix_data(data)
-        bom_enc = None
-        if data[:4] in ('\0\0\xfe\xff', '\xff\xfe\0\0'):
-            bom_enc = {'\0\0\xfe\xff': 'utf-32-be', '\xff\xfe\0\0': 'utf-32-le'}[data[:4]]
-            data = data[4:]
-        elif data[:2] in ('\xff\xfe', '\xfe\xff'):
-            bom_enc = {'\xff\xfe': 'utf-16-le', '\xfe\xff': 'utf-16-be'}[data[:2]]
-            data = data[2:]
-        elif data[:3] == '\xef\xbb\xbf':
-            bom_enc = 'utf-8'
-            data = data[3:]
-        if bom_enc is not None:
-            try:
-                return fix_data(data.decode(bom_enc))
-            except UnicodeDecodeError:
-                pass
-        try:
-            return fix_data(data.decode('utf-8'))
-        except UnicodeDecodeError:
-            pass
-        data, _ = xml_to_unicode(data)
-        return fix_data(data)
+                self.dirty(file)
 
     def get_raw(self, name):
-        path = self.name_map[name]
-        return open(path, 'rb').read()
-
-    def get(self, name):
-        if name in self.cache:
-            val = self.cache[name]
-            if not hasattr(val, 'xpath'):
-                val = self._parse(val, self.mime_map[name])
-            return val
-        raw = self.get_raw(name)
-        raw = self.decode(raw)
-        if name in self.mime_map:
-            try:
-                raw = self._parse(raw, self.mime_map[name])
-            except XMLSyntaxError as err:
-                raise ParseError(name, unicode(err))
-        self.cache[name] = raw
-        return raw
-
-    def set(self, name, val):
-        self.cache[name] = val
-        self.dirtied.add(name)
-
-    def _parse(self, raw, mimetype):
-        mt = mimetype.lower()
-        if mt in HTML_MIMETYPES or mt.endswith('xml'):
-            parser = etree.XMLParser(no_network=True, huge_tree=not iswindows)
-            raw = xml_to_unicode(raw, strip_encoding_pats=True, assume_utf8=True, resolve_entities=True)[0].strip()
-            idx = raw.find('<html')
-            if idx == -1:
-                idx = raw.find('<HTML')
-            if idx > -1:
-                pre = raw[:idx]
-                raw = raw[idx:]
-                if '<!DOCTYPE' in pre:
-                    user_entities = {}
-                    for match in re.finditer(r'<!ENTITY\s+(\S+)\s+([^>]+)', pre):
-                        val = match.group(2)
-                        if val.startswith('"') and val.endswith('"'):
-                            val = val[1:-1]
-                        user_entities[match.group(1)] = val
-                    if user_entities:
-                        pat = re.compile(r'&(%s);' % ('|'.join(user_entities.keys())))
-                        raw = pat.sub(lambda m: user_entities[m.group(1)], raw)
-            return etree.fromstring(raw, parser=parser)
-        return raw
+        self.commit_item(name, keep_parsed=False)
+        f = open(self.name_path_map[name], 'rb')
+        data = f.read()
+        f.close()
+        return data
 
     def flush_cache(self):
-        for name in self.dirtied:
-            data = self.cache[name]
-            if hasattr(data, 'xpath'):
-                data = etree.tostring(data, encoding='UTF-8', xml_declaration=True, pretty_print=True)
-            data = string.replace(data, u"\uFFFD", "")
-            f = open(self.name_map[name], "wb")
-            f.write(data)
-            f.close()
-        self.dirtied.clear()
-        self.cache.clear()
-
-    def write(self, path):
-        self.flush_cache()
-
-        if os.path.exists(path):
-            os.unlink(path)
-        epub = zipfile.ZipFile(path, 'w', compression=zipfile.ZIP_DEFLATED)
-        epub.writestr('mimetype', bytes(guess_type('a.epub')[0]), compression=zipfile.ZIP_STORED)
-
-        cwd = os.getcwdu()
-        os.chdir(self.root)
-        zip_prefix = self.root
-        if not zip_prefix.endswith(os.sep):
-            zip_prefix += os.sep
-        for t in os.walk(self.root, topdown=True):
-            for f in t[2]:
-                if f not in EXCLUDE_FROM_ZIP:
-                    filepath = os.path.join(t[0], f).replace(zip_prefix, '')
-                    st = os.stat(filepath)
-                    mtime = time.localtime(st.st_mtime)
-                    if mtime[0] < 1980:
-                        os.utime(filepath, None)
-                    epub.write(filepath)
-        epub.close()
-        os.chdir(cwd)
+        for name in [n for n in self.dirtied]:
+            self.commit_item(name, keep_parsed=True)
 
     def __hyphenate_node(self, elem, hyphenator, hyphen=u'\u00AD'):
         if elem is None:
@@ -452,11 +200,11 @@ class Container(object):
         if hyphenator is None or hyphen is None or hyphen == '':
             return False
         for name in self.get_html_names():
-            self.log.debug("Hyphenating file {0}".format(name))
-            root = self.get(name)
-            for node in root.xpath("./xhtml:body//xhtml:span[starts-with(@id, 'kobo.')]", namespaces=self.namespaces):
+            self.log.info("Hyphenating file {0}".format(name))
+            root = self.parsed(name)
+            for node in root.xpath("./xhtml:body//xhtml:span[starts-with(@id, 'kobo.')]", namespaces={'xhtml': XHTML_NAMESPACE}):
                 node = self.__hyphenate_node(node, hyphenator, hyphen)
-            self.set(name, root)
+            self.dirty(name)
         return True
 
     def __add_kobo_spans_to_node(self, node):
@@ -480,14 +228,14 @@ class Container(object):
             ngroups = len(groups)
             if ngroups > 0:
                 cur_group = 0
-                text_container = etree.Element("{%s}span" % (self.namespaces["xhtml"],), attrib={"id": "kobo.{0}.{1}".format(self.paragraph_counter, self.segment_counter), "class": "koboSpan"})
+                text_container = etree.Element("{%s}span" % (XHTML_NAMESPACE,), attrib={"id": "kobo.{0}.{1}".format(self.paragraph_counter, self.segment_counter), "class": "koboSpan"})
                 for g in groups:
                     cur_group += 1
                     if text_container.text is None:
                         text_container.text = g
                     elif cur_group < ngroups:
                         self.segment_counter += 1
-                        span = etree.Element("{%s}span" % (self.namespaces["xhtml"],), attrib={"id": "kobo.{0}.{1}".format(self.paragraph_counter, self.segment_counter), "class": "koboSpan"})
+                        span = etree.Element("{%s}span" % (XHTML_NAMESPACE,), attrib={"id": "kobo.{0}.{1}".format(self.paragraph_counter, self.segment_counter), "class": "koboSpan"})
                         span.text = g
                         text_container.append(span)
                     else:
@@ -557,19 +305,19 @@ class Container(object):
 
     def add_kobo_spans(self):
         for name in self.get_html_names():
-            self.log.debug("Adding Kobo spans to {0}".format(name))
-            root = self.get(name)
-            if len(root.xpath('.//xhtml:span[@class="koboSpan"]', namespaces=self.namespaces)) > 0:
-                self.log.debug("\tSkipping file")
+            self.log.info("Adding Kobo spans to {0}".format(name))
+            root = self.parsed(name)
+            if len(root.xpath('.//xhtml:span[@class="koboSpan"]', namespaces={'xhtml': XHTML_NAMESPACE})) > 0:
+                self.log.info("\tSkipping file")
                 continue
             self.paragraph_counter = 1
             self.segment_counter = 0
-            body = root.xpath('./xhtml:body', namespaces=self.namespaces)[0]
+            body = root.xpath('./xhtml:body', namespaces={'xhtml': XHTML_NAMESPACE})[0]
             body = self.__add_kobo_spans_to_node(body)
             root = etree.tostring(root, pretty_print=True)
             # Re-open self-closing paragraph tags
             root = re.sub(r'<p[^>/]*/>', '<p></p>', root)
-            self.set(name, root)
+            self.dirty(name)
         self.flush_cache()
         return True
 
@@ -577,7 +325,7 @@ class Container(object):
         preprocessor = HeuristicProcessor(log=self.log)
 
         for name in self.get_html_names():
-            self.log.debug("Smartening punctuation for file {0}".format(name))
+            self.log.info("Smartening punctuation for file {0}".format(name))
             html = self.get_raw(name)
             html = html.encode("UTF-8")
 
@@ -601,12 +349,12 @@ class Container(object):
             # Remove Unicode replacement characters
             html = string.replace(html, u"\uFFFD", "")
 
-            self.set(name, html)
+            self.dirty(name)
         self.flush_cache()
 
     def clean_markup(self):
         for name in self.get_html_names():
-            self.log.debug("Cleaning markup for file {0}".format(name))
+            self.log.info("Cleaning markup for file {0}".format(name))
             html = self.get_raw(name)
             html = html.encode("UTF-8")
 
@@ -625,12 +373,12 @@ class Container(object):
             # Remove Unicode replacement characters
             html = string.replace(html, u"\uFFFD", "")
 
-            self.set(name, html)
+            self.dirty(name)
         self.flush_cache()
 
     def forced_cleanup(self):
         for name in self.get_html_names():
-            self.log.debug("Forcing cleanup for file {0}".format(name))
+            self.log.info("Forcing cleanup for file {0}".format(name))
             html = self.get_raw(name)
             html = html.encode("UTF-8")
 
@@ -638,7 +386,7 @@ class Container(object):
             html = re.sub(ur'<(meta|link) ([^>]+)></(?:meta|link)>', ur'<\1 \2 />', html, flags=re.UNICODE | re.MULTILINE)
 
             if name == 'index_split_000.xhtml':
-                self.log.debug("HTML after meta/link replacement:\n{0}".format(html))
+                self.log.info("HTML after meta/link replacement:\n{0}".format(html))
 
             # Force open script tags
             html = re.sub(ur'<script (.+) ?/>', ur'<script \1></script>', html, flags=re.UNICODE | re.MULTILINE)
@@ -649,5 +397,5 @@ class Container(object):
             # Force open self-closing script tags
             html = re.sub(ur'<script (.+) ?/>', ur'<script \1></script>', html, flags=re.UNICODE | re.MULTILINE)
 
-            self.set(name, html)
+            self.dirty(name)
         self.flush_cache()
