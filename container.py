@@ -307,7 +307,7 @@ class KEPubContainer(EpubContainer):
         for name in self.get_html_names():
             self.log.info("Adding Kobo spans to {0}".format(name))
             root = self.parsed(name)
-            if len(root.xpath('.//xhtml:span[@class="koboSpan"]', namespaces={'xhtml': XHTML_NAMESPACE})) > 0:
+            if len(root.xpath('.//xhtml:span[@class="koboSpan" or starts-with(@id, "kobo.")]', namespaces={'xhtml': XHTML_NAMESPACE})) > 0:
                 self.log.info("\tSkipping file")
                 continue
             self.paragraph_counter = 1
