@@ -130,6 +130,11 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
     EXTRA_CUSTOMIZATION_DEFAULT.append(False)
     OPT_BLOCK_ANALYTICS_DB_EVENTS = len(EXTRA_CUSTOMIZATION_MESSAGE) - 1
 
+    EXTRA_CUSTOMIZATION_MESSAGE.append('Dismiss Award Tiles:::Firmware 2.6.1 introduced the Aura-style home screen. Select this option to dismiss the Award tiles normally shown '
+                                       'on the home screen.')
+    EXTRA_CUSTOMIZATION_DEFAULT.append(False)
+    OPT_HIDE_AWARDS_TILES = len(EXTRA_CUSTOMIZATION_MESSAGE) - 1
+
     skip_renaming_files = set([])
     hyphenator = None
     kobo_js_re = re.compile(r'.*/?kobo.*\.js$', re.IGNORECASE)
@@ -162,17 +167,30 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
         opts = self.settings()
         if oncard is None:
             with closing(sqlite.connect(self.device_database_path())) as conn:
-                if isinstance(self.fwversion, tuple) and self.fwversion >= self.min_fwversion_tiles and opts.extra_customization[self.OPT_HIDE_NEW_BOOK_TILES]:
-                    sql = get_resources('sql/DismissNewBookTiles.sql')
-                    if sql:
-                        debug_print("KoboTouchExtended - Adding DismissNewBookTiles database trigger")
-                        sql = unicode(sql)
-                        conn.execute(sql)
+                if isinstance(self.fwversion, tuple) and self.fwversion >= self.min_fwversion_tiles:
+                    if opts.extra_customization[self.OPT_HIDE_NEW_BOOK_TILES]:
+                        sql = get_resources('sql/DismissNewBookTiles.sql')
+                        if sql:
+                            debug_print("KoboTouchExtended - Adding DismissNewBookTiles database trigger")
+                            sql = unicode(sql)
+                            conn.execute(sql)
+                        else:
+                            debug_print("KoboTouchExtended - Could not fetch DismissNewBookTiles trigger SQL definition!")
                     else:
-                        debug_print("KoboTouchExtended - Could not fetch DismissNewBookTiles trigger SQL definition!")
-                else:
-                    debug_print("KoboTouchExtended - Dropping DismissNewBookTiles database trigger")
-                    conn.execute("DROP TRIGGER IF EXISTS KTE_Activity_DismissNewBookTiles")
+                        debug_print("KoboTouchExtended - Dropping DismissNewBookTiles database trigger")
+                        conn.execute("DROP TRIGGER IF EXISTS KTE_Activity_DismissNewBookTiles")
+
+                    if opts.extra_customization[self.OPT_HIDE_AWARDS_TILES]:
+                        sql = get_resources('sql/DismissAwardTiles.sql')
+                        if sql:
+                            debug_print("KoboTouchExtended - Adding DismissAwardTiles database trigger")
+                            sql = unicode(sql)
+                            conn.execute(sql)
+                        else:
+                            debug_print("KoboTouchExtended - Could not fetch DismissAwardTiles trigger SQL definition!")
+                    else:
+                        debug_print("KoboTouchExtended - Dropping DismissAwardTiles databsae trigger")
+                        conn.execute("DROP TRIGGER IF EXISTS KTE_Activity_DismissAwardTiles")
 
                 # Put this in a try-catch block. It's OK if this fails.
                 try:
