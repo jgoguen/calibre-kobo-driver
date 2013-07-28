@@ -1,0 +1,18 @@
+* {
+	-webkit-hyphens: auto;
+	-moz-hyphens: auto;
+	hyphens: auto;
+
+	-webkit-hyphenate-after: 3;
+	-webkit-hyphenate-before: 3;
+	-webkit-hyphenate-lines: 2;
+	hyphenate-after: 3;
+	hyphenate-before: 3;
+	hyphenate-lines: 2;
+}
+
+h1, h2, h3, h4, h5, h6, td {
+	-moz-hyphens: none !important;
+	-webkit-hyphens: none !important;
+	hyphens: none !important;
+}

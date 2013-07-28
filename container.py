@@ -23,14 +23,12 @@ from calibre.ebooks.chardet import xml_to_unicode
 from calibre.ebooks.conversion.plugins.epub_input import ADOBE_OBFUSCATION
 from calibre.ebooks.conversion.plugins.epub_input import IDPF_OBFUSCATION
 from calibre.ebooks.conversion.utils import HeuristicProcessor
+from calibre.ebooks.oeb.polish.container import OPF_NAMESPACES
+from calibre.ebooks.oeb.polish.container import EpubContainer
 from calibre.ptempfile import PersistentTemporaryDirectory
 from calibre.utils import logging
 from calibre.utils import zipfile
 from calibre.utils.smartypants import smartyPants
-
-from calibre.ebooks.oeb.polish.container import OPF_NAMESPACES
-from calibre.ebooks.oeb.polish.container import EpubContainer
-
 from copy import deepcopy
 from urllib import unquote
 
@@ -121,11 +119,19 @@ class KEPubContainer(EpubContainer):
             raise ValueError("A source path must be given")
         if name is None:
             name = os.path.basename(path)
-        self.log.info("Copying file '{0}' to '{1}'".format(path, self.root))
-        shutil.copy(path, os.path.join(self.root, name))
         item = self.generate_item(name, media_type=mt)
+        name = self.href_to_name(item.get('href'), self.opf_name)
 
-        return item.get('href')
+        self.log.info("Copying file '{0}' to '{1}' as '{2}'".format(path, self.root, name))
+
+        try:
+            # Throws an error that we can ignore if the directory already exists
+            os.makedirs(os.path.dirname(os.path.join(self.root, name)))
+        except:
+            pass
+        shutil.copy(path, os.path.join(self.root, name))
+
+        return name
 
     def add_content_file_reference(self, name):
         '''Add a reference to the named file (from self.name_path_map) to all content files (self.get_html_names()). Currently
@@ -172,40 +178,6 @@ class KEPubContainer(EpubContainer):
     def flush_cache(self):
         for name in [n for n in self.dirtied]:
             self.commit_item(name, keep_parsed=True)
-
-    def __hyphenate_node(self, elem, hyphenator, hyphen=u'\u00AD'):
-        if elem is None:
-            return None
-
-        if isinstance(elem, basestring):
-            newstr = []
-            for w in elem.split():
-                if len(w) > 3 and '-' not in w and hyphen not in w:
-                    w = hyphenator.inserted(w, hyphen=hyphen)
-                newstr.append(w)
-            elem = " ".join(newstr)
-        else:
-            if elem.text is None and elem.tail is None:
-                # If we get here, there's only child nodes
-                for node in elem.xpath('./node()'):
-                    node = self.__hyphenate_node(node, hyphenator, hyphen)
-            else:
-                elem.text = self.__hyphenate_node(elem.text, hyphenator, hyphen)
-                if elem.text is not None:
-                    elem.text += u" "
-                elem.tail = self.__hyphenate_node(elem.tail, hyphenator, hyphen)
-        return elem
-
-    def hyphenate(self, hyphenator, hyphen=u'\u00AD'):
-        if hyphenator is None or hyphen is None or hyphen == '':
-            return False
-        for name in self.get_html_names():
-            self.log.info("Hyphenating file {0}".format(name))
-            root = self.parsed(name)
-            for node in root.xpath("./xhtml:body//xhtml:span[starts-with(@id, 'kobo.')]", namespaces={'xhtml': XHTML_NAMESPACE}):
-                node = self.__hyphenate_node(node, hyphenator, hyphen)
-            self.dirty(name)
-        return True
 
     def __add_kobo_spans_to_node(self, node):
         if node is None or isinstance(node, etree._Comment):
