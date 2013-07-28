@@ -22,6 +22,7 @@ from calibre.ptempfile import PersistentTemporaryFile
 from calibre.utils.logging import default_log
 from calibre_plugins.kobotouch_extended.container import KEPubContainer
 from contextlib import closing
+from datetime import datetime
 
 
 EPUB_EXT = '.epub'
@@ -246,6 +247,8 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
                 debug_print("KoboTouchExtended:_modify_file:Calibre details file does not exist!")
             o['kobotouchextended_version'] = ".".join([str(n) for n in self.version])
             o['kobotouchextended_options'] = str(opts.extra_customization)
+            o['kobotouchextended_currenttime'] = datetime.utcnow().ctime()
+
             kte_data_file = PersistentTemporaryFile(suffix='_KoboTouchExtended', prefix='driverinfo_')
             debug_print("KoboTouchExtended:_modify_epub:Driver data file :: {0}".format(kte_data_file.name))
             kte_data_file.write(json.dumps(o))
