@@ -1,13 +1,10 @@
 # Calibre driver for Kobo Touch/Glo/Mini
-An extension of the existing KoboTouch driver provided with Calibre. This plugin allows modifying ePub files to enable
-extra Kobo features.
+An extension of the existing KoboTouch driver provided with Calibre. This plugin allows modifying ePub files to enable extra Kobo features.
 
-**Please note**: Modified books are not saved back into your Calibre library to prevent issues with overwriting library
-configurations unexpectedly, so books are processed in transit to your device every time. In most cases, the extra time
-required should not be noticeable.
+**Please note**: Modified books are not saved back into your Calibre library to prevent issues with overwriting library configurations unexpectedly, so books are processed in transit to your device every time. In most cases, the extra time required should not be noticeable.
 
 #Download
-To download this plugin, either clone the repository or [download a snapshot of the `master` branch][zipdownload] by clicking on the big **ZIP** button near the top of the page.
+To download this plugin, either clone the repository or [download a snapshot of the `master` branch][zipdownload] by clicking on the big **Download ZIP** button on the right side of the page.
 
 [zipdownload]: https://github.com/jgoguen/calibre-kobo-driver/archive/master.zip
 
@@ -19,12 +16,13 @@ The current release version of this plugin may be installed directly within cali
 	1. Don't see it? You may already have it installed. Restart calibre and see if you are notified of a pending update.
 1. Restart calibre
 
-To install this plugin from source, you must create a ZIP file named `KoboTouchExtended.zip` and include these files:
+To install this plugin from source, you must create a ZIP file named `KoboTouchExtended.zip` and include these files and folders:
 
 1. \_\_init\_\_.py
 1. container.py
 1. driver.py
-1. hyphenator.py
+1. sql
+1. css
 1. plugin-import-name-kobotouch\_extended.txt
 
 To create the ZIP file:
@@ -56,7 +54,7 @@ This plugin includes the ability to add a CSS file to each book enabling KePub h
 	1. Somewhere on your computer, create the directory structure `usr/local/Kobo/hyphenDicts`
 	1. Download the LibreOffice (or OpenOffice) hyphenation dictionary for your language
 		1. This will be a file with the 'oxt' extension. This is just a ZIP archive with a different name.
-	1. Unzip the OXT file and look for the file named as `hyph_[language].dic`.
+	1. Unzip the OXT file and look for the file named as `hyph\_[language].dic`.
 	1. Copy the hyphenation dictionary to the `hyphenDicts` folder without changing the name.
 	1. Add the `usr` folder to `KoboRoot.tgz`
 		1. UNIX users (Linux, Solaris, BSD, Mac) can, from the command line, run `tar czf KoboRoot.tgz usr/` from wherever you put the `usr` directory.
@@ -64,9 +62,9 @@ This plugin includes the ability to add a CSS file to each book enabling KePub h
 1. For other languages:
 	1. Do everything for already-present languages up to (not including) creating `KoboRoot.tgz`
 	1. Create `usr/share/hyphen`
-	1. Do one of the following, where <lang code> is the two-letter language code and <region code> is the two-letter upper-case regional code. For example, `pt_PT` represents Portugese spoken in Portugal and `pt_BR` represents Portugese spoken in Brazil; `en_US` represents English spoken in the USA, `en_CA` represents English spoken in Canada, and `en_GB` represents English spoken in the United Kingdom.
-		1. Create a symlink named `hyph_<lang code>_<region code>.dic` pointing to `/usr/local/Kobo/hyphenDicts/hyph_<lang code>.dic` (this will be a broken symlink, you may have to force its creation)
-		1. Copy the same file you put in `usr/local/Kobo/hyphenDicts/` into `usr/share/hyphen/` and change the name to `hyph_<lang code>_<region code>.dic`
+	1. Do one of the following, where <lang code> is the two-letter language code and <region code> is the two-letter upper-case regional code. For example, `pt\_PT` represents Portugese spoken in Portugal and `pt\_BR` represents Portugese spoken in Brazil; `en\_US` represents English spoken in the USA, `en\_CA` represents English spoken in Canada, and `en\_GB` represents English spoken in the United Kingdom.
+		1. Create a symlink named `hyph\_<lang code>\_<region code>.dic` pointing to `/usr/local/Kobo/hyphenDicts/hyph\_<lang code>.dic` (this will be a broken symlink, you may have to force its creation)
+		1. Copy the same file you put in `usr/local/Kobo/hyphenDicts/` into `usr/share/hyphen/` and change the name to `hyph\_<lang code>\_<region code>.dic`
 	1. Create `KoboRoot.tgz` as outlined for already-present languages.
 
 Once you have created `KoboRoot.tgz` copy it to the `.kobo` directory on your Kobo device, unmount/eject the drive, and unplug the device. You will see a screen indicating that the Kobo device is updating; it is not, but this method takes advantage of the Kobo update mechanism to load the necessary dictionary files. Make sure you keep your version of `KoboRoot.tgz` around, you will need to re-apply it after every Kobo software update!
@@ -107,14 +105,14 @@ On occasion, such as for debugging purposes, you may wish to have easy access to
 1. Contain no variables
 	1. OS X and Linux users may use a tilde (~) to refer to their home directory instead of typing it in full (/home/jgoguen/calibre-debug may be entered as ~/calibre-debug). Windows users must always enter a full path.
 
-The final path will be a combination of this path and the save template for the plugin. If your debug path is ```/home/jgoguen/calibre-debug``` and your same template is ```{author_sort}/{title}``` then a KePub file would be copied to, for example, ```/home/jgoguen/calibre-debug/Camerata, Jo/A History of Vanguard Industries.kepub.epub```. Directories will be created as needed.
+The final path will be a combination of this path and the save template for the plugin. If your debug path is ```/home/jgoguen/calibre-debug``` and your save template is ```{author_sort}/{title}``` then a KePub file would be copied to, for example, ```/home/jgoguen/calibre-debug/Camerata, Jo/A History of Vanguard Industries.kepub.epub```. Directories will be created as needed.
 
 # Contributing
 Decided you want to contribute to the development of this plugin? Awesome! You have many options:
 
 1. **Contribute code**, whether for existing bug reports, for new bugs that you found, or for new features that you really want to see implemented. To contribute code, you may fork the repository and send a GitHub pull request, or you may send me a PM here with a git patch file. A tutorial on creating a git patch can be found [here][gittutorial]
-1. **Submit bug reports** on GitHub. GitHub bug reports are my to-do list for this plugin; any requests anywhere else are likely to get missed and forgotten and direct emails **will be silently ignored**. Although I'm happy to discuss the plugin here, I may still ask you to create a bug report; this is so I actually remember to investigate your request!
-1. **Test pre-released code** from GitHub. Between releases, new code is committed to the GitHub repository and may be installed using directions provided in ths file. Based on your testing, you may submit bug reports, provide feedback, think of new feature requests, or just generally enjoy early access (and not necessarily stable code!) to upcoming versions of the plugin.
+1. **Submit bug reports** on Launchpad. Launchpad bug reports are my to-do list for this plugin; any requests anywhere else are likely to get missed and forgotten and direct emails **will be silently ignored**. Although I'm happy to discuss the plugin here, I may still ask you to create a bug report; this is so I actually remember to investigate your request!
+1. **Test pre-released code** from GitHub. Between releases, new code is committed to the GitHub repository and may be installed using directions provided in this file. Based on your testing, you may submit bug reports, provide feedback, think of new feature requests, or just generally enjoy early access (and not necessarily stable code!) to upcoming versions of the plugin.
 
 You may also prefer to contribute in some other way. You may [donate to me via PayPal][paypaldonate], [contribute to my fundraiser][driverfundraiser], or you may also contribute by answering questions from other people who may have issues, purchasing items from my wishlists (not yet linked, I'll get on that soon-ish), continuing to use this plugin and providing feedback, and probably a few other ways I haven't thought of yet.
 
@@ -136,13 +134,6 @@ When submitting a bug, I require the following information as a minimum, but any
 	1. To get the calibre debug log, click the arrow beside the "Preferences" menu, choose "Restart in debug mode", repeat the same action that caused the issue, and close calibre. The debug log will be automatically displayed to you.
 
 # Known Issues
-The hyphenation feature may cause the Kobo device to fail to properly recognize words when you tap and hold a word to search for it in the dictionary. This may manifest as the device only selecting part of a word, in which case you may drag the selection to encompass the entire word as a workaround. It may also manifest as the Kobo saying that "word" could not be found and the closest match is "word". To avoid this, do not enable hyphenation.
-
-The hyphenation feature frequently causes some display issues. The workaround is to not use hyphenation; it is a known issue that KePub files with soft hyphens are not always properly displayed. Most commonly noticed are:
-
-1. There may be extra space, possibly a lot of extra space, when formatting changes (e.g. normal font to italics) or after punctuation.
-1. There may be extra space at the end of a line. The amount of space appears to be proportional to the number of soft hyphens on that line, but is not always present even when there are a large number of soft hyphens.
-
 Bookmarks, annotations, highlighting, and anything else that's highly dependent on your current position may work fine or may have slight issues. You may find that some books work better or worse than others. This issue is pending investigation.
 
 If you have previously installed this plugin in calibre 0.9.18 or earlier, then you upgrade to calibre 0.9.19 or later and can't update the plugin, you must manually replace the plugin ZIP file:
