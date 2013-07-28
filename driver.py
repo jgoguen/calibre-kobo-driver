@@ -4,6 +4,7 @@ __license__ = 'GPL v3'
 __copyright__ = '2013, Joel Goguen <jgoguen@jgoguen.ca>'
 __docformat__ = 'markdown en'
 
+import json
 import os
 import re
 import shutil
@@ -17,6 +18,7 @@ from calibre.devices.kobo.driver import KOBOTOUCH
 from calibre.devices.usbms.driver import debug_print
 from calibre.ebooks.metadata.book.base import NULL_VALUES
 from calibre.ebooks.oeb.polish.container import OPF_NAMESPACES
+from calibre.ptempfile import PersistentTemporaryFile
 from calibre.utils.logging import default_log
 from calibre_plugins.kobotouch_extended.container import KEPubContainer
 from contextlib import closing
@@ -228,6 +230,27 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
                 debug_print("KoboTouchExtended:_modify_epub:ERROR: ePub is DRM-encumbered, not modifying")
                 self.skip_renaming_files.append(metadata.uuid)
                 return opts.extra_customization[self.OPT_UPLOAD_ENCUMBERED]
+
+            # Add the conversion info file
+            book_details = {}
+            calibre_details_file = self.normalize_path(os.path.join(self._main_prefix, 'driveinfo.calibre'))
+            debug_print("KoboTouchExtended:_modify_epub:Calibre details file :: {0}".format(calibre_details_file))
+            o = {}
+            if os.path.isfile:
+                f = open(calibre_details_file, 'rb')
+                o = json.loads(f.read())
+                f.close()
+                for prop in ('device_store_uuid', 'prefix', 'last_library_uuid', 'location_code'):
+                    del(o[prop])
+            else:
+                debug_print("KoboTouchExtended:_modify_file:Calibre details file does not exist!")
+            o['kobotouchextended_version'] = ".".join([str(n) for n in self.version])
+            o['kobotouchextended_options'] = str(opts.extra_customization)
+            kte_data_file = PersistentTemporaryFile(suffix='_KoboTouchExtended', prefix='driverinfo_')
+            debug_print("KoboTouchExtended:_modify_epub:Driver data file :: {0}".format(kte_data_file.name))
+            kte_data_file.write(json.dumps(o))
+            kte_data_file.close()
+            container.copy_file_to_container(kte_data_file.name, name='driverinfo.kte', mt='application/json')
 
             # Search for the ePub cover
             found_cover = False
