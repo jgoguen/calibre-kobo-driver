@@ -65,7 +65,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
     reference_kepub = os.path.join(configdir, 'reference.kepub.epub')
 
     minimum_calibre_version = (0, 9, 41)
-    version = (2, 0, 0)
+    version = (2, 0, 1)
 
     content_types = {
         "main": 6,
@@ -81,7 +81,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
     EXTRA_CUSTOMIZATION_MESSAGE = KOBOTOUCH.EXTRA_CUSTOMIZATION_MESSAGE[:]
     EXTRA_CUSTOMIZATION_DEFAULT = KOBOTOUCH.EXTRA_CUSTOMIZATION_DEFAULT[:]
 
-    EXTRA_CUSTOMIZATION_MESSAGE.append('Enable Extended Features:::Choose whether to enable extra customisations')
+    EXTRA_CUSTOMIZATION_MESSAGE.append('Enable Extended Kobo Features:::Choose whether to enable extra customisations')
     EXTRA_CUSTOMIZATION_DEFAULT.append(True)
     OPT_EXTRA_FEATURES = len(EXTRA_CUSTOMIZATION_MESSAGE) - 1
 
@@ -213,6 +213,10 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
         return bl
 
     def _modify_epub(self, file, metadata, container=None):
+        if not file.endswith(EPUB_EXT):
+            self.skip_renaming_files.add(metadata.uuid)
+            return True
+
         debug_print("KoboTouchExtended:_modify_epub:Adding basic Kobo features to {0} by {1}".format(metadata.title, ' and '.join(metadata.authors)))
         opts = self.settings()
 
@@ -229,7 +233,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
         try:
             if container.is_drm_encumbered:
                 debug_print("KoboTouchExtended:_modify_epub:ERROR: ePub is DRM-encumbered, not modifying")
-                self.skip_renaming_files.append(metadata.uuid)
+                self.skip_renaming_files.add(metadata.uuid)
                 return opts.extra_customization[self.OPT_UPLOAD_ENCUMBERED]
 
             # Add the conversion info file
@@ -339,51 +343,49 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
                 return True
 
         # Everything below here is part of the 'extra features' bundle
-        if not opts.extra_customization[self.OPT_EXTRA_FEATURES] or not file.endswith(EPUB_EXT):
-            # Just skip it all if extended features are disabled
-            return True
+        if opts.extra_customization[self.OPT_EXTRA_FEATURES]:
+            debug_print("KoboTouchExtended:_modify_epub:Adding extended Kobo features to {0} by {1}".format(metadata.title, ' and '.join(metadata.authors)))
+            try:
+                # Add the Kobo span tags
+                container.add_kobo_spans()
 
-        debug_print("KoboTouchExtended:_modify_epub:Adding extended Kobo features to {0} by {1}".format(metadata.title, ' and '.join(metadata.authors)))
+                skip_js = False
+                # Check to see if there's already a kobo*.js in the ePub
+                for name in container.name_path_map:
+                    if self.kobo_js_re.match(name):
+                        skip_js = True
+                        break
+                if not skip_js:
+                    if os.path.isfile(self.reference_kepub):
+                        reference_container = KEPubContainer(self.reference_kepub, default_log)
+                        for name in reference_container.name_path_map:
+                            if self.kobo_js_re.match(name):
+                                jsname = container.copy_file_to_container(os.path.join(reference_container.root, name), name='kobo.js')
+                                container.add_content_file_reference(jsname)
+                                break
+            except Exception as e:
+                (exc_type, exc_obj, exc_tb) = sys.exc_info()
+                while exc_tb.tb_next and 'kobotouch_extended' in exc_tb.tb_next.tb_frame.f_code.co_filename:
+                    exc_tb = exc_tb.tb_next
+                fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                if not skip_failed:
+                    raise InvalidEPub(metadata.title, " and ".join(metadata.authors), e.message, fname=fname, lineno=exc_tb.tb_lineno)
+                else:
+                    self.skip_renaming_files.add(metadata.uuid)
+                    debug_print("Failed to process {0} by {1} with error: {2} (file: {3}, lineno: {4})".format(metadata.title, " and ".join(metadata.authors), e.message, fname, exc_tb.tb_lineno))
+                    return True
+        else:
+            self.skip_renaming_files.add(metadata.uuid)
+        os.unlink(file)
+        container.commit(file)
 
-        try:
-            # Add the Kobo span tags
-            container.add_kobo_spans()
+        dpath = opts.extra_customization[self.OPT_FILE_COPY_DIR]
+        dpath = os.path.expanduser(dpath).strip()
+        if dpath != "":
+            dpath = self.create_upload_path(dpath, metadata, metadata.kte_calibre_name)
+            debug_print("KoboTouchExtended:_modify_epub:Generated KePub file copy path: {0}".format(dpath))
+            shutil.copy(file, dpath)
 
-            skip_js = False
-            # Check to see if there's already a kobo*.js in the ePub
-            for name in container.name_path_map:
-                if self.kobo_js_re.match(name):
-                    skip_js = True
-                    break
-            if not skip_js:
-                if os.path.isfile(self.reference_kepub):
-                    reference_container = KEPubContainer(self.reference_kepub, default_log)
-                    for name in reference_container.name_path_map:
-                        if self.kobo_js_re.match(name):
-                            jsname = container.copy_file_to_container(os.path.join(reference_container.root, name), name='kobo.js')
-                            container.add_content_file_reference(jsname)
-                            break
-
-            os.unlink(file)
-            container.commit(file)
-
-            dpath = opts.extra_customization[self.OPT_FILE_COPY_DIR]
-            dpath = os.path.expanduser(dpath).strip()
-            if dpath != "":
-                dpath = self.create_upload_path(dpath, metadata, metadata.kte_calibre_name)
-                debug_print("KoboTouchExtended:_modify_epub:Generated KePub file copy path: {0}".format(dpath))
-                shutil.copy(file, dpath)
-        except Exception as e:
-            (exc_type, exc_obj, exc_tb) = sys.exc_info()
-            while exc_tb.tb_next and 'kobotouch_extended' in exc_tb.tb_next.tb_frame.f_code.co_filename:
-                exc_tb = exc_tb.tb_next
-            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-            if not skip_failed:
-                raise InvalidEPub(metadata.title, " and ".join(metadata.authors), e.message, fname=fname, lineno=exc_tb.tb_lineno)
-            else:
-                self.skip_renaming_files.add(metadata.uuid)
-                debug_print("Failed to process {0} by {1} with error: {2} (file: {3}, lineno: {4})".format(metadata.title, " and ".join(metadata.authors), e.message, fname, exc_tb.tb_lineno))
-                return True
         return True
 
     def upload_books(self, files, names, on_card=None, end_session=True, metadata=None):
