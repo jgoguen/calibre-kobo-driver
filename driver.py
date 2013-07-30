@@ -99,10 +99,8 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
     EXTRA_CUSTOMIZATION_DEFAULT.append(False)
     OPT_SKIP_FAILED = len(EXTRA_CUSTOMIZATION_MESSAGE) - 1
 
-    EXTRA_CUSTOMIZATION_MESSAGE.append('Hyphenate Files:::Select this to add soft hyphens to uploaded ePub files. The language used will be the language defined for the book in calibre. '
-                                                 ' It is necessary to have a LibreOffice/OpenOffice hyphenation dictionary in ' + os.path.join(config_dir, 'plugins', 'KoboTouchExtended') +
-                                                 ' named like hyph_{language}.dic, where {language} is the ISO 639 3-letter language code. For example, \'eng\' but not \'en_CA\'. The default dictionary to use '
-                                                 ' if none is found may be named \'hyph.dic\' instead.')
+    EXTRA_CUSTOMIZATION_MESSAGE.append('Hyphenate Files:::Select this to add a CSS file which enables hyphenation. The language used will be the language defined for the book in calibre. '
+                                                 ' Please see the README file for directions on adding/updating hyphenation dictionaries.')
     EXTRA_CUSTOMIZATION_DEFAULT.append(False)
     OPT_HYPHENATE = len(EXTRA_CUSTOMIZATION_MESSAGE) - 1
 
