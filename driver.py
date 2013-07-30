@@ -65,7 +65,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
     reference_kepub = os.path.join(configdir, 'reference.kepub.epub')
 
     minimum_calibre_version = (0, 9, 41)
-    version = (2, 0, 1)
+    version = (2, 0, 2)
 
     content_types = {
         "main": 6,
@@ -146,6 +146,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
         qsa = QScrollArea()
         qsa.setWidgetResizable(True)
         qsa.setWidget(cw)
+        qsa.validate = cw.validate
         desktop_geom = QCoreApplication.instance().desktop().availableGeometry()
         if desktop_geom.height() < 800:
             qsa.setBaseSize(qsa.size().width(), desktop_geom.height() - 100)
