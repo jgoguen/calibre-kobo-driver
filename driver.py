@@ -64,8 +64,8 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
     configdir = os.path.join(config_dir, 'plugins', 'KoboTouchExtended')
     reference_kepub = os.path.join(configdir, 'reference.kepub.epub')
 
-    minimum_calibre_version = (0, 9, 41)
-    version = (2, 0, 2)
+    minimum_calibre_version = (0, 9, 42)
+    version = (2, 1, 0)
 
     content_types = {
         "main": 6,
@@ -139,6 +139,13 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
     hyphenator = None
     kobo_js_re = re.compile(r'.*/?kobo.*\.js$', re.IGNORECASE)
     invalid_filename_chars_re = re.compile(r'[\/\\\?%\*:;\|\"\'><\$]', re.IGNORECASE | re.UNICODE)
+
+    def modifying_epub(self):
+        opts = self.settings().extra_customization
+        return self.modifying_css() or opts[self.OPT_CLEAN_MARKUP] or \
+            opts[self.OPT_EXTRA_FEATURES] or opts[self.OPT_DELETE_UNMANIFESTED] or \
+            opts[self.OPT_REPLACE_LANG] or opts[self.OPT_HYPHENATE] or \
+            opts[self.OPT_SMARTEN_PUNCTUATION]
 
     @classmethod
     def config_widget(cls):
@@ -214,7 +221,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
     def _modify_epub(self, file, metadata, container=None):
         if not file.endswith(EPUB_EXT):
             self.skip_renaming_files.add(metadata.uuid)
-            return True
+            return super(KOBOTOUCHEXTENDED, self)._modify_epub(file, metadata, container)
 
         debug_print("KoboTouchExtended:_modify_epub:Adding basic Kobo features to {0} by {1}".format(metadata.title, ' and '.join(metadata.authors)))
         opts = self.settings()
@@ -233,7 +240,10 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
             if container.is_drm_encumbered:
                 debug_print("KoboTouchExtended:_modify_epub:ERROR: ePub is DRM-encumbered, not modifying")
                 self.skip_renaming_files.add(metadata.uuid)
-                return opts.extra_customization[self.OPT_UPLOAD_ENCUMBERED]
+                if opts.extra_customization[self.OPT_UPLOAD_ENCUMBERED]:
+                    return super(KOBOTOUCHEXTENDED, self)._modify_epub(file, metadata, container)
+                else:
+                    return False
 
             # Add the conversion info file
             book_details = {}
@@ -339,7 +349,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
             else:
                 self.skip_renaming_files.add(metadata.uuid)
                 debug_print("Failed to process {0} by {1} with error: {2} (file: {3}, lineno: {4})".format(metadata.title, " and ".join(metadata.authors), e.message, fname, exc_tb.tb_lineno))
-                return True
+                return super(KOBOTOUCHEXTENDED, self)._modify_epub(file, metadata, container)
 
         # Everything below here is part of the 'extra features' bundle
         if opts.extra_customization[self.OPT_EXTRA_FEATURES]:
@@ -372,7 +382,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
                 else:
                     self.skip_renaming_files.add(metadata.uuid)
                     debug_print("Failed to process {0} by {1} with error: {2} (file: {3}, lineno: {4})".format(metadata.title, " and ".join(metadata.authors), e.message, fname, exc_tb.tb_lineno))
-                    return True
+                    return super(KOBOTOUCHEXTENDED, self)._modify_epub(file, metadata, container)
         else:
             self.skip_renaming_files.add(metadata.uuid)
         os.unlink(file)
@@ -385,21 +395,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
             debug_print("KoboTouchExtended:_modify_epub:Generated KePub file copy path: {0}".format(dpath))
             shutil.copy(file, dpath)
 
-        return True
-
-    def upload_books(self, files, names, on_card=None, end_session=True, metadata=None):
-        debug_print("KoboTouchExtended:upload_books:Enabling extra ePub features for Kobo devices")
-        i = 0
-        for file, n, mi in zip(files, names, metadata):
-            self.report_progress(i / float(len(files)), "Processing book: {0} by {1}".format(mi.title, " and ".join(mi.authors)))
-            mi.kte_calibre_name = n
-            self._modify_epub(file, mi)
-            i += 1
-
-        self.report_progress(0, 'Working...')
-        result = super(KOBOTOUCHEXTENDED, self).upload_books(files, names, on_card, end_session, metadata)
-
-        return result
+        return super(KOBOTOUCHEXTENDED, self)._modify_epub(file, metadata, container)
 
     def filename_callback(self, path, mi):
         opts = self.settings()
