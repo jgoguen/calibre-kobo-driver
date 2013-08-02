@@ -333,8 +333,5 @@ class KEPubContainer(EpubContainer):
             # Force open self-closing paragraph tags
             html = re.sub(ur'<p[^>/]*/>', ur'<p></p>', html, flags=re.UNICODE | re.MULTILINE)
 
-            # Force open self-closing script tags
-            html = re.sub(ur'<script (.+) ?/>', ur'<script \1></script>', html, flags=re.UNICODE | re.MULTILINE)
-
             self.dirty(name)
         self.flush_cache()
