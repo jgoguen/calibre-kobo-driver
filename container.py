@@ -216,10 +216,10 @@ class KEPubContainer(EpubContainer):
             nodeattrs = {}
             for key in node.keys():
                 nodeattrs[key] = node.get(key)
-    
+
             # reset current node, to start from scratch
             node.clear()
-    
+
             # restore node attributes
             for key in nodeattrs.keys():
                 node.set(key, nodeattrs[key])
@@ -326,9 +326,6 @@ class KEPubContainer(EpubContainer):
 
             # Force meta and link tags to be self-closing
             html = re.sub(ur'<(meta|link) ([^>]+)></(?:meta|link)>', ur'<\1 \2 />', html, flags=re.UNICODE | re.MULTILINE)
-
-            if name == 'index_split_000.xhtml':
-                self.log.info("HTML after meta/link replacement:\n{0}".format(html))
 
             # Force open script tags
             html = re.sub(ur'<script (.+) ?/>', ur'<script \1></script>', html, flags=re.UNICODE | re.MULTILINE)
