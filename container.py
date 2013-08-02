@@ -179,101 +179,71 @@ class KEPubContainer(EpubContainer):
         for name in [n for n in self.dirtied]:
             self.commit_item(name, keep_parsed=True)
 
-    def __add_kobo_spans_to_node(self, node):
-        if node is None or isinstance(node, etree._Comment):
-            return None
-        # Don't munge Processing Instruction nodes
-        if isinstance(node, etree._ProcessingInstruction):
-            if node.tail is not None:
-                node.tail = None
-            return node
 
-        if isinstance(node, basestring):
-            self.segment_counter += 1
-            groups = re.split(ur'(.*?[\.\!\?\:][\'"\u201d\u2019]?\s*)', node, flags=re.UNICODE | re.MULTILINE)
-            groups = [g.decode("utf-8") for g in groups if not re.match(r'^\s*$', g.strip(), re.UNICODE | re.MULTILINE)]
+    def __append_kobo_spans_from_text(self, node, text):
+        if text is not None:
+            # if text is only whitespace, don't add spans
+            if re.match(ur'^\s+$', text, flags=re.UNICODE | re.MULTILINE):
+                return False
+            else:
+                # split text in sentences
+                groups = re.split(ur'(.*?[\.\!\?\:][\'"\u201d\u2019]?\s*)', text, flags=re.UNICODE | re.MULTILINE)
+                # remove empty strings resulting from split()
+                groups = [g.decode("utf-8") for g in groups if g <> '']
 
-            # HACK: Account for nodes that have a whitespace-only text node
-            if len(groups) == 0 and re.match(ur'^\s+$', node, flags=re.UNICODE | re.MULTILINE):
-                return node
-
-            ngroups = len(groups)
-            if ngroups > 0:
-                cur_group = 0
-                text_container = etree.Element("{%s}span" % (XHTML_NAMESPACE,), attrib={"id": "kobo.{0}.{1}".format(self.paragraph_counter, self.segment_counter), "class": "koboSpan"})
+                # add each sentence in its own span
                 for g in groups:
-                    cur_group += 1
-                    if text_container.text is None:
-                        text_container.text = g
-                    elif cur_group < ngroups:
-                        self.segment_counter += 1
-                        span = etree.Element("{%s}span" % (XHTML_NAMESPACE,), attrib={"id": "kobo.{0}.{1}".format(self.paragraph_counter, self.segment_counter), "class": "koboSpan"})
-                        span.text = g
-                        text_container.append(span)
+                    span = etree.Element("{%s}span" % (XHTML_NAMESPACE,), attrib={"id": "kobo.{0}.{1}".format(self.paragraph_counter, self.segment_counter), "class": "koboSpan"})
+                    # tries to remove trailing spaces from the span:
+                    # if match succeds, returns a list like this: ['', '<g> without trailing spaces', 'trailing spaces', '']
+                    nospaces = re.split(ur'(^.*?)(\s+$)', g, flags=re.UNICODE)
+                    if len(nospaces) == 4:
+                        span.text = nospaces[1]
+                        span.tail = nospaces[2]
                     else:
-                        text_children = text_container.getchildren()
-                        if len(text_children) > 0 and text_children[-1] is not None:
-                            text_children[-1].tail = g
-                        else:
-                            if re.match(ur'^\s+$', g, flags=re.UNICODE | re.MULTILINE) or g[0] in NO_SPACE_BEFORE_CHARS:
-                                text_container.text += g
-                            else:
-                                text_container.text += " " + g
-                return text_container
-            return None
-        else:
-            # First process the text
-            newtext = None
-            if node.text is not None:
-                newtext = self.__add_kobo_spans_to_node(node.text)
+                        span.text = g
+                    node.append(span)
+                    self.segment_counter += 1
+                return True
+        return True
 
-            # Clone the rest of the node, clear the node, and add the text node
-            children = deepcopy(node.getchildren())
+    def __add_kobo_spans_to_node(self, node):
+        # process node only if it is not a comment or a processing instruction
+        if not (node is None or isinstance(node, etree._Comment) or isinstance(node, etree._ProcessingInstruction) ):
+            # save node content for later
+            nodetext = node.text
+            nodechildren = deepcopy(node.getchildren())
             nodeattrs = {}
             for key in node.keys():
                 nodeattrs[key] = node.get(key)
+    
+            # reset current node, to start from scratch
             node.clear()
+    
+            # restore node attributes
             for key in nodeattrs.keys():
                 node.set(key, nodeattrs[key])
-            if newtext is not None:
-                if isinstance(newtext, basestring):
-                    node.text = newtext
-                else:
-                    node.append(newtext)
 
-            # For each child, process the child and then process and append its tail
-            for elem in children:
-                elemtail = deepcopy(elem.tail) if elem.tail is not None else None
-                newelem = self.__add_kobo_spans_to_node(elem)
-                if newelem is not None:
-                    node.append(newelem)
+            # the node text is converted to spans
+            if nodetext is not None:
+                if not self.__append_kobo_spans_from_text(node, nodetext):
+                    # didn't add spans, restore text
+                    node.text = nodetext
 
-                newtail = None
-                if elemtail is not None:
-                    newtail = self.__add_kobo_spans_to_node(elemtail)
-                    if newtail is not None:
-                        if isinstance(newtail, basestring):
-                            node_children = node.getchildren()
-                            if len(node_children) > 0 and node_children[-1] is not None:
-                                node_children[-1].tail = newtail
-                            else:
-                                if re.match(ur'^\s+$', newtail, flags=re.UNICODE | re.MULTILINE):
-                                    if node.text is not None:
-                                        node.text += newtail
-                                    else:
-                                        node.text = newtail
-                                else:
-                                    if node.text is not None:
-                                        node.text += u" " + newtail
-                                    else:
-                                        node.text = newtail
-                        else:
-                            node.append(newtail)
+            # re-add the node children
+            for child in nodechildren:
+                # save child tail for later
+                childtail = child.tail
+                node.append(self.__add_kobo_spans_to_node(child))
+                # the child tail is converted to spans
+                if childtail is not None:
+                    if not self.__append_kobo_spans_from_text(node, childtail):
+                        # didn't add spans, restore tail on last child
+                        node[-1].tail = childtail
 
                 self.paragraph_counter += 1
                 self.segment_counter = 1
-            return node
-        return None
+        return node
 
     def add_kobo_spans(self):
         for name in self.get_html_names():
@@ -283,7 +253,7 @@ class KEPubContainer(EpubContainer):
                 self.log.info("\tSkipping file")
                 continue
             self.paragraph_counter = 1
-            self.segment_counter = 0
+            self.segment_counter = 1
             body = root.xpath('./xhtml:body', namespaces={'xhtml': XHTML_NAMESPACE})[0]
             body = self.__add_kobo_spans_to_node(body)
             root = etree.tostring(root, pretty_print=True)
