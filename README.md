@@ -112,8 +112,13 @@ You may also prefer to contribute in some other way. You may [donate to me via P
 [paypaldonate]: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=UXNT7PRVZ5HGA
 [driverfundraiser]: http://gogetfunding.com/project/kobo-touch-extended-driver-development
 
+# Asking Questions
+Wondering how to do something? Want to know if something is possible? Ask your question on the [MobileRead Forum thread for this plugin][mrthread].
+
+[mrthread]: http://www.mobileread.com/forums/showthread.php?t=211135
+
 # Reporting a Bug
-Found a bug with this plugin? Great! Please use the [Launchpad issue tracker][lp-bugs] to send me reports of issues or questions. Under no circumstances should I be emailed directly unless I have asked to have something sent to me. Any emails I haven't asked for **may be silently ignored** at my sole discretion. Everyone can benefit from a public bug tracker, but only one person benefits from a private email.
+Found a bug with this plugin? Great! Please use the [Launchpad issue tracker][lp-bugs] to send me reports of issues or feature requests. Under no circumstances should I be emailed directly unless I have asked to have something sent to me. Any emails I haven't asked for **may be silently ignored** at my sole discretion. Everyone can benefit from a public bug tracker, but only one person benefits from a private email.
 
 [lp-bugs]: https://bugs.launchpad.net/calibre-kobo-driver
 
