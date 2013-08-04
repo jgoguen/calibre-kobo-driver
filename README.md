@@ -48,24 +48,16 @@ To use this plugin after installing:
 1. Click the **Send to device** button.
 
 ## Hyphenation
-This plugin includes the ability to add a CSS file to each book enabling KePub hyphenation. The standard hyphenation dictionaries are somewhat deficient for some languages; fixing this (or adding your own dictionary) requires a little work and requires that you can create gzipped tarballs (.tgz files):
+This plugin includes the ability to add a CSS file to each book enabling KePub hyphenation. The standard hyphenation dictionaries are somewhat deficient for some languages; fixing this (or adding your own dictionary) requires a little work and requires that you can create gzipped tarballs (.tgz files). Note that you can only update existing dictionaries, you cannot add new ones.
 
-1. For already-present languages:
-	1. Somewhere on your computer, create the directory structure `usr/local/Kobo/hyphenDicts`
-	1. Download the LibreOffice (or OpenOffice) hyphenation dictionary for your language
-		1. This will be a file with the 'oxt' extension. This is just a ZIP archive with a different name.
-	1. Unzip the OXT file and look for the file named as `hyph\_[language].dic`.
-	1. Copy the hyphenation dictionary to the `hyphenDicts` folder without changing the name.
-	1. Add the `usr` folder to `KoboRoot.tgz`
-		1. UNIX users (Linux, Solaris, BSD, Mac) can, from the command line, run `tar czf KoboRoot.tgz usr/` from wherever you put the `usr` directory.
-		1. Windows users, you're on your own. Contributions of reliable Windows directions are welcome!
-1. For other languages:
-	1. Do everything for already-present languages up to (not including) creating `KoboRoot.tgz`
-	1. Create `usr/share/hyphen`
-	1. Do one of the following, where <lang code> is the two-letter language code and <region code> is the two-letter upper-case regional code. For example, `pt\_PT` represents Portugese spoken in Portugal and `pt\_BR` represents Portugese spoken in Brazil; `en\_US` represents English spoken in the USA, `en\_CA` represents English spoken in Canada, and `en\_GB` represents English spoken in the United Kingdom.
-		1. Create a symlink named `hyph\_<lang code>\_<region code>.dic` pointing to `/usr/local/Kobo/hyphenDicts/hyph\_<lang code>.dic` (this will be a broken symlink, you may have to force its creation)
-		1. Copy the same file you put in `usr/local/Kobo/hyphenDicts/` into `usr/share/hyphen/` and change the name to `hyph\_<lang code>\_<region code>.dic`
-	1. Create `KoboRoot.tgz` as outlined for already-present languages.
+1. Somewhere on your computer, create the directory structure `usr/local/Kobo/hyphenDicts`
+1. Download the LibreOffice (or OpenOffice) hyphenation dictionary for your language
+	1. This will be a file with the 'oxt' extension. This is just a ZIP archive with a different name.
+1. Unzip the OXT file and look for the file named as `hyph\_[language].dic`.
+1. Copy the hyphenation dictionary to the `hyphenDicts` folder without changing the name.
+1. Add the `usr` folder to `KoboRoot.tgz`
+	1. UNIX users (Linux, Solaris, BSD, Mac) can, from the command line, run `tar czf KoboRoot.tgz usr/` from wherever you put the `usr` directory.
+	1. Windows users, you're on your own. Contributions of reliable Windows directions are welcome!
 
 Once you have created `KoboRoot.tgz` copy it to the `.kobo` directory on your Kobo device, unmount/eject the drive, and unplug the device. You will see a screen indicating that the Kobo device is updating; it is not, but this method takes advantage of the Kobo update mechanism to load the necessary dictionary files. Make sure you keep your version of `KoboRoot.tgz` around, you will need to re-apply it after every Kobo software update!
 
@@ -78,7 +70,7 @@ Provided languages are:
 1. Italian (it\_IT)
 1. Portugese (pt\_PT)
 
-Please note that even with this feature, hyphenation is not exact.
+Please note that even with this feature, hyphenation is not exact. Also remember that you can only update existing dictionaries.
 
 ## Kobo JavaScript Extraction
 This plugin includes the ability to extract the Kobo JavaScript file from a free Kobo-supplied KePub which is not encumbered by any Digital Restrictions Management (DRM). Enabling this requires a little work:
