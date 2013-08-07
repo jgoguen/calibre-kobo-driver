@@ -4,4 +4,4 @@ __license__ = 'GPL v3'
 __copyright__ = '2013, Joel Goguen <jgoguen@jgoguen.ca>'
 __docformat__ = 'markdown en'
 
-from calibre_plugins.kobotouch_extended.driver import KOBOTOUCHEXTENDED
+from calibre_plugins.kobotouch_extended.conversion.kepub_output import KEPubOutput

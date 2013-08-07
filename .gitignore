@@ -35,17 +35,17 @@ nosetests.xml
 .pydevproject
 
 # IDE files
-.project
-.settings
-.pydevproject
-.includepath
-.classpath
-*.xcodeproj
-*.kpf
-*.komodoproject
-.komodotools
+/.settings
+/.includepath
+/.classpath
+/*.xcodeproj
+/*.kpf
+/*.komodoproject
+/.komodotools
 
-test-books/
-KoboTouchExtended.zip
-TODO
+/test-books/
+/KoboTouchExtended.zip
+/TODO
 /.checkstyle
+/KePub Output.zip
+/__init__.py

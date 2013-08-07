@@ -8,29 +8,16 @@ import os
 import re
 import shutil
 import string
-import sys
-import time
 
 from lxml import etree
-from lxml.etree import XMLSyntaxError
 
 from calibre import guess_type
-from calibre import prepare_string_for_xml
-from calibre.constants import DEBUG
-from calibre.constants import iswindows
-from calibre.ebooks.chardet import substitute_entites
-from calibre.ebooks.chardet import xml_to_unicode
 from calibre.ebooks.conversion.plugins.epub_input import ADOBE_OBFUSCATION
 from calibre.ebooks.conversion.plugins.epub_input import IDPF_OBFUSCATION
 from calibre.ebooks.conversion.utils import HeuristicProcessor
-from calibre.ebooks.oeb.polish.container import OPF_NAMESPACES
 from calibre.ebooks.oeb.polish.container import EpubContainer
-from calibre.ptempfile import PersistentTemporaryDirectory
-from calibre.utils import logging
-from calibre.utils import zipfile
 from calibre.utils.smartypants import smartyPants
 from copy import deepcopy
-from urllib import unquote
 
 HTML_MIMETYPES = frozenset(['text/html', 'application/xhtml+xml'])
 EXCLUDE_FROM_ZIP = frozenset(['mimetype', '.DS_Store', 'thumbs.db', '.directory'])
@@ -140,25 +127,25 @@ class KEPubContainer(EpubContainer):
         '''
         if name not in self.name_path_map or name not in self.mime_map:
             raise ValueError("A valid file name must be given (got: {0})".format(name))
-        for file in self.get_html_names():
-            self.log.info("Adding reference to {0} to file {1}".format(name, file))
-            root = self.parsed(file)
+        for infile in self.get_html_names():
+            self.log.info("Adding reference to {0} to file {1}".format(name, infile))
+            root = self.parsed(infile)
             if root is None:
-                self.log.error("Could not retrieve content file {0}".format(file))
+                self.log.error("Could not retrieve content file {0}".format(infile))
                 continue
             head = root.xpath('./xhtml:head', namespaces={'xhtml': XHTML_NAMESPACE})
             if head is None:
-                self.log.error("Could not find a <head> element in content file {0}".format(file))
+                self.log.error("Could not find a <head> element in content file {0}".format(infile))
                 continue
             head = head[0]
             if head is None:
-                self.log.error("A <head> section was found but was undefined in content file {0}".format(file))
+                self.log.error("A <head> section was found but was undefined in content file {0}".format(infile))
                 continue
 
             if self.mime_map[name] == guess_type('a.css')[0]:
-                elem = head.makeelement("{%s}link" % XHTML_NAMESPACE, rel='stylesheet', href=os.path.relpath(name, os.path.dirname(file)).replace(os.sep, '/'))
+                elem = head.makeelement("{%s}link" % XHTML_NAMESPACE, rel='stylesheet', href=os.path.relpath(name, os.path.dirname(infile)).replace(os.sep, '/'))
             elif self.mime_map[name] == guess_type('a.js')[0]:
-                elem = head.makeelement("{%s}script" % XHTML_NAMESPACE, type='text/javascript', src=os.path.relpath(name, os.path.dirname(file)).replace(os.sep, '/'))
+                elem = head.makeelement("{%s}script" % XHTML_NAMESPACE, type='text/javascript', src=os.path.relpath(name, os.path.dirname(infile)).replace(os.sep, '/'))
             else:
                 elem = None
 
@@ -166,7 +153,7 @@ class KEPubContainer(EpubContainer):
                 head.append(elem)
                 if self.mime_map[name] == guess_type('a.css')[0]:
                     self.fix_tail(elem)
-                self.dirty(file)
+                self.dirty(infile)
 
     def get_raw(self, name):
         self.commit_item(name, keep_parsed=False)
@@ -209,7 +196,7 @@ class KEPubContainer(EpubContainer):
 
     def __add_kobo_spans_to_node(self, node):
         # process node only if it is not a comment or a processing instruction
-        if not (node is None or isinstance(node, etree._Comment) or isinstance(node, etree._ProcessingInstruction) ):
+        if not (node is None or isinstance(node, etree._Comment) or isinstance(node, etree._ProcessingInstruction)):
             # save node content for later
             nodetext = node.text
             nodechildren = deepcopy(node.getchildren())
