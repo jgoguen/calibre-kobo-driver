@@ -4,15 +4,19 @@ __license__ = 'GPL v3'
 __copyright__ = '2013, Joel Goguen <jgoguen@jgoguen.ca>'
 __docformat__ = 'markdown en'
 
+# Be careful editing this! This file has to work in two different packages at once,
+# so don't import anything from calibre_plugins.kobotouch_extended or
+# calibre_plugins.koboconversion
+
 import os
 import re
 
 from calibre.constants import config_dir
-from calibre.ebooks.oeb.polish.container import OPF_NAMESPACES
 from calibre.ebooks.metadata.book.base import NULL_VALUES
+from calibre.ebooks.oeb.polish.container import OPF_NAMESPACES
+from calibre.ebooks.oeb.polish.container import EpubContainer
 from calibre.ptempfile import PersistentTemporaryFile
 from calibre.utils.logging import default_log
-from calibre_plugins.kobotouch_extended.container import KEPubContainer
 
 kobo_js_re = re.compile(r'.*/?kobo.*\.js$', re.IGNORECASE)
 XML_NAMESPACE = 'http://www.w3.org/XML/1998/namespace'
@@ -107,7 +111,7 @@ def modify_epub(container, filename, metadata=None, opts={}):
                 break
         if not skip_js:
             if os.path.isfile(reference_kepub):
-                reference_container = KEPubContainer(reference_kepub, default_log)
+                reference_container = EpubContainer(reference_kepub, default_log)
                 for name in reference_container.name_path_map:
                     if kobo_js_re.match(name):
                         jsname = container.copy_file_to_container(os.path.join(reference_container.root, name), name='kobo.js')

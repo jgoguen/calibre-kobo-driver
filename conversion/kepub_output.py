@@ -8,21 +8,21 @@ import json
 import os
 
 from calibre.constants import config_dir
-from calibre.customize.conversion import OptionRecommendation
 from calibre.customize.conversion import OutputFormatPlugin
+from calibre.customize.conversion import OptionRecommendation
 from calibre.ebooks.conversion.plugins.epub_output import EPUBOutput
-from calibre.ebooks.metadata.book.base import Metadata
 from calibre.ebooks.metadata.book.base import NULL_VALUES
+from calibre.ebooks.metadata.book.base import Metadata
 from calibre.utils.logging import default_log
-from calibre_plugins.kobotouch_extended.common import modify_epub
-from calibre_plugins.kobotouch_extended.container import KEPubContainer
+from calibre_plugins.koboconversion.common import modify_epub
+from calibre_plugins.koboconversion.container import KEPubContainer
 from datetime import datetime
 
 class KEPubOutput(OutputFormatPlugin):
     name = 'KePub Output'
     author = 'Joel Goguen'
     file_type = 'kepub'
-    version = (2, 2, 0)
+    version = (2, 2, 1)
     minimum_calibre_version = (0, 9, 42)
 
     epub_output_plugin = None
@@ -59,14 +59,12 @@ class KEPubOutput(OutputFormatPlugin):
         OutputFormatPlugin.__init__(self, *args, **kwargs)
 
     def gui_configuration_widget(self, parent, get_option_by_name, get_option_help, db, book_id=None):
-        from calibre_plugins.kobotouch_extended.conversion.config import PluginWidget
+        from calibre_plugins.koboconversion.conversion.config import PluginWidget
         return PluginWidget(parent, get_option_by_name, get_option_help, db, book_id)
 
     def convert(self, oeb_book, output, input_plugin, opts, log):
         self.epub_output_plugin.convert(oeb_book, output, input_plugin, opts, log)
         container = KEPubContainer(output, default_log)
-        import shutil
-        shutil.copyfile(os.path.join(container.opf_dir, container.opf_name), '/home/jgoguen/output.opf')
 
         if container.is_drm_encumbered:
             return

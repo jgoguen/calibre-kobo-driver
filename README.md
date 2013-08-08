@@ -38,7 +38,7 @@ To install the conversion output format plugin from source, you must rename **co
 1. common.py
 1. conversion
 1. css
-1. plugin-import-name-kobotouch\_extended.txt
+1. plugin-import-name-koboconversion.txt
 
 To create a ZIP file:
 

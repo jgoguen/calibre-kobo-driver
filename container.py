@@ -4,6 +4,10 @@ __license__ = 'GPL v3'
 __copyright__ = '2010, Kovid Goyal <kovid@kovidgoyal.net>; 2013, Joel Goguen <jgoguen@jgoguen.ca>'
 __docformat__ = 'restructuredtext en'
 
+# Be careful editing this! This file has to work in two different packages at once,
+# so don't import anything from calibre_plugins.kobotouch_extended or
+# calibre_plugins.koboconversion
+
 import os
 import re
 import shutil

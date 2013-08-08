@@ -55,7 +55,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
     FORMATS = set(['kepub', 'epub', 'cbr', 'cbz', 'pdf', 'txt'])
 
     minimum_calibre_version = (0, 9, 42)
-    version = (2, 2, 0)
+    version = (2, 2, 1)
 
     content_types = {
         "main": 6,
