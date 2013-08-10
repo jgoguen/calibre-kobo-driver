@@ -22,35 +22,25 @@ class KEPubOutput(OutputFormatPlugin):
     name = 'KePub Output'
     author = 'Joel Goguen'
     file_type = 'kepub'
-    version = (2, 2, 1)
+    version = (2, 2, 2)
     minimum_calibre_version = (0, 9, 42)
 
     epub_output_plugin = None
     configdir = os.path.join(config_dir, 'plugins')
     reference_kepub = os.path.join(configdir, 'reference.kepub.epub')
     options = set([
-                   OptionRecommendation(name='opt_kepub_enable_extended_features', recommended_value=True, level=OptionRecommendation.HIGH,
-                                        help='Choose whether to enable extra customisations'),
-                   OptionRecommendation(name='opt_kepub_hyphenate', recommended_value=True,
-                                 level=OptionRecommendation.MED,
+                   OptionRecommendation(name='kepub_hyphenate', recommended_value=True,
                                  help='Select this to add a CSS file which enables hyphenation. '
                                  'The language used will be the language defined for the book in '
                                  'calibre. Please see the README file for directions on updating '
                                  'hyphenation dictionaries.'),
-                   OptionRecommendation(name='opt_kepub_replace_lang', recommended_value=True,
-                                 level=OptionRecommendation.LOW,
+                   OptionRecommendation(name='kepub_replace_lang', recommended_value=True,
                                  help='Select this to replace the defined language in each '
                                  'content file inside the ePub.'),
-                   OptionRecommendation(name='opt_kepub_clean_markup', recommended_value=True,
-                                 level=OptionRecommendation.MED,
+                   OptionRecommendation(name='kepub_clean_markup', recommended_value=True,
                                  help='Select this to clean up the internal ePub markup.')
     ])
-    recommendations = set([
-                           ('opt_kepub_enable_extended_features', True, OptionRecommendation.HIGH),
-                           ('opt_kepub_hyphenate', True, OptionRecommendation.MED),
-                           ('opt_kepub_replace_lang', True, OptionRecommendation.LOW),
-                           ('opt_kepub_clean_markup', True, OptionRecommendation.MED)
-    ])
+    recommendations = set([])
 
     def __init__(self, *args, **kwargs):
         self.epub_output_plugin = EPUBOutput(*args, **kwargs)
@@ -98,9 +88,9 @@ class KEPubOutput(OutputFormatPlugin):
         mi.language
 
         modify_epub(container, output, metadata=mi, opts={
-                                                    'clean_markup': opts.opt_kepub_clean_markup,
-                                                    'hyphenate': opts.opt_kepub_hyphenate,
-                                                    'replace_lang': opts.opt_kepub_replace_lang,
+                                                    'clean_markup': opts.kepub_clean_markup,
+                                                    'hyphenate': opts.kepub_hyphenate,
+                                                    'replace_lang': opts.kepub_replace_lang,
                                                     'smarten_punctuation': False,
-                                                    'extended_kepub_features': opts.opt_kepub_enable_extended_features
+                                                    'extended_kepub_features': True
         })

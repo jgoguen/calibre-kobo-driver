@@ -22,9 +22,12 @@ kobo_js_re = re.compile(r'.*/?kobo.*\.js$', re.IGNORECASE)
 XML_NAMESPACE = 'http://www.w3.org/XML/1998/namespace'
 configdir = os.path.join(config_dir, 'plugins')
 reference_kepub = os.path.join(configdir, 'reference.kepub.epub')
+version = (2, 2, 3)
+minimum_calibre_version = (0, 9, 42)
 
 
 def modify_epub(container, filename, metadata=None, opts={}):
+    print(str(opts))
     # Search for the ePub cover
     found_cover = False
     opf = container.opf
