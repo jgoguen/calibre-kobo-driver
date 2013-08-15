@@ -4,12 +4,13 @@ __license__ = 'GPL v3'
 __copyright__ = '2013, Joel Goguen <jgoguen@jgoguen.ca>'
 __docformat__ = 'markdown en'
 
-import textwrap
+import importlib
 
-from calibre import prepare_string_for_xml
 from calibre.gui2.convert import Widget
 from calibre.gui2.convert.epub_output import PluginWidget as EPUBPluginWidget
 from calibre.gui2.convert.epub_output_ui import Ui_Form as EPUBUIForm
+from calibre.gui2.preferences.conversion import OutputOptions as BaseOutputOptions
+
 
 class PluginWidget(EPUBPluginWidget, EPUBUIForm):
     TITLE = 'KePub Output'
@@ -35,8 +36,6 @@ class PluginWidget(EPUBPluginWidget, EPUBUIForm):
         from PyQt4 import QtCore
         from PyQt4 import QtGui
         from calibre.gui2.convert.epub_output_ui import _fromUtf8
-
-        w = textwrap.TextWrapper(80)
 
         rows = self.gridLayout.rowCount() - 1
 
@@ -68,3 +67,10 @@ class PluginWidget(EPUBPluginWidget, EPUBUIForm):
 
         # Copy from calibre.gui2.convert.epub_output_ui.Ui_Form to make the new additions work
         QtCore.QMetaObject.connectSlotsByName(Form)
+
+
+class OutputOptions(BaseOutputOptions):
+    def load_conversion_widgets(self):
+        super(OutputOptions, self).load_conversion_widgets()
+        self.conversion_widgets.append(PluginWidget)
+        self.conversion_widgets = sorted(self.conversion_widgets, key=lambda x: x.TITLE)

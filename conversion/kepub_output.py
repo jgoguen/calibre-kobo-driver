@@ -14,31 +14,27 @@ from calibre.ebooks.conversion.plugins.epub_output import EPUBOutput
 from calibre.ebooks.metadata.book.base import NULL_VALUES
 from calibre.ebooks.metadata.book.base import Metadata
 from calibre.utils.logging import default_log
+from calibre_plugins.koboconversion.common import plugin_minimum_calibre_version
+from calibre_plugins.koboconversion.common import plugin_version
 from calibre_plugins.koboconversion.common import modify_epub
 from calibre_plugins.koboconversion.container import KEPubContainer
 from datetime import datetime
+
 
 class KEPubOutput(OutputFormatPlugin):
     name = 'KePub Output'
     author = 'Joel Goguen'
     file_type = 'kepub'
-    version = (2, 2, 2)
-    minimum_calibre_version = (0, 9, 42)
+    version = plugin_version
+    minimum_calibre_version = plugin_minimum_calibre_version
 
     epub_output_plugin = None
     configdir = os.path.join(config_dir, 'plugins')
     reference_kepub = os.path.join(configdir, 'reference.kepub.epub')
     options = set([
-                   OptionRecommendation(name='kepub_hyphenate', recommended_value=True,
-                                 help='Select this to add a CSS file which enables hyphenation. '
-                                 'The language used will be the language defined for the book in '
-                                 'calibre. Please see the README file for directions on updating '
-                                 'hyphenation dictionaries.'),
-                   OptionRecommendation(name='kepub_replace_lang', recommended_value=True,
-                                 help='Select this to replace the defined language in each '
-                                 'content file inside the ePub.'),
-                   OptionRecommendation(name='kepub_clean_markup', recommended_value=True,
-                                 help='Select this to clean up the internal ePub markup.')
+        OptionRecommendation(name='kepub_hyphenate', recommended_value=True, help='Select this to add a CSS file which enables hyphenation. The language used will be the language defined for the book in calibre. Please see the README file for directions on updating hyphenation dictionaries.'),
+        OptionRecommendation(name='kepub_replace_lang', recommended_value=True, help='Select this to replace the defined language in each content file inside the ePub.'),
+        OptionRecommendation(name='kepub_clean_markup', recommended_value=True, help='Select this to clean up the internal ePub markup.')
     ])
     recommendations = set([])
 
@@ -61,8 +57,8 @@ class KEPubOutput(OutputFormatPlugin):
 
         # Write the details file
         o = {
-             'kepub_output_version': ".".join([str(n) for n in self.version]),
-             'kepub_output_currenttime': datetime.utcnow().ctime()
+            'kepub_output_version': ".".join([str(n) for n in self.version]),
+            'kepub_output_currenttime': datetime.utcnow().ctime()
         }
         kte_data_file = self.temporary_file('_KePubOutputPluginInfo')
         kte_data_file.write(json.dumps(o))
@@ -88,9 +84,9 @@ class KEPubOutput(OutputFormatPlugin):
         mi.language
 
         modify_epub(container, output, metadata=mi, opts={
-                                                    'clean_markup': opts.kepub_clean_markup,
-                                                    'hyphenate': opts.kepub_hyphenate,
-                                                    'replace_lang': opts.kepub_replace_lang,
-                                                    'smarten_punctuation': False,
-                                                    'extended_kepub_features': True
+            'clean_markup': opts.kepub_clean_markup,
+            'hyphenate': opts.kepub_hyphenate,
+            'replace_lang': opts.kepub_replace_lang,
+            'smarten_punctuation': False,
+            'extended_kepub_features': True
         })

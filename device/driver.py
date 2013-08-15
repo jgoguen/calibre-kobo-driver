@@ -15,6 +15,8 @@ from calibre.constants import config_dir
 from calibre.devices.kobo.driver import KOBOTOUCH
 from calibre.devices.usbms.driver import debug_print
 from calibre.utils.logging import default_log
+from calibre_plugins.kobotouch_extended.common import plugin_minimum_calibre_version
+from calibre_plugins.kobotouch_extended.common import plugin_version
 from calibre_plugins.kobotouch_extended.common import modify_epub
 from calibre_plugins.kobotouch_extended.container import KEPubContainer
 from datetime import datetime
@@ -32,7 +34,7 @@ class InvalidEPub(ValueError):
         self.message = message
         self.fname = fname
         self.lineno = lineno
-        ValueError.__init__(self, _("Failed to parse '{0}' by '{1}' with error: '{2}' (file: {3}, line: {4})".format(name, author, message, fname, lineno)))
+        ValueError.__init__(self, "Failed to parse '{0}' by '{1}' with error: '{2}' (file: {3}, line: {4})".format(name, author, message, fname, lineno))
 
 
 class KOBOTOUCHEXTENDED(KOBOTOUCH):
@@ -54,8 +56,8 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
     reference_kepub = os.path.join(configdir, 'reference.kepub.epub')
     FORMATS = set(['kepub', 'epub', 'cbr', 'cbz', 'pdf', 'txt'])
 
-    minimum_calibre_version = (0, 9, 42)
-    version = (2, 2, 2)
+    minimum_calibre_version = plugin_minimum_calibre_version
+    version = plugin_version
 
     content_types = {
         "main": 6,
@@ -79,13 +81,11 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
     EXTRA_CUSTOMIZATION_DEFAULT.append(False)
     OPT_UPLOAD_ENCUMBERED = len(EXTRA_CUSTOMIZATION_MESSAGE) - 1
 
-    EXTRA_CUSTOMIZATION_MESSAGE.append('Silently Ignore Failed Conversions:::Select this to not upload any book that fails conversion to kepub. If this is not selected, the upload process '
-                                                 'will be stopped at the first book that fails. If this is selected, failed books will be silently removed from the upload queue.')
+    EXTRA_CUSTOMIZATION_MESSAGE.append('Silently Ignore Failed Conversions:::Select this to not upload any book that fails conversion to kepub. If this is not selected, the upload process will be stopped at the first book that fails. If this is selected, failed books will be silently removed from the upload queue.')
     EXTRA_CUSTOMIZATION_DEFAULT.append(False)
     OPT_SKIP_FAILED = len(EXTRA_CUSTOMIZATION_MESSAGE) - 1
 
-    EXTRA_CUSTOMIZATION_MESSAGE.append('Hyphenate Files:::Select this to add a CSS file which enables hyphenation. The language used will be the language defined for the book in calibre. '
-                                                 ' Please see the README file for directions on adding/updating hyphenation dictionaries.')
+    EXTRA_CUSTOMIZATION_MESSAGE.append('Hyphenate Files:::Select this to add a CSS file which enables hyphenation. The language used will be the language defined for the book in calibre. Please see the README file for directions on adding/updating hyphenation dictionaries.')
     EXTRA_CUSTOMIZATION_DEFAULT.append(False)
     OPT_HYPHENATE = len(EXTRA_CUSTOMIZATION_MESSAGE) - 1
 
@@ -194,11 +194,11 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
             container.copy_file_to_container(kte_data_file.name, name='driverinfo.kte', mt='application/json')
 
             modify_epub(container, infile, metadata=metadata, opts={
-                                    'clean_markup': opts.extra_customization[self.OPT_CLEAN_MARKUP],
-                                    'hyphenate': opts.extra_customization[self.OPT_HYPHENATE],
-                                    'replace_lang': opts.extra_customization[self.OPT_REPLACE_LANG],
-                                    'smarten_punctuation': opts.extra_customization[self.OPT_SMARTEN_PUNCTUATION],
-                                    'extended_kepub_features': opts.extra_customization[self.OPT_EXTRA_FEATURES]
+                'clean_markup': opts.extra_customization[self.OPT_CLEAN_MARKUP],
+                'hyphenate': opts.extra_customization[self.OPT_HYPHENATE],
+                'replace_lang': opts.extra_customization[self.OPT_REPLACE_LANG],
+                'smarten_punctuation': opts.extra_customization[self.OPT_SMARTEN_PUNCTUATION],
+                'extended_kepub_features': opts.extra_customization[self.OPT_EXTRA_FEATURES]
             })
         except Exception as e:
             exc_tb = sys.exc_info()[2]

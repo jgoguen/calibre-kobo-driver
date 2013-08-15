@@ -38,7 +38,7 @@ class ParseError(ValueError):
     def __init__(self, name, desc):
         self.name = name
         self.desc = desc
-        ValueError.__init__(self, _('Failed to parse: {0} with error: {1}').format(name, desc))
+        ValueError.__init__(self, 'Failed to parse: {0} with error: {1}'.format(name, desc))
 
 
 class KEPubContainer(EpubContainer):
@@ -170,7 +170,6 @@ class KEPubContainer(EpubContainer):
         for name in [n for n in self.dirtied]:
             self.commit_item(name, keep_parsed=True)
 
-
     def __append_kobo_spans_from_text(self, node, text):
         if text is not None:
             # if text is only whitespace, don't add spans
@@ -180,7 +179,7 @@ class KEPubContainer(EpubContainer):
                 # split text in sentences
                 groups = re.split(ur'(.*?[\.\!\?\:][\'"\u201d\u2019]?\s*)', text, flags=re.UNICODE | re.MULTILINE)
                 # remove empty strings resulting from split()
-                groups = [g.decode("utf-8") for g in groups if g <> '']
+                groups = [g.decode("utf-8") for g in groups if g != '']
 
                 # add each sentence in its own span
                 for g in groups:

@@ -22,8 +22,8 @@ kobo_js_re = re.compile(r'.*/?kobo.*\.js$', re.IGNORECASE)
 XML_NAMESPACE = 'http://www.w3.org/XML/1998/namespace'
 configdir = os.path.join(config_dir, 'plugins')
 reference_kepub = os.path.join(configdir, 'reference.kepub.epub')
-version = (2, 2, 3)
-minimum_calibre_version = (0, 9, 42)
+plugin_version = (2, 2, 3)
+plugin_minimum_calibre_version = (0, 9, 42)
 
 
 def modify_epub(container, filename, metadata=None, opts={}):
@@ -98,7 +98,6 @@ def modify_epub(container, filename, metadata=None, opts={}):
     # Now smarten punctuation
     if 'smarten_punctuation' in opts and opts['smarten_punctuation'] is True:
         container.smarten_punctuation()
-
 
     if 'extended_kepub_features' in opts and opts['extended_kepub_features'] is True:
         if metadata is not None:
