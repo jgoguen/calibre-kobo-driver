@@ -156,8 +156,6 @@ When submitting a bug, I require the following information as a minimum, but any
 	1. To get the calibre debug log, click the arrow beside the "Preferences" menu, choose "Restart in debug mode", repeat the same action that caused the issue, and close calibre. The debug log will be automatically displayed to you.
 
 # Known Issues
-Bookmarks, annotations, highlighting, and anything else that's highly dependent on your current position may work fine or may have slight issues. You may find that some books work better or worse than others. This issue is pending investigation.
-
 If you have previously installed the device driver plugin in calibre 0.9.18 or earlier, then you upgrade to calibre 0.9.19 or later and can't update the plugin or install the conversion output format plugin, you must manually replace the device driver plugin ZIP file:
 
 1. Download the latest version of the code.
