@@ -103,8 +103,8 @@ Both plugins includes the ability to extract the Kobo JavaScript file from a fre
 1. Obtain a KePub file from Kobo which is provided to you without any Digital Restrictions Management.
 	1. Some of [Kobo's free eBooks][kobofreebooks] are provided without DRM
 	1. In some regions, Kobo devices are sold with free ebooks in the `.kobo/kepub/` folder which do not have DRM
-1. Copy the KePub file to the KoboTouchExtended configuration directory
-	1. To find the configuration directory, open calibre's preferences, choose **Miscellaneous**, and click **Open calibre configuration directory**
+1. Copy the KePub file to the calibre plugins directory
+	1. To find the plugins directory, open calibre's preferences, choose **Miscellaneous**, and click **Open calibre configuration directory**
 	1. Go to the **plugins** directory
 1. Rename the KePub file to `reference.kepub.epub`
 	1. Windows users must be sure to [show file extensions in Windows Explorer][winshowext] to be able to properly rename the file.
