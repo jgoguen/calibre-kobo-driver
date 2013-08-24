@@ -54,7 +54,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
     description = 'Communicate with the Kobo Touch, Glo, and Mini firmwares and enable extended Kobo ePub features.'
     configdir = os.path.join(config_dir, 'plugins')
     reference_kepub = os.path.join(configdir, 'reference.kepub.epub')
-    FORMATS = set(['kepub', 'epub', 'cbr', 'cbz', 'pdf', 'txt'])
+    FORMATS = ['kepub', 'epub', 'cbr', 'cbz', 'pdf', 'txt']
 
     minimum_calibre_version = plugin_minimum_calibre_version
     version = plugin_version
