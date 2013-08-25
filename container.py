@@ -233,6 +233,8 @@ class KEPubContainer(EpubContainer):
 
                 self.paragraph_counter += 1
                 self.segment_counter = 1
+        else:
+            node.tail = None
         return node
 
     def add_kobo_spans(self):
