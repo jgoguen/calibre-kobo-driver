@@ -23,7 +23,7 @@ XML_NAMESPACE = 'http://www.w3.org/XML/1998/namespace'
 configdir = os.path.join(config_dir, 'plugins')
 reference_kepub = os.path.join(configdir, 'reference.kepub.epub')
 plugin_version = (2, 2, 5)
-plugin_minimum_calibre_version = (0, 9, 42)
+plugin_minimum_calibre_version = (0, 9, 44)
 
 
 def modify_epub(container, filename, metadata=None, opts={}):
