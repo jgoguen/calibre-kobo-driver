@@ -19,7 +19,7 @@ The current release version of this plugin may be installed directly within cali
 1. To install the Kobo Touch/Glo/Mini driver plugin, select the **KoboTouchExtended** plugin from the list of available plugins and click **Install**
 	1. Don't see it? You may already have it installed. Restart calibre and see if you are notified of a pending update.
 1. To install the KePub conversion output format plugin, select the **KePub Output** plugin from the list of available plugins and click **Install**
-	1. Don't see it? You may already have it installed. Restart calibre and see if you are notified of a pending update. Or, this may not yet be uploaded to the calibre plugin index. 
+	1. Don't see it? You may already have it installed. Restart calibre and see if you are notified of a pending update. Or, this may not yet be uploaded to the calibre plugin index.
 1. Restart calibre
 
 To install the device driver plugin from source, you must rename **device\_init.py** to **\_\_init\_\_.py**, create a ZIP file named `KoboTouchExtended.zip` and include these files and folders:
@@ -82,7 +82,10 @@ Both plugins includes the ability to add a CSS file to each book enabling KePub 
 1. Copy the hyphenation dictionary to the `hyphenDicts` folder without changing the name.
 1. Add the `usr` folder to `KoboRoot.tgz`
 	1. UNIX users (Linux, Solaris, BSD, Mac) can, from the command line, run `tar czf KoboRoot.tgz usr/` from wherever you put the `usr` directory.
-	1. Windows users, you're on your own. Contributions of reliable Windows directions are welcome!
+	1. Windows users, you're on your own. It has been reported that using the free [7-Zip archiver][7zip] you can create .tgz files. See http://gettingeek.com/how-to-create-tarball-compress-to-gzip-under-windows-tar-gz-379.html for more details.
+		1. If you follow these directions exactly, your file will have the extension `.tar.gz`. You can safely rename this to `.tgz` after the file has been created and ignore the Windows warning about changing file extensions.
+
+[7zip]: http://www.7-zip.org/download.html
 
 Once you have created `KoboRoot.tgz` copy it to the `.kobo` directory on your Kobo device, unmount/eject the drive, and unplug the device. You will see a screen indicating that the Kobo device is updating; it is not, but this method takes advantage of the Kobo update mechanism to load the necessary dictionary files. Make sure you keep your version of `KoboRoot.tgz` around, you will need to re-apply it after every Kobo software update!
 
