@@ -107,7 +107,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 
     skip_renaming_files = set([])
     kobo_js_re = re.compile(r'.*/?kobo.*\.js$', re.IGNORECASE)
-    invalid_filename_chars_re = re.compile(r'[\/\\\?%\*:;\|\"\'><\$]', re.IGNORECASE | re.UNICODE)
+    invalid_filename_chars_re = re.compile(r'[\/\\\?%\*:;\|\"\'><\$!]', re.IGNORECASE | re.UNICODE)
 
     def modifying_epub(self):
         opts = self.settings().extra_customization
