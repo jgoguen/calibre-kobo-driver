@@ -222,7 +222,10 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
             debug_print("KoboTouchExtended:_modify_epub:Generated KePub file copy path: {0}".format(dpath))
             shutil.copy(infile, dpath)
 
-        return super(KOBOTOUCHEXTENDED, self)._modify_epub(infile, metadata, container)
+        retval = super(KOBOTOUCHEXTENDED, self)._modify_epub(infile, metadata, container)
+        if retval:
+            container.commit(outpath=infile)
+        return retval
 
     def filename_callback(self, path, mi):
         opts = self.settings()
