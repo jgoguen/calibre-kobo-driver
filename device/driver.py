@@ -152,8 +152,8 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
             return super(KOBOTOUCHEXTENDED, self)._modify_epub(infile, metadata, container)
 
         debug_print("KoboTouchExtended:_modify_epub:Adding basic Kobo features to {0} by {1}".format(metadata.title, ' and '.join(metadata.authors)))
-        opts = self.settings()
 
+        opts = self.settings()
         skip_failed = opts.extra_customization[self.OPT_SKIP_FAILED]
         if skip_failed:
             debug_print("KoboTouchExtended:_modify_epub:Failed conversions will be skipped")
@@ -226,6 +226,29 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
         if retval:
             container.commit(outpath=infile)
         return retval
+
+    def upload_books(self, files, names, on_card=None, end_session=True, metadata=None):
+        opts = self.settings()
+        if opts.extra_customization[self.OPT_MODIFY_CSS]:
+            debug_print("KoboTouchExtended:upload_books:Searching for device-specific CSS file")
+            device_css_file_name = self.KOBO_EXTRA_CSSFILE
+            if self.isAuraHD():
+                device_css_file_name = 'kobo_extra_AURAHD.css'
+            elif self.isAura():
+                device_css_file_name = 'kobo_extra_AURA.css'
+            elif self.isGlo():
+                device_css_file_name = 'kobo_extra_GLO.css'
+            elif self.isMini():
+                device_css_file_name = 'kobo_extra_MINI.css'
+            elif self.isTouch():
+                device_css_file_name = 'kobo_extra_TOUCH.css'
+            device_css_file_name = os.path.join(self.configdir, device_css_file_name)
+            if os.path.isfile(device_css_file_name):
+                debug_print("KoboTouchExtended:upload_books:Found device-specific file {0}".format(device_css_file_name))
+                shutil.copy(device_css_file_name, os.path.join(self._main_prefix, self.KOBO_EXTRA_CSSFILE))
+            else:
+                debug_print("KoboTouchExtended:upload_books:No device-specific CSS file found (expecting {0})".format(device_css_file_name))
+        return super(KOBOTOUCHEXTENDED, self).upload_books(files, names, on_card, end_session, metadata)
 
     def filename_callback(self, path, mi):
         opts = self.settings()
