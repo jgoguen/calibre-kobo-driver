@@ -72,6 +72,19 @@ To use the conversion output format plugin after installing:
 
 **WARNING: THE CONVERSION OUTPUT FORMAT PLUGIN GENERATES FILES WHOSE INTERNAL STRUCTURE IS STILL UNDER DEVELOPMENT. THE KEPUB FILE STRUCTURE IS NOT YET FULLY UNDERSTOOD. DO NOT, UNDER ANY CIRCUMSTANCES, DELETE THE FILES FOR THE SOURCE FORMAT. ALWAYS HAVE A NON-KEPUB FORMAT FOR YOUR BOOKS.**
 
+## Adding Arbitrary CSS
+The device driver plugin, through the base KoboTouch driver provided with calibre, has the ability to copy all rules from a specific CSS file into each book as it is uploaded. To support easily maintaining device-specific CSS files, the device driver can copy a CSS file into the correct place to allow adding it to each book. To do this, locate the calibre plugin directory, create a CSS file in there, and ensure that the **Modify CSS** option is selected in the driver preferences. To locate the calibre plugin directory, open calibre's preferences, choose **Miscellaneous**, and click the **Open calibre configuration directory** button. The plugin directory is in there.
+
+The name of the CSS file must be in the format `kobo_extra_<DEVICE>.css`. The following replacements for `<DEVICE>` are currently supported (capitalization is important):
+
+- Kobo Aura HD &mdash; AURAHD (`kobo_extra_AURAHD.css`)
+- Kobo Aura &mdash; AURA (`kobo_extra_AURA.css`)
+- Kobo Glo &mdash; GLO (`kobo_extra_GLO.css`)
+- Kobo Mini &mdash; MINI (`kobo_extra_MINI.css`)
+- Kobo Touch &mdash; TOUCH (`kobo_extra_TOUCH.css`)
+
+Please note, this will blindly overwrite any `kobo_extra.css` you may have already sent to your Kobo device! If you have created the `kobo_extra.css` file on your Kobo device already and you want to make use of this feature, you must copy `kobo_extra.css` to the location specified above.
+
 ## Hyphenation
 Both plugins includes the ability to add a CSS file to each book enabling KePub hyphenation. The standard hyphenation dictionaries provided on Kobo devices are somewhat deficient for some languages; fixing this (or adding your own dictionary) requires a little work and requires that you can create gzipped tarballs (.tgz files). Note that you can only update existing dictionaries, you cannot add new ones.
 
