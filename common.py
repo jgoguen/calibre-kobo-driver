@@ -22,8 +22,8 @@ kobo_js_re = re.compile(r'.*/?kobo.*\.js$', re.IGNORECASE)
 XML_NAMESPACE = 'http://www.w3.org/XML/1998/namespace'
 configdir = os.path.join(config_dir, 'plugins')
 reference_kepub = os.path.join(configdir, 'reference.kepub.epub')
-plugin_version = (2, 2, 7)
-plugin_minimum_calibre_version = (0, 9, 44)
+plugin_version = (2, 2, 8)
+plugin_minimum_calibre_version = (1, 3, 0)
 
 
 def modify_epub(container, filename, metadata=None, opts={}):
