@@ -11,6 +11,7 @@ import shutil
 import sqlite3 as sqlite
 import sys
 
+from ConfigParser import SafeConfigParser
 from calibre.constants import config_dir
 from calibre.devices.kobo.driver import KOBOTOUCH
 from calibre.devices.usbms.driver import debug_print
@@ -104,6 +105,10 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
     EXTRA_CUSTOMIZATION_MESSAGE.append('Copy generated KePub files to a directory:::Enter an absolute directory path to copy all generated KePub files into for debugging purposes.')
     EXTRA_CUSTOMIZATION_DEFAULT.append(u'')
     OPT_FILE_COPY_DIR = len(EXTRA_CUSTOMIZATION_MESSAGE) - 1
+
+    EXTRA_CUSTOMIZATION_MESSAGE.append('Use full book page numbers:::Select this to show page numbers for the whole book, instead of each chapter. This will also affect regular ePub page number display!.')
+    EXTRA_CUSTOMIZATION_DEFAULT.append(False)
+    OPT_FULL_PAGE_NUMBERS = len(EXTRA_CUSTOMIZATION_MESSAGE) - 1
 
     skip_renaming_files = set([])
     kobo_js_re = re.compile(r'.*/?kobo.*\.js$', re.IGNORECASE)
@@ -248,6 +253,18 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
                 shutil.copy(device_css_file_name, os.path.join(self._main_prefix, self.KOBO_EXTRA_CSSFILE))
             else:
                 debug_print("KoboTouchExtended:upload_books:No device-specific CSS file found (expecting {0})".format(device_css_file_name))
+
+        kobo_config_file = os.path.join(self._main_prefix, '.kobo', 'Kobo', 'Kobo eReader.conf')
+        if os.path.isfile(kobo_config_file):
+            cfg = SafeConfigParser(allow_no_value=True)
+            cfg.read(kobo_config_file)
+            if not cfg.has_section("FeatureSettings"):
+                cfg.add_section("FeatureSettings")
+            debug_print("KoboTouchExtended:upload_books:Setting FeatureSettings.FullBookPageNumbers to {0}".format("true" if opts.extra_customization[self.OPT_FULL_PAGE_NUMBERS] else "false"))
+            cfg.set("FeatureSettings", "FullBookPageNumbers", "true" if opts.extra_customization[self.OPT_FULL_PAGE_NUMBERS] else "false")
+            with open(kobo_config_file, 'wb') as cfgfile:
+                cfg.write(cfgfile)
+
         return super(KOBOTOUCHEXTENDED, self).upload_books(files, names, on_card, end_session, metadata)
 
     def filename_callback(self, path, mi):
