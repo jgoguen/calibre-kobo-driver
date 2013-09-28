@@ -257,6 +257,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
         kobo_config_file = os.path.join(self._main_prefix, '.kobo', 'Kobo', 'Kobo eReader.conf')
         if os.path.isfile(kobo_config_file):
             cfg = SafeConfigParser(allow_no_value=True)
+            cfg.optionxform = str
             cfg.read(kobo_config_file)
             if not cfg.has_section("FeatureSettings"):
                 cfg.add_section("FeatureSettings")
