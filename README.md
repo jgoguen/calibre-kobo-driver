@@ -1,3 +1,5 @@
+[![I Love Open Source](http://www.iloveopensource.io/images/logo-lightbg.png)](http://www.iloveopensource.io/projects/525d9a87a82101497d0007a6)
+
 # Kobo Touch/Glo/Mini KePub Plugins
 This provides an extension of the existing KoboTouch driver provided with Calibre. This driver plugin allows modifying ePub files to enable extra Kobo features.
 
