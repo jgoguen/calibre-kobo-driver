@@ -23,6 +23,8 @@ from calibre.ebooks.oeb.polish.container import EpubContainer
 from calibre.utils.smartypants import smartyPants
 from copy import deepcopy
 
+load_translations()
+
 HTML_MIMETYPES = frozenset(['text/html', 'application/xhtml+xml'])
 EXCLUDE_FROM_ZIP = frozenset(['mimetype', '.DS_Store', 'thumbs.db', '.directory'])
 NO_SPACE_BEFORE_CHARS = frozenset([c for c in string.punctuation] + [u'\xbb'])
@@ -130,7 +132,7 @@ class KEPubContainer(EpubContainer):
         supported.
         '''
         if name not in self.name_path_map or name not in self.mime_map:
-            raise ValueError("A valid file name must be given (got: {0})".format(name))
+            raise ValueError(_("A valid file name must be given (got: {filename})").format(filename=name))
         for infile in self.get_html_names():
             self.log.info("Adding reference to {0} to file {1}".format(name, infile))
             root = self.parsed(infile)

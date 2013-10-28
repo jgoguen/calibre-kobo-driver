@@ -21,6 +21,8 @@ from calibre_plugins.koboconversion.container import KEPubContainer
 from datetime import datetime
 
 
+load_translations()
+
 class KEPubOutput(OutputFormatPlugin):
     name = 'KePub Output'
     author = 'Joel Goguen'
@@ -32,9 +34,9 @@ class KEPubOutput(OutputFormatPlugin):
     configdir = os.path.join(config_dir, 'plugins')
     reference_kepub = os.path.join(configdir, 'reference.kepub.epub')
     options = set([
-        OptionRecommendation(name='kepub_hyphenate', recommended_value=True, help='Select this to add a CSS file which enables hyphenation. The language used will be the language defined for the book in calibre. Please see the README file for directions on updating hyphenation dictionaries.'),
-        OptionRecommendation(name='kepub_replace_lang', recommended_value=True, help='Select this to replace the defined language in each content file inside the ePub.'),
-        OptionRecommendation(name='kepub_clean_markup', recommended_value=True, help='Select this to clean up the internal ePub markup.')
+        OptionRecommendation(name='kepub_hyphenate', recommended_value=True, help=_('Select this to add a CSS file which enables hyphenation. The language used will be the language defined for the book in calibre. Please see the README file for directions on updating hyphenation dictionaries.')),
+        OptionRecommendation(name='kepub_replace_lang', recommended_value=True, help=_('Select this to replace the defined language in each content file inside the ePub.')),
+        OptionRecommendation(name='kepub_clean_markup', recommended_value=True, help=_('Select this to clean up the internal ePub markup.'))
     ])
     recommendations = set([])
 

@@ -10,6 +10,7 @@ import re
 import shutil
 import sqlite3 as sqlite
 import sys
+import uuid
 
 from ConfigParser import SafeConfigParser
 from calibre.constants import config_dir
@@ -23,6 +24,8 @@ from calibre_plugins.kobotouch_extended.container import KEPubContainer
 from datetime import datetime
 
 
+load_translations()
+
 EPUB_EXT = '.epub'
 KEPUB_EXT = '.kepub'
 XML_NAMESPACE = 'http://www.w3.org/XML/1998/namespace'
@@ -35,7 +38,7 @@ class InvalidEPub(ValueError):
         self.message = message
         self.fname = fname
         self.lineno = lineno
-        ValueError.__init__(self, "Failed to parse '{0}' by '{1}' with error: '{2}' (file: {3}, line: {4})".format(name, author, message, fname, lineno))
+        ValueError.__init__(self, _("Failed to parse '{book}' by '{author}' with error: '{error}' (file: {filename}, line: {lineno})").format(book=name, author=author, error=message, filename=fname, lineno=lineno))
 
 
 class KOBOTOUCHEXTENDED(KOBOTOUCH):
@@ -52,7 +55,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
     name = 'KoboTouchExtended'
     gui_name = 'Kobo Touch/Glo/Mini'
     author = 'Joel Goguen'
-    description = 'Communicate with the Kobo Touch, Glo, and Mini firmwares and enable extended Kobo ePub features.'
+    description = _('Communicate with the Kobo Touch, Glo, and Mini firmwares and enable extended Kobo ePub features.')
     configdir = os.path.join(config_dir, 'plugins')
     reference_kepub = os.path.join(configdir, 'reference.kepub.epub')
     FORMATS = ['kepub', 'epub', 'cbr', 'cbz', 'pdf', 'txt']
@@ -74,41 +77,45 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
     EXTRA_CUSTOMIZATION_MESSAGE = KOBOTOUCH.EXTRA_CUSTOMIZATION_MESSAGE[:]
     EXTRA_CUSTOMIZATION_DEFAULT = KOBOTOUCH.EXTRA_CUSTOMIZATION_DEFAULT[:]
 
-    EXTRA_CUSTOMIZATION_MESSAGE.append('Enable Extended Kobo Features:::Choose whether to enable extra customisations')
+    EXTRA_CUSTOMIZATION_MESSAGE.append(_('Enable Extended Kobo Features') + ':::' + _('Choose whether to enable extra customizations'))
     EXTRA_CUSTOMIZATION_DEFAULT.append(True)
     OPT_EXTRA_FEATURES = len(EXTRA_CUSTOMIZATION_MESSAGE) - 1
 
-    EXTRA_CUSTOMIZATION_MESSAGE.append('Upload DRM-encumbered ePub files:::Select this to upload ePub files encumbered by DRM. If this is not selected, it is a fatal error to upload an encumbered file')
+    EXTRA_CUSTOMIZATION_MESSAGE.append(_('Upload DRM-encumbered ePub files') + ':::' + _('Select this to upload ePub files encumbered by DRM. If this is not selected, it is a fatal error to upload an encumbered file'))
     EXTRA_CUSTOMIZATION_DEFAULT.append(False)
     OPT_UPLOAD_ENCUMBERED = len(EXTRA_CUSTOMIZATION_MESSAGE) - 1
 
-    EXTRA_CUSTOMIZATION_MESSAGE.append('Silently Ignore Failed Conversions:::Select this to not upload any book that fails conversion to kepub. If this is not selected, the upload process will be stopped at the first book that fails. If this is selected, failed books will be silently removed from the upload queue.')
+    EXTRA_CUSTOMIZATION_MESSAGE.append(_('Silently Ignore Failed Conversions') + ':::' + _('Select this to not upload any book that fails conversion to kepub. If this is not selected, the upload process will be stopped at the first book that fails. If this is selected, failed books will be silently removed from the upload queue.'))
     EXTRA_CUSTOMIZATION_DEFAULT.append(False)
     OPT_SKIP_FAILED = len(EXTRA_CUSTOMIZATION_MESSAGE) - 1
 
-    EXTRA_CUSTOMIZATION_MESSAGE.append('Hyphenate Files:::Select this to add a CSS file which enables hyphenation. The language used will be the language defined for the book in calibre. Please see the README file for directions on adding/updating hyphenation dictionaries.')
+    EXTRA_CUSTOMIZATION_MESSAGE.append(_('Hyphenate Files') + ':::' + _('Select this to add a CSS file which enables hyphenation. The language used will be the language defined for the book in calibre. Please see the README file for directions on adding/updating hyphenation dictionaries.'))
     EXTRA_CUSTOMIZATION_DEFAULT.append(False)
     OPT_HYPHENATE = len(EXTRA_CUSTOMIZATION_MESSAGE) - 1
 
-    EXTRA_CUSTOMIZATION_MESSAGE.append('Replace Content Language Code:::Select this to replace the defined language in each content file inside the ePub.')
+    EXTRA_CUSTOMIZATION_MESSAGE.append(_('Replace Content Language Code') + ':::' + _('Select this to replace the defined language in each content file inside the ePub.'))
     EXTRA_CUSTOMIZATION_DEFAULT.append(False)
     OPT_REPLACE_LANG = len(EXTRA_CUSTOMIZATION_MESSAGE) - 1
 
-    EXTRA_CUSTOMIZATION_MESSAGE.append('Smarten Punctuation:::Select this to smarten punctuation in the ePub')
+    EXTRA_CUSTOMIZATION_MESSAGE.append(_('Smarten Punctuation') + ':::' + _('Select this to smarten punctuation in the ePub'))
     EXTRA_CUSTOMIZATION_DEFAULT.append(False)
     OPT_SMARTEN_PUNCTUATION = len(EXTRA_CUSTOMIZATION_MESSAGE) - 1
 
-    EXTRA_CUSTOMIZATION_MESSAGE.append('Clean up ePub Markup:::Select this to clean up the internal ePub markup.')
+    EXTRA_CUSTOMIZATION_MESSAGE.append(_('Clean up ePub Markup') + ':::' + _('Select this to clean up the internal ePub markup.'))
     EXTRA_CUSTOMIZATION_DEFAULT.append(False)
     OPT_CLEAN_MARKUP = len(EXTRA_CUSTOMIZATION_MESSAGE) - 1
 
-    EXTRA_CUSTOMIZATION_MESSAGE.append('Copy generated KePub files to a directory:::Enter an absolute directory path to copy all generated KePub files into for debugging purposes.')
+    EXTRA_CUSTOMIZATION_MESSAGE.append(_('Copy generated KePub files to a directory') + ':::' + _('Enter an absolute directory path to copy all generated KePub files into for debugging purposes.'))
     EXTRA_CUSTOMIZATION_DEFAULT.append(u'')
     OPT_FILE_COPY_DIR = len(EXTRA_CUSTOMIZATION_MESSAGE) - 1
 
-    EXTRA_CUSTOMIZATION_MESSAGE.append('Use full book page numbers:::Select this to show page numbers for the whole book, instead of each chapter. This will also affect regular ePub page number display!.')
+    EXTRA_CUSTOMIZATION_MESSAGE.append(_('Use full book page numbers') + ':::' + _('Select this to show page numbers for the whole book, instead of each chapter. This will also affect regular ePub page number display!'))
     EXTRA_CUSTOMIZATION_DEFAULT.append(False)
     OPT_FULL_PAGE_NUMBERS = len(EXTRA_CUSTOMIZATION_MESSAGE) - 1
+
+    EXTRA_CUSTOMIZATION_MESSAGE.append(_('Display reading statistics') + ':::' + _('Display KePub reading statistics. This will cause the file name template to be ignored and all books sent to .kobo/kepub/ with a UUID-based name!'))
+    EXTRA_CUSTOMIZATION_DEFAULT.append(False)
+    OPT_READING_STATS = len(EXTRA_CUSTOMIZATION_MESSAGE) - 1
 
     skip_renaming_files = set([])
     kobo_js_re = re.compile(r'.*/?kobo.*\.js$', re.IGNORECASE)
@@ -283,6 +290,19 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 
     def sanitize_path_components(self, components):
         return [self.invalid_filename_chars_re.sub('_', x) for x in components]
+
+    def create_upload_path(self, path, mdata, fname, create_dirs=True):
+        debug_print("KoboTouchExtended:create_upload_path:(path={0})(fname={1})".format(path, fname))
+        opts = self.settings()
+        if opts.extra_customization[self.OPT_READING_STATS] and opts.extra_customization[self.OPT_EXTRA_FEATURES]:
+            upload_path = os.path.abspath(os.path.join(self._main_prefix, '.kobo', 'kepub'))
+            if not os.path.isdir(upload_path):
+                os.makedirs(upload_path)
+            upload_path = os.path.join(upload_path, str(uuid.uuid5(uuid.NAMESPACE_X500, str(fname))))
+            debug_print("KoboTouchExtended:create_upload_path:Generated KePub upload path {0}".format(upload_path))
+            return upload_path
+        else:
+            return super(KOBOTOUCHEXTENDED, self).create_upload_path(path, mdata, fname, create_dirs)
 
     def sync_booklists(self, booklists, end_session=True):
         opts = self.settings()

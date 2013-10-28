@@ -1,0 +1,117 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR ORGANIZATION
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2013-10-28 13:17+Atlantic Daylight Time\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: ENCODING\n"
+"Generated-By: pygettext.py 1.5\n"
+
+
+#: container.py:133
+msgid "A valid file name must be given (got: {filename})"
+msgstr ""
+
+#: device\driver.py:39
+msgid "Failed to parse '{book}' by '{author}' with error: '{error}' (file: {filename}, line: {lineno})"
+msgstr ""
+
+#: device\driver.py:56
+msgid "Communicate with the Kobo Touch, Glo, and Mini firmwares and enable extended Kobo ePub features."
+msgstr ""
+
+#: device\driver.py:78
+msgid "Choose whether to enable extra customizations"
+msgstr ""
+
+#: device\driver.py:78
+msgid "Enable Extended Kobo Features"
+msgstr ""
+
+#: device\driver.py:82
+msgid "Select this to upload ePub files encumbered by DRM. If this is not selected, it is a fatal error to upload an encumbered file"
+msgstr ""
+
+#: device\driver.py:82
+msgid "Upload DRM-encumbered ePub files"
+msgstr ""
+
+#: device\driver.py:86
+msgid "Select this to not upload any book that fails conversion to kepub. If this is not selected, the upload process will be stopped at the first book that fails. If this is selected, failed books will be silently removed from the upload queue."
+msgstr ""
+
+#: device\driver.py:86
+msgid "Silently Ignore Failed Conversions"
+msgstr ""
+
+#: device\driver.py:90
+#: conversion\config.py:47
+msgid "Hyphenate Files"
+msgstr ""
+
+#: device\driver.py:90
+msgid "Select this to add a CSS file which enables hyphenation. The language used will be the language defined for the book in calibre. Please see the README file for directions on adding/updating hyphenation dictionaries."
+msgstr ""
+
+#: device\driver.py:94
+#: conversion\config.py:58
+msgid "Replace Content Language Code"
+msgstr ""
+
+#: device\driver.py:94
+#: conversion\kepub_output.py:36
+msgid "Select this to replace the defined language in each content file inside the ePub."
+msgstr ""
+
+#: device\driver.py:98
+msgid "Select this to smarten punctuation in the ePub"
+msgstr ""
+
+#: device\driver.py:98
+msgid "Smarten Punctuation"
+msgstr ""
+
+#: device\driver.py:102
+#: conversion\config.py:52
+msgid "Clean up ePub Markup"
+msgstr ""
+
+#: device\driver.py:102
+#: conversion\kepub_output.py:37
+msgid "Select this to clean up the internal ePub markup."
+msgstr ""
+
+#: device\driver.py:106
+msgid "Copy generated KePub files to a directory"
+msgstr ""
+
+#: device\driver.py:106
+msgid "Enter an absolute directory path to copy all generated KePub files into for debugging purposes."
+msgstr ""
+
+#: device\driver.py:110
+msgid "Select this to show page numbers for the whole book, instead of each chapter. This will also affect regular ePub page number display!"
+msgstr ""
+
+#: device\driver.py:110
+msgid "Use full book page numbers"
+msgstr ""
+
+#: device\driver.py:114
+msgid "Display KePub reading statistics. This will cause the file name template to be ignored and all books sent to .kobo/kepub/ with a UUID-based name!"
+msgstr ""
+
+#: device\driver.py:114
+msgid "Display reading statistics"
+msgstr ""
+
+#: conversion\kepub_output.py:35
+msgid "Select this to add a CSS file which enables hyphenation. The language used will be the language defined for the book in calibre. Please see the README file for directions on updating hyphenation dictionaries."
+msgstr ""

@@ -4,13 +4,13 @@ __license__ = 'GPL v3'
 __copyright__ = '2013, Joel Goguen <jgoguen@jgoguen.ca>'
 __docformat__ = 'markdown en'
 
-import importlib
-
 from calibre.gui2.convert import Widget
 from calibre.gui2.convert.epub_output import PluginWidget as EPUBPluginWidget
 from calibre.gui2.convert.epub_output_ui import Ui_Form as EPUBUIForm
 from calibre.gui2.preferences.conversion import OutputOptions as BaseOutputOptions
 
+
+load_translations()
 
 class PluginWidget(EPUBPluginWidget, EPUBUIForm):
     TITLE = 'KePub Output'
@@ -44,18 +44,18 @@ class PluginWidget(EPUBPluginWidget, EPUBUIForm):
 
         self.opt_kepub_hyphenate = QtGui.QCheckBox(Form)
         self.opt_kepub_hyphenate.setObjectName(_fromUtf8("opt_kepub_hyphenate"))
-        self.opt_kepub_hyphenate.setText("Hyphenate files")
+        self.opt_kepub_hyphenate.setText(_("Hyphenate Files"))
         self.gridLayout.addWidget(self.opt_kepub_hyphenate, rows, 0, 1, 1)
 
         self.opt_kepub_clean_markup = QtGui.QCheckBox(Form)
         self.opt_kepub_clean_markup.setObjectName(_fromUtf8("opt_kepub_clean_markup"))
-        self.opt_kepub_clean_markup.setText("Clean ePub markup")
+        self.opt_kepub_clean_markup.setText(_("Clean up ePub markup"))
         self.gridLayout.addWidget(self.opt_kepub_clean_markup, rows, 1, 1, 1)
         rows = rows + 1
 
         self.opt_kepub_replace_lang = QtGui.QCheckBox(Form)
         self.opt_kepub_replace_lang.setObjectName(_fromUtf8("opt_kepub_replace_lang"))
-        self.opt_kepub_replace_lang.setText("Update content file language")
+        self.opt_kepub_replace_lang.setText(_("Replace Content Language Code"))
         self.gridLayout.addWidget(self.opt_kepub_replace_lang, rows, 0, 1, 1)
 
         # Next option here
