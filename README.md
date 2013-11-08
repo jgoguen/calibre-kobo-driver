@@ -147,12 +147,14 @@ Decided you want to contribute to the development of these plugins? Awesome! You
 1. **Contribute code**, whether for existing bug reports, for new bugs that you found, or for new features that you really want to see implemented. To contribute code, you may fork the repository and send a GitHub pull request, or you may send me a PM on MobileRead with a git patch file. A tutorial on creating a git patch can be found [here][gittutorial]
 1. **Submit bug reports** on Launchpad. Launchpad bug reports are my to-do list for this plugin; any requests anywhere else are likely to get missed and forgotten and direct emails **will be silently ignored**. Although I'm happy to discuss the plugin here, I may still ask you to create a bug report; this is so I actually remember to investigate your request!
 1. **Test pre-released code** from GitHub. Between releases, new code is committed to the GitHub repository and may be installed using directions provided in this file. Based on your testing, you may submit bug reports, provide feedback, think of new feature requests, or just generally enjoy early access (and not necessarily stable code!) to upcoming versions of the plugin.
+1. **Translate the plugin** on [the plugin's Launchpad Translations page][lptranslation]
 
 You may also prefer to contribute in some other way. You may [donate to me via PayPal][paypaldonate], [contribute to my fundraiser][driverfundraiser], send BitCoins to 1JwHa28vQ33FzCofRMNgpzfUcNGpoh3hUR, or you may also contribute by answering questions from other people who may have issues, purchasing items from my wishlists (not yet linked, I'll get on that soon-ish), continuing to use this plugin and providing feedback, and probably a few other ways I haven't thought of yet.
 
 [gittutorial]: http://ariejan.net/2009/10/26/how-to-create-and-apply-a-patch-with-git/
 [paypaldonate]: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=UXNT7PRVZ5HGA
 [driverfundraiser]: http://gogetfunding.com/project/kobo-touch-extended-driver-development
+[lptranslation]:
 
 # Asking Questions
 Wondering how to do something? Want to know if something is possible? Ask your question on the [MobileRead Forum thread for the device driver plugin][devicethread] or the [MobileRead Forum thread for the conversion output format plugin][conversionthread].
@@ -174,7 +176,7 @@ When submitting a bug, I require the following information as a minimum, but any
 	1. To get the calibre debug log, click the arrow beside the "Preferences" menu, choose "Restart in debug mode", repeat the same action that caused the issue, and close calibre. The debug log will be automatically displayed to you.
 
 # Known Issues
-When using Kobo firmware 2.9.0, sideloaded KePub files do not display in-book statistics.
+When using Kobo firmware 2.9.0 or later, sideloaded KePub files do not display in-book statistics.
 
 If you have previously installed the device driver plugin in calibre 0.9.18 or earlier, then you upgrade to calibre 0.9.19 or later and can't update the plugin or install the conversion output format plugin, you must manually replace the device driver plugin ZIP file:
 
