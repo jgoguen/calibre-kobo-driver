@@ -10,6 +10,7 @@ __docformat__ = 'markdown en'
 
 import os
 import re
+import uuid
 
 from calibre.constants import config_dir
 from calibre.ebooks.metadata.book.base import NULL_VALUES
@@ -23,7 +24,7 @@ XML_NAMESPACE = 'http://www.w3.org/XML/1998/namespace'
 configdir = os.path.join(config_dir, 'plugins')
 reference_kepub = os.path.join(configdir, 'reference.kepub.epub')
 plugin_version = (2, 2, 12)
-plugin_minimum_calibre_version = (1, 9, 0)
+plugin_minimum_calibre_version = (1, 3, 0)
 
 
 def modify_epub(container, filename, metadata=None, opts={}):
@@ -121,3 +122,11 @@ def modify_epub(container, filename, metadata=None, opts={}):
                         break
     os.unlink(filename)
     container.commit(filename)
+
+
+def uuid_from_name(name):
+    return str(uuid.uuid5(uuid.NAMESPACE_X500, str(name)))
+
+
+def uuid_from_metadata(mi):
+    return uuid_from_name(":::".join([mi.title_sort, mi.author_sort, mi.series if mi.series else "", mi.format_series_index() if mi.series else ""]))

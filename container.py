@@ -23,7 +23,11 @@ from calibre.ebooks.oeb.polish.container import EpubContainer
 from calibre.utils.smartypants import smartyPants
 from copy import deepcopy
 
-load_translations()
+# Support load_translations() without forcing calibre 1.9+
+try:
+    load_translations()
+except NameError:
+    pass
 
 HTML_MIMETYPES = frozenset(['text/html', 'application/xhtml+xml'])
 EXCLUDE_FROM_ZIP = frozenset(['mimetype', '.DS_Store', 'thumbs.db', '.directory'])
@@ -37,6 +41,7 @@ class InvalidEpub(ValueError):
 
 
 class ParseError(ValueError):
+
     def __init__(self, name, desc):
         self.name = name
         self.desc = desc
@@ -293,11 +298,6 @@ class KEPubContainer(EpubContainer):
             self.log.info("Cleaning markup for file {0}".format(name))
             html = self.get_raw(name)
             html = html.encode("UTF-8")
-
-            # Replace unicode dashes with ASCII representations - smarten punctuation picks this up if asked for
-            html = string.replace(html, u"\u2014", ' -- ')
-            html = string.replace(html, u"\u2013", ' --- ')
-            html = string.replace(html, u"\x97", ' --- ')
 
             # Get rid of Microsoft cruft
             html = re.sub(ur'\s*<o:p>\s*</o:p>', ' ', html, flags=re.UNICODE | re.MULTILINE)
