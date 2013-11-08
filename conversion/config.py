@@ -10,11 +10,16 @@ from calibre.gui2.convert.epub_output_ui import Ui_Form as EPUBUIForm
 from calibre.gui2.preferences.conversion import OutputOptions as BaseOutputOptions
 
 
-load_translations()
+# Support load_translations() without forcing calibre 1.9+
+try:
+    load_translations()
+except NameError:
+    pass
+
 
 class PluginWidget(EPUBPluginWidget, EPUBUIForm):
-    TITLE = 'KePub Output'
-    HELP = 'Options specific to KePub output'
+    TITLE = _('KePub Output')
+    HELP = _('Options specific to KePub output')
     COMMIT_NAME = 'kepub_output'
 
     def __init__(self, parent, get_option, get_help, db=None, book_id=None):
@@ -70,6 +75,7 @@ class PluginWidget(EPUBPluginWidget, EPUBUIForm):
 
 
 class OutputOptions(BaseOutputOptions):
+
     def load_conversion_widgets(self):
         super(OutputOptions, self).load_conversion_widgets()
         self.conversion_widgets.append(PluginWidget)

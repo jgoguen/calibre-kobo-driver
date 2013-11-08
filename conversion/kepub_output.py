@@ -21,10 +21,15 @@ from calibre_plugins.koboconversion.container import KEPubContainer
 from datetime import datetime
 
 
-load_translations()
+# Support load_translations() without forcing calibre 1.9+
+try:
+    load_translations()
+except NameError:
+    pass
+
 
 class KEPubOutput(OutputFormatPlugin):
-    name = 'KePub Output'
+    name = _('KePub Output')
     author = 'Joel Goguen'
     file_type = 'kepub'
     version = plugin_version

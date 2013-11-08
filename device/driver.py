@@ -10,7 +10,6 @@ import re
 import shutil
 import sqlite3 as sqlite
 import sys
-import uuid
 
 from ConfigParser import SafeConfigParser
 from calibre.constants import config_dir
@@ -24,7 +23,11 @@ from calibre_plugins.kobotouch_extended.container import KEPubContainer
 from datetime import datetime
 
 
-load_translations()
+# Support load_translations() without forcing calibre 1.9+
+try:
+    load_translations()
+except NameError:
+    pass
 
 EPUB_EXT = '.epub'
 KEPUB_EXT = '.kepub'
@@ -32,6 +35,7 @@ XML_NAMESPACE = 'http://www.w3.org/XML/1998/namespace'
 
 
 class InvalidEPub(ValueError):
+
     def __init__(self, name, author, message, fname=None, lineno=None):
         self.name = name
         self.author = author
@@ -42,6 +46,7 @@ class InvalidEPub(ValueError):
 
 
 class KOBOTOUCHEXTENDED(KOBOTOUCH):
+
     '''Extended driver for Kobo Touch, Kobo Glo, and Kobo Mini devices.
 
     This driver automatically modifies ePub files to include extra information
@@ -69,9 +74,9 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
         "toc": 899
     }
 
-    supported_dbversion = 88
+    supported_dbversion = 89
     min_supported_dbversion = 65
-    max_supported_fwversion = (2, 9, 0)
+    max_supported_fwversion = (2, 10, 0)
     min_fwversion_tiles = (2, 6, 1)
 
     EXTRA_CUSTOMIZATION_MESSAGE = KOBOTOUCH.EXTRA_CUSTOMIZATION_MESSAGE[:]
@@ -112,10 +117,6 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
     EXTRA_CUSTOMIZATION_MESSAGE.append(_('Use full book page numbers') + ':::' + _('Select this to show page numbers for the whole book, instead of each chapter. This will also affect regular ePub page number display!'))
     EXTRA_CUSTOMIZATION_DEFAULT.append(False)
     OPT_FULL_PAGE_NUMBERS = len(EXTRA_CUSTOMIZATION_MESSAGE) - 1
-
-    EXTRA_CUSTOMIZATION_MESSAGE.append(_('Display reading statistics') + ':::' + _('Display KePub reading statistics. This will cause the file name template to be ignored and all books sent to .kobo/kepub/ with a UUID-based name!'))
-    EXTRA_CUSTOMIZATION_DEFAULT.append(False)
-    OPT_READING_STATS = len(EXTRA_CUSTOMIZATION_MESSAGE) - 1
 
     skip_renaming_files = set([])
     kobo_js_re = re.compile(r'.*/?kobo.*\.js$', re.IGNORECASE)
@@ -290,19 +291,6 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 
     def sanitize_path_components(self, components):
         return [self.invalid_filename_chars_re.sub('_', x) for x in components]
-
-    def create_upload_path(self, path, mdata, fname, create_dirs=True):
-        debug_print("KoboTouchExtended:create_upload_path:(path={0})(fname={1})".format(path, fname))
-        opts = self.settings()
-        if opts.extra_customization[self.OPT_READING_STATS] and opts.extra_customization[self.OPT_EXTRA_FEATURES]:
-            upload_path = os.path.abspath(os.path.join(self._main_prefix, '.kobo', 'kepub'))
-            if not os.path.isdir(upload_path):
-                os.makedirs(upload_path)
-            upload_path = os.path.join(upload_path, str(uuid.uuid5(uuid.NAMESPACE_X500, str(fname))))
-            debug_print("KoboTouchExtended:create_upload_path:Generated KePub upload path {0}".format(upload_path))
-            return upload_path
-        else:
-            return super(KOBOTOUCHEXTENDED, self).create_upload_path(path, mdata, fname, create_dirs)
 
     def sync_booklists(self, booklists, end_session=True):
         opts = self.settings()
