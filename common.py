@@ -23,7 +23,7 @@ kobo_js_re = re.compile(r'.*/?kobo.*\.js$', re.IGNORECASE)
 XML_NAMESPACE = 'http://www.w3.org/XML/1998/namespace'
 configdir = os.path.join(config_dir, 'plugins')
 reference_kepub = os.path.join(configdir, 'reference.kepub.epub')
-plugin_version = (2, 2, 12)
+plugin_version = (2, 2, 13)
 plugin_minimum_calibre_version = (1, 3, 0)
 
 
@@ -129,4 +129,4 @@ def uuid_from_name(name):
 
 
 def uuid_from_metadata(mi):
-    return uuid_from_name(":::".join([mi.title_sort, mi.author_sort, mi.series if mi.series else "", mi.format_series_index() if mi.series else ""]))
+    return uuid_from_name(":::".join(["KoboTouchExtended", mi.title_sort, mi.author_sort, mi.series if mi.series else "", mi.format_series_index() if mi.series else ""]))
