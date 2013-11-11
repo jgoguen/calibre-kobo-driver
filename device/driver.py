@@ -319,7 +319,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 
                 with closing(connection.cursor()) as cursor:
                     userid = 'kepub_user'
-                    cursor.execute("SELECT UserID FROM user")
+                    cursor.execute("SELECT UserID FROM user WHERE ___DeviceID IS NULL")
                     row = cursor.fetchone()
                     do_series = opts.extra_customization[self.OPT_UPDATE_SERIES_DETAILS] and self.supports_series()
                     if row is not None and len(row) > 0:
