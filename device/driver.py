@@ -48,6 +48,10 @@ class InvalidEPub(ValueError):
         ValueError.__init__(self, _("Failed to parse '{book}' by '{author}' with error: '{error}' (file: {filename}, line: {lineno})").format(book=name, author=author, error=message, filename=fname, lineno=lineno))
 
 
+class InvalidConfiguration(Exception):
+    pass
+
+
 class KOBOTOUCHEXTENDED(KOBOTOUCH):
 
     '''Extended driver for Kobo Touch, Kobo Glo, and Kobo Mini devices.
@@ -107,7 +111,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
     EXTRA_CUSTOMIZATION_DEFAULT.append(False)
     OPT_SKIP_FAILED = len(EXTRA_CUSTOMIZATION_MESSAGE) - 1
 
-    EXTRA_CUSTOMIZATION_MESSAGE.append(_('Hyphenate Files') + ':::' + _('Select this to add a CSS file which enables hyphenation. The language used will be the language defined for the book in calibre. Please see the README file for directions on adding/updating hyphenation dictionaries.'))
+    EXTRA_CUSTOMIZATION_MESSAGE.append(_('Hyphenate Files') + ':::' + _('Select this to add a CSS file which enables hyphenation. The language used will be the language defined for the book in calibre. Please see the README file for directions on updating hyphenation dictionaries.'))
     EXTRA_CUSTOMIZATION_DEFAULT.append(False)
     OPT_HYPHENATE = len(EXTRA_CUSTOMIZATION_MESSAGE) - 1
 
@@ -306,6 +310,14 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
             cfg = SafeConfigParser(allow_no_value=True)
             cfg.optionxform = str
             cfg.read(kobo_config_file)
+
+            debug_print("KoboTouchExtended:upload_books:enable_stats - {0}".format("True" if self.enable_stats else "False"))
+            debug_print("KoboTouchExtended:upload_books:has ApplicationPreferences - {0}".format("True" if cfg.has_section("ApplicationPreferences") else "False"))
+            debug_print("KoboTouchExtended:upload_books:has AIRPLANE_MODE - {0}".format("True" if cfg.has_option("ApplicationPreferences", "AIRPLANE_MODE") else "False"))
+            debug_print("KoboTouchExtended:upload_books:AIRPLANE_MODE value - {0}".format("True" if cfg.getboolean("ApplicationPreferences", "AIRPLANE_MODE") else "False"))
+            if self.enable_stats and cfg.has_section("ApplicationPreferences") and cfg.has_option("ApplicationPreferences", "AIRPLANE_MODE") and not cfg.getboolean("ApplicationPreferences", "AIRPLANE_MODE"):
+                raise InvalidConfiguration(_("You have asked to enable KePub reading statistics, but you have wireless enabled.") + " " + _("You must either disable reading statistics or you must disable wireless, never use the Kobo Desktop software, and never re-enable wireless.") + " " + _("Enabling wireless or using the Kobo Desktop software will remove books added with reading statistics enabled!"))
+
             if not cfg.has_section("FeatureSettings"):
                 cfg.add_section("FeatureSettings")
             debug_print("KoboTouchExtended:upload_books:Setting FeatureSettings.FullBookPageNumbers to {0}".format("true" if opts.extra_customization[self.OPT_FULL_PAGE_NUMBERS] else "false"))
