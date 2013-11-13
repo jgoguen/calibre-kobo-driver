@@ -10,7 +10,6 @@ __docformat__ = 'markdown en'
 
 import os
 import re
-import uuid
 
 from calibre.constants import config_dir
 from calibre.ebooks.metadata.book.base import NULL_VALUES
@@ -122,11 +121,3 @@ def modify_epub(container, filename, metadata=None, opts={}):
                         break
     os.unlink(filename)
     container.commit(filename)
-
-
-def uuid_from_name(name):
-    return str(uuid.uuid5(uuid.NAMESPACE_X500, str(name)))
-
-
-def uuid_from_metadata(mi):
-    return uuid_from_name(":::".join(["KoboTouchExtended", mi.title_sort, mi.author_sort, mi.series if mi.series else "", mi.format_series_index() if mi.series else ""]))
