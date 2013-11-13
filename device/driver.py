@@ -135,7 +135,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
     EXTRA_CUSTOMIZATION_DEFAULT.append(False)
     OPT_FULL_PAGE_NUMBERS = len(EXTRA_CUSTOMIZATION_MESSAGE) - 1
 
-    EXTRA_CUSTOMIZATION_MESSAGE.append(_('Display reading statistics') + ':::' + _('Display KePub reading statistics. This will cause the file name template to be ignored and all books sent to .kobo/kepub/ with a UUID-based name!'))
+    EXTRA_CUSTOMIZATION_MESSAGE.append(_('Display reading statistics if environment variable KOBOTOUCHEXTENDED_READING_STATS is set to \'True\'') + ':::' + _('Display KePub reading statistics. This will cause the file name template to be ignored and all books sent to .kobo/kepub/ with a UUID-based name!'))
     EXTRA_CUSTOMIZATION_DEFAULT.append(False)
     OPT_READING_STATS = len(EXTRA_CUSTOMIZATION_MESSAGE) - 1
 
@@ -176,9 +176,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
     @classmethod
     def save_template(cls):
         opts = super(KOBOTOUCHEXTENDED, cls).settings()
-        print("DBVersion: " + str(cls.dbversion))
-        print("Min DBVersion: " + str(cls.min_dbversion_stats))
-        if cls.dbversion >= cls.min_dbversion_stats and opts.extra_customization[cls.OPT_READING_STATS] and opts.extra_customization[cls.OPT_EXTRA_FEATURES]:
+        if "KOBOTOUCHEXTENDED_READING_STATS" in os.environ and os.environ["KOBOTOUCHEXTENDED_READING_STATS"] == "True" and cls.dbversion >= cls.min_dbversion_stats and opts.extra_customization[cls.OPT_READING_STATS] and opts.extra_customization[cls.OPT_EXTRA_FEATURES]:
             return ".kobo/kepub/{title_sort}"
         else:
             return super(KOBOTOUCHEXTENDED, cls).save_template()
@@ -196,6 +194,8 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 
     @property
     def enable_stats(self):
+        if "KOBOTOUCHEXTENDED_READING_STATS" not in os.environ or os.environ["KOBOTOUCHEXTENDED_READING_STATS"] != "True":
+            return False
         opts = self.settings()
         return self.dbversion >= self.min_dbversion_stats and opts.extra_customization[self.OPT_READING_STATS] and opts.extra_customization[self.OPT_EXTRA_FEATURES]
 
@@ -449,8 +449,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 
     def create_upload_path(self, path, mdata, fname, create_dirs=True):
         debug_print("KoboTouchExtended:create_upload_path:(path={0})(fname={1})".format(path, fname))
-        opts = self.settings()
-        if self.dbversion > self.min_dbversion_stats and opts.extra_customization[self.OPT_READING_STATS] and opts.extra_customization[self.OPT_EXTRA_FEATURES]:
+        if self.enable_stats:
             upload_path = os.path.abspath(os.path.join(self._main_prefix, '.kobo', 'kepub'))
             if not os.path.isdir(upload_path):
                 os.makedirs(upload_path)
