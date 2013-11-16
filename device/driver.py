@@ -67,8 +67,15 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
     minimum_calibre_version = plugin_minimum_calibre_version
     version = plugin_version
 
-    supported_dbversion = 89
-    max_supported_fwversion = (2, 10, 0)
+    # Set these only if there is some reason to deviate from the mainline KoboTouch driver
+    #supported_dbversion = 92
+    #max_supported_fwversion = (3, 0, 0)
+
+    content_types = {
+        "main": 6,
+        "content": 9,
+        "toc": 899
+    }
 
     EXTRA_CUSTOMIZATION_MESSAGE = KOBOTOUCH.EXTRA_CUSTOMIZATION_MESSAGE[:]
     EXTRA_CUSTOMIZATION_DEFAULT = KOBOTOUCH.EXTRA_CUSTOMIZATION_DEFAULT[:]
