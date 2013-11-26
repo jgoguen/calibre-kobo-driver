@@ -18,7 +18,7 @@ except NameError:
 
 
 class PluginWidget(EPUBPluginWidget, EPUBUIForm):
-    TITLE = _('KePub Output')
+    TITLE = 'KePub Output'
     HELP = _('Options specific to KePub output')
     COMMIT_NAME = 'kepub_output'
 
