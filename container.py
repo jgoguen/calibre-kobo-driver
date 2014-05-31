@@ -34,6 +34,7 @@ EXCLUDE_FROM_ZIP = frozenset(['mimetype', '.DS_Store', 'thumbs.db', '.directory'
 NO_SPACE_BEFORE_CHARS = frozenset([c for c in string.punctuation] + [u'\xbb'])
 ENCRYPTION_NAMESPACES = {'enc': 'http://www.w3.org/2001/04/xmlenc#', 'deenc': 'http://ns.adobe.com/digitaleditions/enc'}
 XHTML_NAMESPACE = 'http://www.w3.org/1999/xhtml'
+SPECIAL_TAGS = frozenset(['img'])
 
 
 class InvalidEpub(ValueError):
@@ -207,6 +208,13 @@ class KEPubContainer(EpubContainer):
     def __add_kobo_spans_to_node(self, node):
         # process node only if it is not a comment or a processing instruction
         if not (node is None or isinstance(node, etree._Comment) or isinstance(node, etree._ProcessingInstruction)):
+            # Special case: <img> tags
+            special_tag_match = re.search(r'^(?:\{[^\}]+\})?(\w+)$', node.tag)
+            if special_tag_match and special_tag_match.group(1) in SPECIAL_TAGS:
+                span = etree.Element("{%s}span" % (XHTML_NAMESPACE,), attrib={"id": "kobo.{0}.{1}".format(self.paragraph_counter, self.segment_counter), "class": "koboSpan"})
+                span.append(node)
+                return span
+
             # save node content for later
             nodetext = node.text
             nodechildren = deepcopy(node.getchildren())
