@@ -38,8 +38,12 @@ class PluginWidget(EPUBPluginWidget, EPUBUIForm):
     def setupUi(self, Form):
         super(PluginWidget, self).setupUi(Form)
 
-        from PyQt4 import QtCore
-        from PyQt4 import QtGui
+		try:
+	        from PyQt4 import QtCore
+		    from PyQt4 import QtGui
+		except ImportError:
+			from PyQt5 import Qt as QtGui
+			from PyQt5 import QtCore
         from calibre.gui2.convert.epub_output_ui import _fromUtf8
 
         rows = self.gridLayout.rowCount() - 1
