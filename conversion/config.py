@@ -44,7 +44,6 @@ class PluginWidget(EPUBPluginWidget, EPUBUIForm):
 		except ImportError:
 			from PyQt5 import Qt as QtGui
 			from PyQt5 import QtCore
-        from calibre.gui2.convert.epub_output_ui import _fromUtf8
 
         rows = self.gridLayout.rowCount() - 1
 
@@ -52,18 +51,18 @@ class PluginWidget(EPUBPluginWidget, EPUBUIForm):
         self.gridLayout.removeItem(spacer)
 
         self.opt_kepub_hyphenate = QtGui.QCheckBox(Form)
-        self.opt_kepub_hyphenate.setObjectName(_fromUtf8("opt_kepub_hyphenate"))
+        self.opt_kepub_hyphenate.setObjectName(unicode("opt_kepub_hyphenate"))
         self.opt_kepub_hyphenate.setText(_("Hyphenate Files"))
         self.gridLayout.addWidget(self.opt_kepub_hyphenate, rows, 0, 1, 1)
 
         self.opt_kepub_clean_markup = QtGui.QCheckBox(Form)
-        self.opt_kepub_clean_markup.setObjectName(_fromUtf8("opt_kepub_clean_markup"))
+        self.opt_kepub_clean_markup.setObjectName(unicode("opt_kepub_clean_markup"))
         self.opt_kepub_clean_markup.setText(_("Clean up ePub markup"))
         self.gridLayout.addWidget(self.opt_kepub_clean_markup, rows, 1, 1, 1)
         rows = rows + 1
 
         self.opt_kepub_replace_lang = QtGui.QCheckBox(Form)
-        self.opt_kepub_replace_lang.setObjectName(_fromUtf8("opt_kepub_replace_lang"))
+        self.opt_kepub_replace_lang.setObjectName(unicode("opt_kepub_replace_lang"))
         self.opt_kepub_replace_lang.setText(_("Replace Content Language Code"))
         self.gridLayout.addWidget(self.opt_kepub_replace_lang, rows, 0, 1, 1)
 
