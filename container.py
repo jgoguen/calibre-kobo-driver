@@ -239,11 +239,15 @@ class KEPubContainer(EpubContainer):
             for child in nodechildren:
                 # save child tail for later
                 childtail = child.tail
+                child.tail = None
                 node.append(self.__add_kobo_spans_to_node(child))
                 # the child tail is converted to spans
                 if childtail is not None:
+                    self.paragraph_counter += 1
+                    self.segment_counter = 1
                     if not self.__append_kobo_spans_from_text(node, childtail):
                         # didn't add spans, restore tail on last child
+                        self.paragraph_counter -= 1
                         node[-1].tail = childtail
 
                 self.paragraph_counter += 1
