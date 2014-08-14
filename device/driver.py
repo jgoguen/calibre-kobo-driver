@@ -137,12 +137,12 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 
     @classmethod
     def config_widget(cls):
-		try:
-	        from PyQt4.Qt import QCoreApplication
-		    from PyQt4.Qt import QScrollArea
-		except ImportError:
-			from PyQt5.QtCore import QCoreApplication
-			from PyQt5.QtWidgets import QScrollArea
+        try:
+            from PyQt5.QtCore import QCoreApplication
+            from PyQt5.QtWidgets import QScrollArea
+        except ImportError:
+            from PyQt4.Qt import QCoreApplication
+            from PyQt4.Qt import QScrollArea
 
         cw = super(KOBOTOUCHEXTENDED, cls).config_widget()
         qsa = QScrollArea()
