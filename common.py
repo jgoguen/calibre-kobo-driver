@@ -104,6 +104,8 @@ def modify_epub(container, filename, metadata=None, opts={}):
             print("KoboTouchExtended:common:modify_epub:Adding extended Kobo features to {0} by {1}".format(metadata.title, ' and '.join(metadata.authors)))
         # Add the Kobo span tags
         container.add_kobo_spans()
+        # Add the Kobo style hacks div tags
+        container.add_kobo_divs()
 
         skip_js = False
         # Check to see if there's already a kobo*.js in the ePub
@@ -119,5 +121,12 @@ def modify_epub(container, filename, metadata=None, opts={}):
                         jsname = container.copy_file_to_container(os.path.join(reference_container.root, name), name='kobo.js')
                         container.add_content_file_reference(jsname)
                         break
+
+        # Add the Kobo style hacks
+        stylehacks_css = PersistentTemporaryFile(suffix='_stylehacks', prefix='kepub_')
+        stylehacks_css.write(get_resources('css/style-hacks.css'))
+        stylehacks_css.close()
+        css_path = os.path.basename(container.copy_file_to_container(stylehacks_css.name, name='kte-css/stylehacks.css'))
+        container.add_content_file_reference("kte-css/{0}".format(css_path))
     os.unlink(filename)
     container.commit(filename)
