@@ -247,7 +247,9 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
         if opts.extra_customization[self.OPT_MODIFY_CSS]:
             debug_print("KoboTouchExtended:upload_books:Searching for device-specific CSS file")
             device_css_file_name = self.KOBO_EXTRA_CSSFILE
-            if self.isAuraHD():
+            if self.isAuraH2O():
+                device_css_file_name = 'kobo_extra_AURAH2O.css'
+            elif self.isAuraHD():
                 device_css_file_name = 'kobo_extra_AURAHD.css'
             elif self.isAura():
                 device_css_file_name = 'kobo_extra_AURA.css'

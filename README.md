@@ -79,6 +79,7 @@ The device driver plugin, through the base KoboTouch driver provided with calibr
 
 The name of the CSS file must be in the format `kobo_extra_<DEVICE>.css`. The following replacements for `<DEVICE>` are currently supported (capitalization is important):
 
+- Kobo Aura H2O &mdash; AURAH2O (`kobo_extra_AURAH2O.css`)
 - Kobo Aura HD &mdash; AURAHD (`kobo_extra_AURAHD.css`)
 - Kobo Aura &mdash; AURA (`kobo_extra_AURA.css`)
 - Kobo Glo &mdash; GLO (`kobo_extra_GLO.css`)
