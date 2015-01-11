@@ -88,6 +88,8 @@ The name of the CSS file must be in the format `kobo_extra_<DEVICE>.css`. The fo
 
 Please note, this will blindly overwrite any `kobo_extra.css` you may have already sent to your Kobo device! If you have created the `kobo_extra.css` file on your Kobo device already and you want to make use of this feature, you must copy `kobo_extra.css` to the location specified above.
 
+Please also be aware that support for the Aura H2O was only added in Calibre 2.1.0, as such, you'll need to be running Calibre 2.1 or newer for this feature to work.
+
 ## Hyphenation
 Both plugins includes the ability to add a CSS file to each book enabling KePub hyphenation. The standard hyphenation dictionaries provided on Kobo devices are somewhat deficient for some languages; fixing this (or adding your own dictionary) requires a little work and requires that you can create gzipped tarballs (.tgz files). Note that you can only update existing dictionaries, you cannot add new ones.
 
