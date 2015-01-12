@@ -256,6 +256,50 @@ class KEPubContainer(EpubContainer):
             node.tail = None
         return node
 
+    def __add_kobo_divs_to_node(self, node):
+        # process node only if it is not a comment or a processing instruction
+        if not (node is None or isinstance(node, etree._Comment) or isinstance(node, etree._ProcessingInstruction)):
+            # save node content for later
+            nodetext = node.text
+            nodechildren = deepcopy(node.getchildren())
+            nodeattrs = {}
+            for key in node.keys():
+                nodeattrs[key] = node.get(key)
+
+            # reset current node, to start from scratch
+            node.clear()
+
+            # restore node attributes
+            for key in nodeattrs.keys():
+                node.set(key, nodeattrs[key])
+
+            # Wrap the full body in a div
+            div = etree.Element("{%s}div" % (XHTML_NAMESPACE,), attrib={"id": "book-inner"})
+
+            # Handle the node text
+            if nodetext is not None:
+                div.text = nodetext
+
+            # re-add the node children, but as children of the div
+            for child in nodechildren:
+                # save child tail for later
+                childtail = child.tail
+                child.tail = None
+                div.append(child)
+                # Handle the child tail
+                if childtail is not None:
+                    div[-1].tail = childtail
+
+            # Finally, wrap that div in another one...
+            outer_div = etree.Element("{%s}div" % (XHTML_NAMESPACE,), attrib={"id": "book-columns"})
+            outer_div.append(div)
+
+            # And re-chuck the full div pyramid in the now empty body
+            node.append(outer_div)
+        else:
+            node.tail = None
+        return node
+
     def add_kobo_spans(self):
         for name in self.get_html_names():
             self.log.info("Adding Kobo spans to {0}".format(name))
@@ -270,6 +314,25 @@ class KEPubContainer(EpubContainer):
             root = etree.tostring(root, pretty_print=True)
             # Re-open self-closing paragraph tags
             root = re.sub(r'<p[^>/]*/>', '<p></p>', root)
+            self.dirty(name)
+        self.flush_cache()
+        return True
+
+    def add_kobo_divs(self):
+        for name in self.get_html_names():
+            self.log.info("Adding Kobo divs to {0}".format(name))
+            root = self.parsed(name)
+            if len(root.xpath('.//xhtml:div[@id="book-inner"]', namespaces={'xhtml': XHTML_NAMESPACE})) > 0:
+                self.log.info("\tSkipping file")
+                continue
+            # NOTE: Hackish heuristic: Forgo this if we have more div's than p's, which would potentially indicate a book using div's instead of p's...
+            # Apparently, doing this on those books appears to blow up in a spectacular way, so, err, don't ;).
+            # FIXME: Try to figure out what's really happening instead of sidestepping the issue?
+            if root.xpath('count(//xhtml:div)', namespaces={'xhtml': XHTML_NAMESPACE}) > root.xpath('count(//xhtml:p)', namespaces={'xhtml': XHTML_NAMESPACE}):
+                self.log.info("\tSkipping file (many divs! handle it!)")
+                continue
+            body = root.xpath('./xhtml:body', namespaces={'xhtml': XHTML_NAMESPACE})[0]
+            body = self.__add_kobo_divs_to_node(body)
             self.dirty(name)
         self.flush_cache()
         return True

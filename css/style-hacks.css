@@ -1,0 +1,14 @@
+div#book-inner p, div#book-inner div {
+	font-size: 1.0em;
+}
+a {
+	color: black;
+}
+a:link, a:visited, a:hover, a:active {
+	color: blue;
+}
+div#book-inner * {
+	margin-top: 0 !important;
+	margin-bottom: 0 !important;
+}
+
