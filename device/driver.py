@@ -247,16 +247,21 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
         if opts.extra_customization[self.OPT_MODIFY_CSS]:
             debug_print("KoboTouchExtended:upload_books:Searching for device-specific CSS file")
             device_css_file_name = self.KOBO_EXTRA_CSSFILE
-            if self.isAuraHD():
-                device_css_file_name = 'kobo_extra_AURAHD.css'
-            elif self.isAura():
-                device_css_file_name = 'kobo_extra_AURA.css'
-            elif self.isGlo():
-                device_css_file_name = 'kobo_extra_GLO.css'
-            elif self.isMini():
-                device_css_file_name = 'kobo_extra_MINI.css'
-            elif self.isTouch():
-                device_css_file_name = 'kobo_extra_TOUCH.css'
+            try:
+                if self.isAuraH2O():
+                    device_css_file_name = 'kobo_extra_AURAH2O.css'
+                elif self.isAuraHD():
+                    device_css_file_name = 'kobo_extra_AURAHD.css'
+                elif self.isAura():
+                    device_css_file_name = 'kobo_extra_AURA.css'
+                elif self.isGlo():
+                    device_css_file_name = 'kobo_extra_GLO.css'
+                elif self.isMini():
+                    device_css_file_name = 'kobo_extra_MINI.css'
+                elif self.isTouch():
+                    device_css_file_name = 'kobo_extra_TOUCH.css'
+            except AttributeError:
+                debug_print("KoboTouchExtended:upload_books:Calibre version too old to handle some specific devices, falling back to generic file {0}".format(device_css_file_name))
             device_css_file_name = os.path.join(self.configdir, device_css_file_name)
             if os.path.isfile(device_css_file_name):
                 debug_print("KoboTouchExtended:upload_books:Found device-specific file {0}".format(device_css_file_name))
