@@ -8,7 +8,7 @@ a:link, a:visited, a:hover, a:active {
 	color: blue;
 }
 div#book-inner * {
-	margin-top: 0 !important;
-	margin-bottom: 0 !important;
+	margin-top: 0;
+	margin-bottom: 0;
 }
 
