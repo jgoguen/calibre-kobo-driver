@@ -7,7 +7,7 @@ a {
 a:link, a:visited, a:hover, a:active {
 	color: blue;
 }
-div#book-inner * {
+div#book-inner {
 	margin-top: 0;
 	margin-bottom: 0;
 }
