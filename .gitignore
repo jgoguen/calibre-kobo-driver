@@ -45,8 +45,7 @@ nosetests.xml
 /.tags_sorted_by_file
 
 /test-books/
-/KoboTouchExtended.zip
+/*.zip
 /TODO
 /.checkstyle
-/KePub Output.zip
 /__init__.py
