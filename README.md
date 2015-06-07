@@ -115,6 +115,7 @@ Provided languages are:
 1. German (de\_DE)
 1. Italian (it\_IT)
 1. Portugese (pt\_PT)
+1. Dutch (nl\_NL)
 
 Please note that even with this feature, hyphenation is not exact. Also remember that you can only update existing dictionaries.
 
