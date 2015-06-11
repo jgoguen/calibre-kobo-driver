@@ -22,7 +22,7 @@ kobo_js_re = re.compile(r'.*/?kobo.*\.js$', re.IGNORECASE)
 XML_NAMESPACE = 'http://www.w3.org/XML/1998/namespace'
 configdir = os.path.join(config_dir, 'plugins')
 reference_kepub = os.path.join(configdir, 'reference.kepub.epub')
-plugin_version = (2, 4, 0)
+plugin_version = (2, 4, 1)
 plugin_minimum_calibre_version = (1, 3, 0)
 
 
@@ -63,7 +63,13 @@ def modify_epub(container, filename, metadata=None, opts={}):
         container.clean_markup()
 
     # Hyphenate files?
-    if 'hyphenate' in opts and opts['hyphenate'] is True:
+    if 'no-hyphens' in opts and opts['no-hyphens'] is True:
+        nohyphen_css = PersistentTemporaryFile(suffix="_nohyphen", prefix="kepub_")
+        nohyphen_css.write(get_resources("css/no-hyphens.css"))
+        nohyphen_css.close()
+        css_path = os.path.basename(container.copy_file_to_container(nohyphen_css.name, name='kte-css/no-hyphens.css'))
+        container.add_content_file_reference("kte-css/{0}".format(css_path))
+    elif 'hyphenate' in opts and opts['hyphenate'] is True:
         if ('replace_lang' not in opts or opts['replace_lang'] is not True) or (metadata is not None and metadata.language == NULL_VALUES['language']):
             print("KoboTouchExtended:common:modify_epub:WARNING - Hyphenation is enabled but not overriding content file language. Hyphenation may use the wrong dictionary.")
         hyphenation_css = PersistentTemporaryFile(suffix='_hyphenate', prefix='kepub_')

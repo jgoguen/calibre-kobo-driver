@@ -9,9 +9,9 @@ zip -ru "KePub Output.zip" container.py common.py __init__.py conversion plugin-
 rm -f __init__.py
 
 cp -f md_reader_init.py __init__.py
-zip -ru "KePub Metadata Reader.zip" __init__.py translations/*.mo metadata/__init__.py metadata/reader.py common.py plugin-import-name-kepubmdreader.txt
+zip -ru "Read KEPUB metadata.zip" __init__.py translations/*.mo metadata/__init__.py metadata/reader.py common.py plugin-import-name-kepubmdreader.txt
 
 cp -f md_writer_init.py __init__.py
-zip -ru "KePub Metadata Writer.zip" __init__.py translations/*.mo metadata/__init__.py metadata/writer.py common.py plugin-import-name-kepubmdwriter.txt
+zip -ru "Set KEPUB metadata.zip" __init__.py translations/*.mo metadata/__init__.py metadata/writer.py common.py plugin-import-name-kepubmdwriter.txt
 
 touch __init__.py

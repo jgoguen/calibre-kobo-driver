@@ -39,7 +39,8 @@ class KEPubOutput(OutputFormatPlugin):
     configdir = os.path.join(config_dir, 'plugins')
     reference_kepub = os.path.join(configdir, 'reference.kepub.epub')
     options = set([
-        OptionRecommendation(name='kepub_hyphenate', recommended_value=True, help=_('Select this to add a CSS file which enables hyphenation. The language used will be the language defined for the book in calibre. Please see the README file for directions on updating hyphenation dictionaries.')),
+        OptionRecommendation(name='kepub_hyphenate', recommended_value=True, help=_("Select this to add a CSS file which enables hyphenation.") + " " + _("The language used will be the language defined for the book in calibre.") + " " + _("Please see the README file for directions on updating hyphenation dictionaries.")),
+        OptionRecommendation(name="kepub_disable_hyphenation", recommended_value=False, help=_("Select this to disable all hyphenation in a book.") + " " + _("This takes precedence over the hyphenation option.")),
         OptionRecommendation(name='kepub_replace_lang', recommended_value=True, help=_('Select this to replace the defined language in each content file inside the ePub.')),
         OptionRecommendation(name='kepub_clean_markup', recommended_value=True, help=_('Select this to clean up the internal ePub markup.'))
     ])
@@ -93,6 +94,7 @@ class KEPubOutput(OutputFormatPlugin):
         modify_epub(container, output, metadata=mi, opts={
             'clean_markup': opts.kepub_clean_markup,
             'hyphenate': opts.kepub_hyphenate,
+            'no-hyphens': opts.kepub_disable_hyphenation,
             'replace_lang': opts.kepub_replace_lang,
             'smarten_punctuation': False,
             'extended_kepub_features': True

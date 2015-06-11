@@ -29,7 +29,8 @@ class PluginWidget(EPUBPluginWidget, EPUBUIForm):
                                        'epub_inline_toc', 'epub_toc_at_end', 'toc_title',
                                        'preserve_cover_aspect_ratio', 'epub_flatten',
                                        'kepub_hyphenate', 'kepub_replace_lang',
-                                       'kepub_clean_markup'])
+                                       'kepub_clean_markup',
+                                       'kepub_disable_hyphenation'])
         for i in range(2):
             self.opt_no_svg_cover.toggle()
         self.db, self.book_id = db, book_id
@@ -55,18 +56,23 @@ class PluginWidget(EPUBPluginWidget, EPUBUIForm):
         self.opt_kepub_hyphenate.setText(_("Hyphenate Files"))
         self.gridLayout.addWidget(self.opt_kepub_hyphenate, rows, 0, 1, 1)
 
+        self.opt_kepub_disable_hyphenation = QtGui.QCheckBox(Form)
+        self.opt_kepub_disable_hyphenation.setObjectName(unicode("opt_kepub_disable_hyphenation"))
+        self.opt_kepub_disable_hyphenation.setText(_("Disable hyphenation"))
+        self.gridLayout.addWidget(self.opt_kepub_disable_hyphenation, rows, 1, 1, 1)
+
+        rows = rows + 1
+
         self.opt_kepub_clean_markup = QtGui.QCheckBox(Form)
         self.opt_kepub_clean_markup.setObjectName(unicode("opt_kepub_clean_markup"))
         self.opt_kepub_clean_markup.setText(_("Clean up ePub markup"))
-        self.gridLayout.addWidget(self.opt_kepub_clean_markup, rows, 1, 1, 1)
-        rows = rows + 1
+        self.gridLayout.addWidget(self.opt_kepub_clean_markup, rows, 0, 1, 1)
 
         self.opt_kepub_replace_lang = QtGui.QCheckBox(Form)
         self.opt_kepub_replace_lang.setObjectName(unicode("opt_kepub_replace_lang"))
         self.opt_kepub_replace_lang.setText(_("Replace Content Language Code"))
-        self.gridLayout.addWidget(self.opt_kepub_replace_lang, rows, 0, 1, 1)
+        self.gridLayout.addWidget(self.opt_kepub_replace_lang, rows, 1, 1, 1)
 
-        # Next option here
         rows = rows + 1
 
         # Next options here

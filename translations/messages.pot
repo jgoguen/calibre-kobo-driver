@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2015-01-14 13:38+PST\n"
+"POT-Creation-Date: 2015-06-09 09:26+PDT\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -23,15 +23,19 @@ msgstr ""
 msgid "Options specific to KePub output"
 msgstr ""
 
-#: conversion/config.py:55 device/driver.py:95
+#: conversion/config.py:56 device/driver.py:95
 msgid "Hyphenate Files"
 msgstr ""
 
-#: conversion/config.py:60
+#: conversion/config.py:61 device/driver.py:119
+msgid "Disable hyphenation"
+msgstr ""
+
+#: conversion/config.py:68
 msgid "Clean up ePub markup"
 msgstr ""
 
-#: conversion/config.py:66 device/driver.py:99
+#: conversion/config.py:73 device/driver.py:99
 msgid "Replace Content Language Code"
 msgstr ""
 
@@ -39,15 +43,31 @@ msgstr ""
 msgid "KePub Output"
 msgstr ""
 
-#: conversion/kepub_output.py:42 device/driver.py:95
-msgid "Select this to add a CSS file which enables hyphenation. The language used will be the language defined for the book in calibre. Please see the README file for directions on updating hyphenation dictionaries."
+#: conversion/kepub_output.py:42
+msgid "Please see the README file for directions on updating hyphenation dictionaries."
 msgstr ""
 
-#: conversion/kepub_output.py:43 device/driver.py:99
+#: conversion/kepub_output.py:42
+msgid "Select this to add a CSS file which enables hyphenation."
+msgstr ""
+
+#: conversion/kepub_output.py:42
+msgid "The language used will be the language defined for the book in calibre."
+msgstr ""
+
+#: conversion/kepub_output.py:43
+msgid "Select this to disable all hyphenation in a book."
+msgstr ""
+
+#: conversion/kepub_output.py:43
+msgid "This takes precedence over the hyphenation option."
+msgstr ""
+
+#: conversion/kepub_output.py:44 device/driver.py:99
 msgid "Select this to replace the defined language in each content file inside the ePub."
 msgstr ""
 
-#: conversion/kepub_output.py:44 device/driver.py:107
+#: conversion/kepub_output.py:45 device/driver.py:107
 msgid "Select this to clean up the internal ePub markup."
 msgstr ""
 
@@ -83,6 +103,10 @@ msgstr ""
 msgid "Silently Ignore Failed Conversions"
 msgstr ""
 
+#: device/driver.py:95
+msgid "Select this to add a CSS file which enables hyphenation. The language used will be the language defined for the book in calibre. Please see the README file for directions on updating hyphenation dictionaries."
+msgstr ""
+
 #: device/driver.py:103
 msgid "Select this to smarten punctuation in the ePub"
 msgstr ""
@@ -109,5 +133,17 @@ msgstr ""
 
 #: device/driver.py:115
 msgid "Use full book page numbers"
+msgstr ""
+
+#: device/driver.py:119
+msgid "Select this to disable hyphenation for books."
+msgstr ""
+
+#: metadata/reader.py:15
+msgid "Read metadata from %s files"
+msgstr ""
+
+#: metadata/writer.py:15
+msgid "Set metadata in %s files"
 msgstr ""
 

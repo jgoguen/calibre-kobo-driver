@@ -83,6 +83,7 @@ The name of the CSS file must be in the format `kobo_extra_<DEVICE>.css`. The fo
 - Kobo Aura HD &mdash; AURAHD (`kobo_extra_AURAHD.css`)
 - Kobo Aura &mdash; AURA (`kobo_extra_AURA.css`)
 - Kobo Glo &mdash; GLO (`kobo_extra_GLO.css`)
+- Kobo Glo HD &mdash; GLOHD (`kobo_extra_GLOHD.css`)
 - Kobo Mini &mdash; MINI (`kobo_extra_MINI.css`)
 - Kobo Touch &mdash; TOUCH (`kobo_extra_TOUCH.css`)
 

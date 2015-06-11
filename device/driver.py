@@ -116,6 +116,10 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
     EXTRA_CUSTOMIZATION_DEFAULT.append(False)
     OPT_FULL_PAGE_NUMBERS = len(EXTRA_CUSTOMIZATION_MESSAGE) - 1
 
+    EXTRA_CUSTOMIZATION_MESSAGE.append(_('Disable hyphenation') + ':::' + _('Select this to disable hyphenation for books.'))
+    EXTRA_CUSTOMIZATION_DEFAULT.append(False)
+    OPT_DISABLE_HYPHENATION = len(EXTRA_CUSTOMIZATION_MESSAGE) - 1
+
     skip_renaming_files = set([])
     kobo_js_re = re.compile(r'.*/?kobo.*\.js$', re.IGNORECASE)
     invalid_filename_chars_re = re.compile(r'[\/\\\?%\*:;\|\"\'><\$!]', re.IGNORECASE | re.UNICODE)
@@ -124,7 +128,8 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
         opts = self.settings().extra_customization
         return self.modifying_css() or opts[self.OPT_CLEAN_MARKUP] or \
             opts[self.OPT_EXTRA_FEATURES] or opts[self.OPT_REPLACE_LANG] \
-            or opts[self.OPT_HYPHENATE] or opts[self.OPT_SMARTEN_PUNCTUATION]
+            or opts[self.OPT_HYPHENATE] or opts[self.OPT_SMARTEN_PUNCTUATION] \
+            or opts[self.OPT_DISABLE_HYPHENATION]
 
     @classmethod
     def settings(cls):
@@ -210,7 +215,9 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 
             modify_epub(container, infile, metadata=metadata, opts={
                 'clean_markup': opts.extra_customization[self.OPT_CLEAN_MARKUP],
-                'hyphenate': opts.extra_customization[self.OPT_HYPHENATE],
+                'hyphenate': opts.extra_customization[self.OPT_HYPHENATE] and \
+                    not opts.extra_customization[self.OPT_DISABLE_HYPHENATION],
+                'no-hyphens': opts.extra_customization[self.OPT_DISABLE_HYPHENATION],
                 'replace_lang': opts.extra_customization[self.OPT_REPLACE_LANG],
                 'smarten_punctuation': opts.extra_customization[self.OPT_SMARTEN_PUNCTUATION],
                 'extended_kepub_features': opts.extra_customization[self.OPT_EXTRA_FEATURES]
@@ -256,6 +263,8 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
                     device_css_file_name = 'kobo_extra_AURA.css'
                 elif self.isGlo():
                     device_css_file_name = 'kobo_extra_GLO.css'
+                elif self.isGloHD():
+                    device_css_file_name = 'kobo_extra_GLOHD.css'
                 elif self.isMini():
                     device_css_file_name = 'kobo_extra_MINI.css'
                 elif self.isTouch():
@@ -285,15 +294,10 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
         return super(KOBOTOUCHEXTENDED, self).upload_books(files, names, on_card, end_session, metadata)
 
     def filename_callback(self, path, mi):
-        opts = self.settings()
-        if opts.extra_customization[self.OPT_EXTRA_FEATURES]:
-            debug_print("KoboTouchExtended:filename_callback:Path - {0}".format(path))
-
-            idx = path.rfind('.')
-            ext = path[idx:]
-            if ext == KEPUB_EXT or (ext == EPUB_EXT and mi.uuid not in self.skip_renaming_files):
-                path = "{0}.kepub{1}".format(path[:idx], EPUB_EXT)
-                debug_print("KoboTouchExtended:filename_callback:New path - {0}".format(path))
+        debug_print("KoboTouchExtended:filename_callback:Path - {0}".format(path))
+        if path.endswith(KEPUB_EXT):
+            path += EPUB_EXT
+            debug_print("KoboTouchExtended:filename_callback:New path - {0}".format(path))
 
         return path
 

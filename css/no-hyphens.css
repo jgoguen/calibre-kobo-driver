@@ -1,0 +1,5 @@
+* {
+  -moz-hyphens: none !important;
+  -webkit-hyphens: none !important;
+  hyphens: none !important;
+}
