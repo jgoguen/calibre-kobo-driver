@@ -9,9 +9,9 @@ Write-Zip -Path .\container.py,.\common.py,.\conversion,.\plugin-import-name-kob
 rm __init__.py
 
 cp md_reader_init.py __init__.py
-Write-Zip -Path .\__init__.py,.\translations,.\metadata\__init__.py,.\metadata\reader.py,.\common.py,.\plugin-import-name-kepubmdreader.txt "Read KEPUB metadata.zip"
+Write-Zip -Path .\__init__.py,.\translations,.\metadata\__init__.py,.\metadata\reader.py,.\common.py,.\plugin-import-name-kepubmdreader.txt "KePub Metadata Reader.zip"
 
 cp md_writer_init.py __init__.py
-Write-Zip -Path .\__init__.py,.\translations,.\metadata\__init__.py,.\metadata\writer.py,.\common.py,.\plugin-import-name-kepubmdwriter.txt "Set KEPUB metadata.zip"
+Write-Zip -Path .\__init__.py,.\translations,.\metadata\__init__.py,.\metadata\writer.py,.\common.py,.\plugin-import-name-kepubmdwriter.txt "KePub Metadata Writer.zip"
 
 Set-Content -Path __init__.py -Value $null

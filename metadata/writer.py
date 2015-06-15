@@ -10,7 +10,7 @@ from calibre_plugins.kepubmdwriter.common import plugin_version
 
 class KEPUBMetadataWriter(EPUBMetadataWriter):
 
-    name = 'Set KEPUB metadata'
+    name = 'KePub Metadata Writer'
     author = 'David Forrester'
     description = _('Set metadata in %s files') % 'Kobo ePub'
     file_types  = set(['kepub'])

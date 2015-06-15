@@ -10,7 +10,7 @@ from calibre_plugins.kepubmdreader.common import plugin_version
 
 class KEPUBMetadataReader(EPUBMetadataReader):
 
-    name = 'Read KEPUB metadata'
+    name = 'KePub Metadata Reader'
     author = 'David Forrester'
     description = _('Read metadata from %s files') % 'Kobo ePub'
     file_types  = set(['kepub'])
