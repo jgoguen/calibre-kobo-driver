@@ -6,7 +6,7 @@ __docformat__ = 'markdown en'
 
 # Be careful editing this! This file has to work in two different packages at once,
 # so don't import anything from calibre_plugins.kobotouch_extended or
-# calibre_plugins.koboconversion
+# calibre_plugins.kepubout or calibre_plugins.kepubin
 
 import os
 import re
@@ -22,10 +22,13 @@ kobo_js_re = re.compile(r'.*/?kobo.*\.js$', re.IGNORECASE)
 XML_NAMESPACE = 'http://www.w3.org/XML/1998/namespace'
 configdir = os.path.join(config_dir, 'plugins')
 reference_kepub = os.path.join(configdir, 'reference.kepub.epub')
-plugin_version = (2, 4, 2)
+plugin_version = (2, 5, 0)
 plugin_minimum_calibre_version = (1, 3, 0)
 
 
+# The logic here to detect a cover image is mostly duplicated from
+# metadata/writer.py. Updates to the logic here probably need an accompanying
+# update over there.
 def modify_epub(container, filename, metadata=None, opts={}):
     print(str(opts))
     # Search for the ePub cover

@@ -6,7 +6,7 @@ __docformat__ = 'restructuredtext en'
 
 # Be careful editing this! This file has to work in two different packages at once,
 # so don't import anything from calibre_plugins.kobotouch_extended or
-# calibre_plugins.koboconversion
+# calibre_plugins.kepubout or calibre_plugins.kepubin
 
 import os
 import re

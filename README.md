@@ -33,14 +33,23 @@ To install the device driver plugin from source, you must rename **device\_init.
 1. css
 1. plugin-import-name-kobotouch\_extended.txt
 
-To install the conversion output format plugin from source, you must rename **conversion\_init.py** to **\_\_init\_\_.py**, create a ZIP file named `KePub Output.zip` and include these files and folders:
+To install the conversion output format plugin from source, you must rename **conversion\_out\_init.py** to **\_\_init\_\_.py**, create a ZIP file named `KePub Output.zip` and include these files and folders:
 
 1. \_\_init\_\_.py
 1. container.py
 1. common.py
 1. conversion
 1. css
-1. plugin-import-name-koboconversion.txt
+1. plugin-import-name-kepubout.txt
+
+To install the conversion input format plugin from source, you must rename **conversion\_in\_init.py** to **\_\_init\_\_.py**, create a ZIP file named `KePub Input.zip` and include these files and folders:
+
+1. \_\_init\_\_.py
+1. container.py
+1. common.py
+1. conversion
+1. css
+1. plugin-import-name-kepubin.txt
 
 To create a ZIP file:
 

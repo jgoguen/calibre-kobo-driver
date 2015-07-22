@@ -14,10 +14,10 @@ from calibre.ebooks.conversion.plugins.epub_output import EPUBOutput
 from calibre.ebooks.metadata.book.base import NULL_VALUES
 from calibre.ebooks.metadata.book.base import Metadata
 from calibre.utils.logging import default_log
-from calibre_plugins.koboconversion.common import plugin_minimum_calibre_version
-from calibre_plugins.koboconversion.common import plugin_version
-from calibre_plugins.koboconversion.common import modify_epub
-from calibre_plugins.koboconversion.container import KEPubContainer
+from calibre_plugins.kepubout.common import plugin_minimum_calibre_version
+from calibre_plugins.kepubout.common import plugin_version
+from calibre_plugins.kepubout.common import modify_epub
+from calibre_plugins.kepubout.container import KEPubContainer
 from datetime import datetime
 
 
@@ -29,7 +29,7 @@ except NameError:
 
 
 class KEPubOutput(OutputFormatPlugin):
-    name = _('KePub Output')
+    name = 'KePub Output'
     author = 'Joel Goguen'
     file_type = 'kepub'
     version = plugin_version
@@ -53,7 +53,7 @@ class KEPubOutput(OutputFormatPlugin):
         OutputFormatPlugin.__init__(self, *args, **kwargs)
 
     def gui_configuration_widget(self, parent, get_option_by_name, get_option_help, db, book_id=None):
-        from calibre_plugins.koboconversion.conversion.config import PluginWidget
+        from calibre_plugins.kepubout.conversion.output_config import PluginWidget
         return PluginWidget(parent, get_option_by_name, get_option_help, db, book_id)
 
     def convert(self, oeb_book, output, input_plugin, opts, log):
