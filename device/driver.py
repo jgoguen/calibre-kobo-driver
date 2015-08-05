@@ -294,11 +294,15 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
         return super(KOBOTOUCHEXTENDED, self).upload_books(files, names, on_card, end_session, metadata)
 
     def filename_callback(self, path, mi):
-        debug_print("KoboTouchExtended:filename_callback:Path - {0}".format(path))
-        if path.endswith(KEPUB_EXT):
-            path += EPUB_EXT
-            debug_print("KoboTouchExtended:filename_callback:New path - {0}".format(path))
+        opts = self.settings()
+        if opts.extra_customization[self.OPT_EXTRA_FEATURES]:
+            debug_print("KoboTouchExtended:filename_callback:Path - {0}".format(path))
+            if path.endswith(KEPUB_EXT):
+                path += EPUB_EXT
+            elif path.endswith(EPUB_EXT) and mi.uuid not in self.skip_renaming_files:
+                path = path.rstrip(EPUB_EXT) + KEPUB_EXT + EPUB_EXT
 
+            debug_print("KoboTouchExtended:filename_callback:New path - {0}".format(path))
         return path
 
     def sanitize_path_components(self, components):
