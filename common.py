@@ -22,7 +22,7 @@ kobo_js_re = re.compile(r'.*/?kobo.*\.js$', re.IGNORECASE)
 XML_NAMESPACE = 'http://www.w3.org/XML/1998/namespace'
 configdir = os.path.join(config_dir, 'plugins')
 reference_kepub = os.path.join(configdir, 'reference.kepub.epub')
-plugin_version = (2, 5, 2)
+plugin_version = (2, 5, 3)
 plugin_minimum_calibre_version = (1, 3, 0)
 
 
@@ -51,7 +51,7 @@ def modify_epub(container, filename, metadata=None, opts={}):
     # It's possible that the cover image can't be detected this way. Try looking for the cover image ID in the OPF manifest.
     if not found_cover:
         print("KoboTouchExtended:common:modify_epub:Looking for cover image in OPF manifest")
-        node_list = opf.xpath('./opf:manifest/opf:item[(@id="cover" or starts-with(@id, "cover")) and starts-with(@media-type, "image")]', namespaces=OPF_NAMESPACES)
+        node_list = opf.xpath('./opf:manifest/opf:item[(translate(@id, \'ABCDEFGHIJKLMNOPQRSTUVWXYZ\', \'abcdefghijklmnopqrstuvwxyz\')="cover" or starts-with(translate(@id, \'ABCDEFGHIJKLMNOPQRSTUVWXYZ\', \'abcdefghijklmnopqrstuvwxyz\'), "cover")) and starts-with(@media-type, "image")]', namespaces=OPF_NAMESPACES)
         if len(node_list) > 0:
             node = node_list[0]
             if "properties" not in node.attrib or node.attrib["properties"] != 'cover-image':
