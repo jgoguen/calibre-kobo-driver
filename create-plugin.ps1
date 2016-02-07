@@ -17,8 +17,10 @@ rm .\conversion\__init__.py
 
 cp md_reader_init.py __init__.py
 Write-Zip -Path .\__init__.py,.\translations,.\metadata\__init__.py,.\metadata\reader.py,.\common.py,.\plugin-import-name-kepubmdreader.txt "KePub Metadata Reader.zip"
+rm __init__.py
 
 cp md_writer_init.py __init__.py
 Write-Zip -Path .\__init__.py,.\translations,.\metadata\__init__.py,.\metadata\writer.py,.\common.py,.\plugin-import-name-kepubmdwriter.txt "KePub Metadata Writer.zip"
+rm __init__.py
 
 Set-Content -Path __init__.py -Value $null

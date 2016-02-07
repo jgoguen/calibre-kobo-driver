@@ -17,8 +17,10 @@ rm -f conversion/__init__.py
 
 cp -f md_reader_init.py __init__.py
 zip -ru "KePub Metadata Reader.zip" __init__.py translations/*.mo metadata/__init__.py metadata/reader.py common.py plugin-import-name-kepubmdreader.txt
+rm -f __init__.py
 
 cp -f md_writer_init.py __init__.py
 zip -ru "KePub Metadata Writer.zip" __init__.py translations/*.mo metadata/__init__.py metadata/writer.py common.py plugin-import-name-kepubmdwriter.txt
+rm -f __init__.py
 
 touch __init__.py

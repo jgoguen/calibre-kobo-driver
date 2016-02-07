@@ -4,9 +4,12 @@ __license__ = 'GPL v3'
 __copyright__ = '2015, David Forrester <davidfor@internode.on.net>'
 __docformat__ = 'markdown en'
 
+import os
+
 from cStringIO import StringIO
 
 from calibre.customize.builtins import EPUBMetadataWriter
+from calibre.devices.usbms.driver import debug_print
 from calibre.ebooks.metadata.epub import get_zip_reader
 from calibre.ebooks.metadata.opf2 import OPF
 from calibre.utils.localunzip import LocalZipFile
