@@ -189,17 +189,13 @@ class KEPubContainer(EpubContainer):
                 # remove empty strings resulting from split()
                 groups = [g.decode("utf-8") for g in groups if g != '']
 
+                # To match Kobo KePubs, the trailing whitespace needs to be
+                # prepended to the next group. Probably equivalent to make sure
+                # the space stays in the span at the end.
                 # add each sentence in its own span
                 for g in groups:
                     span = etree.Element("{%s}span" % (XHTML_NAMESPACE,), attrib={"id": "kobo.{0}.{1}".format(self.paragraph_counter, self.segment_counter), "class": "koboSpan"})
-                    # tries to remove trailing spaces from the span:
-                    # if match succeds, returns a list like this: ['', '<g> without trailing spaces', 'trailing spaces', '']
-                    nospaces = re.split(ur'(^.*?)(\s+$)', g, flags=re.UNICODE)
-                    if len(nospaces) == 4:
-                        span.text = nospaces[1]
-                        span.tail = nospaces[2]
-                    else:
-                        span.text = g
+                    span.text = g
                     node.append(span)
                     self.segment_counter += 1
                 return True
