@@ -67,10 +67,6 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
     minimum_calibre_version = plugin_minimum_calibre_version
     version = plugin_version
 
-    # Set these only if there is some reason to deviate from the mainline KoboTouch driver
-    #supported_dbversion = 92
-    #max_supported_fwversion = (3, 0, 0)
-
     content_types = {
         "main": 6,
         "content": 9,

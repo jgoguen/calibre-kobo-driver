@@ -169,7 +169,10 @@ class KEPubContainer(EpubContainer):
 
     def get_raw(self, name):
         self.commit_item(name, keep_parsed=False)
-        f = open(self.name_path_map[name], 'rb')
+        try:
+            f = open(self.name_path_map[name], 'rb')
+        except:
+            return None
         data = f.read()
         f.close()
         return data
@@ -339,6 +342,8 @@ class KEPubContainer(EpubContainer):
         for name in self.get_html_names():
             self.log.info("Smartening punctuation for file {0}".format(name))
             html = self.get_raw(name)
+            if html is None:
+                continue
             html = html.encode("UTF-8")
 
             # Fix non-breaking space indents
@@ -368,6 +373,8 @@ class KEPubContainer(EpubContainer):
         for name in self.get_html_names():
             self.log.info("Cleaning markup for file {0}".format(name))
             html = self.get_raw(name)
+            if html is None:
+                continue
             html = html.encode("UTF-8")
 
             # Get rid of Microsoft cruft
@@ -387,6 +394,8 @@ class KEPubContainer(EpubContainer):
         for name in self.get_html_names():
             self.log.info("Forcing cleanup for file {0}".format(name))
             html = self.get_raw(name)
+            if html is None:
+                continue
             encoding_match = re.search(r'^\<\?.+encoding="([^"]+)"', html[:75], re.MULTILINE)
             if encoding_match and encoding_match.group(1) and encoding_match.group(1).upper() != "UTF-8":
                 html = html.decode(encoding_match.group(1))
