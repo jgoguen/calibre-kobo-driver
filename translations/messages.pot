@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2015-06-09 09:26+PDT\n"
+"POT-Creation-Date: 2016-06-25 23:06+PDT\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -15,59 +15,35 @@ msgstr ""
 "Generated-By: pygettext.py 1.5\n"
 
 
-#: container.py:141
+#: container.py:148
 msgid "A valid file name must be given (got: {filename})"
 msgstr ""
 
-#: conversion/config.py:22
-msgid "Options specific to KePub output"
-msgstr ""
-
-#: conversion/config.py:56 device/driver.py:95
-msgid "Hyphenate Files"
-msgstr ""
-
-#: conversion/config.py:61 device/driver.py:119
-msgid "Disable hyphenation"
-msgstr ""
-
-#: conversion/config.py:68
-msgid "Clean up ePub markup"
-msgstr ""
-
-#: conversion/config.py:73 device/driver.py:99
-msgid "Replace Content Language Code"
-msgstr ""
-
-#: conversion/kepub_output.py:32
-msgid "KePub Output"
-msgstr ""
-
-#: conversion/kepub_output.py:42
-msgid "Please see the README file for directions on updating hyphenation dictionaries."
-msgstr ""
-
-#: conversion/kepub_output.py:42
+#: conversion/kepub_output.py:44
 msgid "Select this to add a CSS file which enables hyphenation."
 msgstr ""
 
-#: conversion/kepub_output.py:42
+#: conversion/kepub_output.py:46
 msgid "The language used will be the language defined for the book in calibre."
 msgstr ""
 
-#: conversion/kepub_output.py:43
+#: conversion/kepub_output.py:48
+msgid "Please see the README file for directions on updating hyphenation dictionaries."
+msgstr ""
+
+#: conversion/kepub_output.py:52
 msgid "Select this to disable all hyphenation in a book."
 msgstr ""
 
-#: conversion/kepub_output.py:43
+#: conversion/kepub_output.py:53
 msgid "This takes precedence over the hyphenation option."
 msgstr ""
 
-#: conversion/kepub_output.py:44 device/driver.py:99
+#: conversion/kepub_output.py:57
 msgid "Select this to replace the defined language in each content file inside the ePub."
 msgstr ""
 
-#: conversion/kepub_output.py:45 device/driver.py:107
+#: conversion/kepub_output.py:62
 msgid "Select this to clean up the internal ePub markup."
 msgstr ""
 
@@ -75,75 +51,15 @@ msgstr ""
 msgid "Failed to parse '{book}' by '{author}' with error: '{error}' (file: {filename}, line: {lineno})"
 msgstr ""
 
-#: device/driver.py:62
+#: device/driver.py:66
 msgid "Communicate with the Kobo Touch, Glo, Mini, Aura HD, and Aura firmwares and enable extended Kobo ePub features."
 msgstr ""
 
-#: device/driver.py:83
-msgid "Choose whether to enable extra customizations"
-msgstr ""
-
-#: device/driver.py:83
-msgid "Enable Extended Kobo Features"
-msgstr ""
-
-#: device/driver.py:87
-msgid "Select this to upload ePub files encumbered by DRM. If this is not selected, it is a fatal error to upload an encumbered file"
-msgstr ""
-
-#: device/driver.py:87
-msgid "Upload DRM-encumbered ePub files"
-msgstr ""
-
-#: device/driver.py:91
-msgid "Select this to not upload any book that fails conversion to kepub. If this is not selected, the upload process will be stopped at the first book that fails. If this is selected, failed books will be silently removed from the upload queue."
-msgstr ""
-
-#: device/driver.py:91
-msgid "Silently Ignore Failed Conversions"
-msgstr ""
-
-#: device/driver.py:95
-msgid "Select this to add a CSS file which enables hyphenation. The language used will be the language defined for the book in calibre. Please see the README file for directions on updating hyphenation dictionaries."
-msgstr ""
-
-#: device/driver.py:103
-msgid "Select this to smarten punctuation in the ePub"
-msgstr ""
-
-#: device/driver.py:103
-msgid "Smarten Punctuation"
-msgstr ""
-
-#: device/driver.py:107
-msgid "Clean up ePub Markup"
-msgstr ""
-
-#: device/driver.py:111
-msgid "Copy generated KePub files to a directory"
-msgstr ""
-
-#: device/driver.py:111
-msgid "Enter an absolute directory path to copy all generated KePub files into for debugging purposes."
-msgstr ""
-
-#: device/driver.py:115
-msgid "Select this to show page numbers for the whole book, instead of each chapter. This will also affect regular ePub page number display!"
-msgstr ""
-
-#: device/driver.py:115
-msgid "Use full book page numbers"
-msgstr ""
-
-#: device/driver.py:119
-msgid "Select this to disable hyphenation for books."
-msgstr ""
-
-#: metadata/reader.py:15
+#: metadata/reader.py:16
 msgid "Read metadata from %s files"
 msgstr ""
 
-#: metadata/writer.py:15
+#: metadata/writer.py:25
 msgid "Set metadata in %s files"
 msgstr ""
 

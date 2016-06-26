@@ -26,18 +26,26 @@ class KEPUBInput(EPUBInput):
     minimum_calibre_version = (0, 1, 0)
 
     options = {
-        OptionRecommendation(name='strip_kobo_spans', recommended_value=True,
-            help=_('Kepubs have spans wrapping each sentence. These are used by the ereader for the reading location '
+        OptionRecommendation(
+            name='strip_kobo_spans',
+            recommended_value=True,
+            help=_(
+                'Kepubs have spans wrapping each sentence. These are used by the ereader for the reading location '
                 'and bookmark location. They are not used by an ePub reader but are valid code and can be safely be '
                 'left in the ePub. If you plan to edit the ePub, it is recommended that you remove the spans.')),
     }
 
     recommendations = set([])
 
-    def gui_configuration_widget(self, parent, get_option_by_name,
-                                 get_option_help, db, book_id=None):
+    def gui_configuration_widget(self,
+                                 parent,
+                                 get_option_by_name,
+                                 get_option_help,
+                                 db,
+                                 book_id=None):
         from calibre_plugins.kepubin.conversion.input_config import PluginWidget
-        return PluginWidget(parent, get_option_by_name, get_option_help, db, book_id)
+        return PluginWidget(parent, get_option_by_name, get_option_help, db,
+                            book_id)
 
     def convert(self, stream, options, file_ext, log, accelerators):
         log("KEPUBInput::convert - start")
@@ -50,7 +58,7 @@ class KEPUBInput(EPUBInput):
             zf.extractall(os.getcwdu())
         except:
             log.exception('KEPUB appears to be invalid ZIP file, trying a '
-                'more forgiving ZIP parser')
+                          'more forgiving ZIP parser')
             from calibre.utils.localunzip import extractall
             stream.seek(0)
             extractall(stream)
@@ -64,7 +72,8 @@ class KEPUBInput(EPUBInput):
         path = getattr(stream, 'name', 'stream')
 
         if opf is None:
-            raise ValueError(_('%s is not a valid KEPUB file (could not find opf)') % path)
+            raise ValueError(
+                _('%s is not a valid KEPUB file (could not find opf)') % path)
 
         encfile = os.path.abspath('rights.xml')
         if os.path.exists(encfile):
@@ -77,27 +86,29 @@ class KEPUBInput(EPUBInput):
         self.encrypted_fonts = []
 
         if len(parts) > 1 and parts[0]:
-            delta = '/'.join(parts[:-1])+'/'
+            delta = '/'.join(parts[:-1]) + '/'
             for elem in opf.itermanifest():
-                elem.set('href', delta+elem.get('href'))
+                elem.set('href', delta + elem.get('href'))
             for elem in opf.iterguide():
-                elem.set('href', delta+elem.get('href'))
+                elem.set('href', delta + elem.get('href'))
 
         self.removed_cover = self.rationalize_cover(opf, log)
 
         self.optimize_opf_parsing = opf
         for x in opf.itermanifest():
             if x.get('media-type', '') == 'application/x-dtbook+xml':
-                raise ValueError(
-                    _('EPUB files with DTBook markup are not supported'))
+                raise ValueError(_(
+                    'EPUB files with DTBook markup are not supported'))
 
         not_for_spine = set()
         for y in opf.itermanifest():
             id_ = y.get('id', None)
             if id_ and y.get('media-type', None) in {
-                    'application/vnd.adobe-page-template+xml', 'application/vnd.adobe.page-template+xml',
-                    'application/adobe-page-template+xml', 'application/adobe.page-template+xml',
-                    'application/text'}:
+                    'application/vnd.adobe-page-template+xml',
+                    'application/vnd.adobe.page-template+xml',
+                    'application/adobe-page-template+xml',
+                    'application/adobe.page-template+xml', 'application/text'
+            }:
                 not_for_spine.add(id_)
 
         seen = set()
@@ -148,7 +159,8 @@ class KEPUBInput(EPUBInput):
             if not hasattr(item.data, 'xpath'):
                 continue
 
-            for a in item.data.xpath('//h:span[@class="koboSpan"]', namespaces={'h':XHTML_NS}):
+            for a in item.data.xpath('//h:span[@class="koboSpan"]',
+                                     namespaces={'h': XHTML_NS}):
                 refactor_span(a)
 
         log("KEPUBInput::postprocess_book - end")

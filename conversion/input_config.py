@@ -36,11 +36,16 @@ class PluginWidget(EPUBPluginWidget, EPUBUIForm):
     HELP = _('Options specific to KePub input.')
 
     def __init__(self, parent, get_option, get_help, db=None, book_id=None):
-        Widget.__init__(self, parent, ['dont_split_on_page_breaks', 'flow_size',
-                                       'no_default_epub_cover', 'no_svg_cover',
-                                       'epub_inline_toc', 'epub_toc_at_end', 'toc_title',
-                                       'preserve_cover_aspect_ratio', 'epub_flatten',
-                                       'strip_kobo_spans',])
+        Widget.__init__(self, parent, ['dont_split_on_page_breaks',
+                                       'flow_size',
+                                       'no_default_epub_cover',
+                                       'no_svg_cover',
+                                       'epub_inline_toc',
+                                       'epub_toc_at_end',
+                                       'toc_title',
+                                       'preserve_cover_aspect_ratio',
+                                       'epub_flatten',
+                                       'strip_kobo_spans', ])
         if book_id:
             self._icon = QIcon(I('forward.png'))
         self.initialize_options(get_option, get_help, db, book_id)
@@ -54,7 +59,8 @@ class PluginWidget(EPUBPluginWidget, EPUBUIForm):
         self.gridLayout.removeItem(spacer)
 
         self.opt_strip_kobo_spans = QtGui.QCheckBox(Form)
-        self.opt_strip_kobo_spans.setObjectName(unicode("opt_strip_kobo_spans"))
+        self.opt_strip_kobo_spans.setObjectName(unicode(
+            "opt_strip_kobo_spans"))
         self.opt_strip_kobo_spans.setText(_("Strip Kobo spans"))
         self.gridLayout.addWidget(self.opt_strip_kobo_spans, rows, 0, 1, 1)
         rows = rows + 1
@@ -67,8 +73,8 @@ class PluginWidget(EPUBPluginWidget, EPUBUIForm):
 
 
 class OutputOptions(BaseOutputOptions):
-
     def load_conversion_widgets(self):
         super(OutputOptions, self).load_conversion_widgets()
         self.conversion_widgets.append(PluginWidget)
-        self.conversion_widgets = sorted(self.conversion_widgets, key=lambda x: x.TITLE)
+        self.conversion_widgets = sorted(self.conversion_widgets,
+                                         key=lambda x: x.TITLE)

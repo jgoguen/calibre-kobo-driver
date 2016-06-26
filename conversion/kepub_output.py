@@ -20,7 +20,6 @@ from calibre_plugins.kepubout.common import modify_epub
 from calibre_plugins.kepubout.container import KEPubContainer
 from datetime import datetime
 
-
 # Support load_translations() without forcing calibre 1.9+
 try:
     load_translations()
@@ -39,25 +38,51 @@ class KEPubOutput(OutputFormatPlugin):
     configdir = os.path.join(config_dir, 'plugins')
     reference_kepub = os.path.join(configdir, 'reference.kepub.epub')
     options = set([
-        OptionRecommendation(name='kepub_hyphenate', recommended_value=True, help=_("Select this to add a CSS file which enables hyphenation.") + " " + _("The language used will be the language defined for the book in calibre.") + " " + _("Please see the README file for directions on updating hyphenation dictionaries.")),
-        OptionRecommendation(name="kepub_disable_hyphenation", recommended_value=False, help=_("Select this to disable all hyphenation in a book.") + " " + _("This takes precedence over the hyphenation option.")),
-        OptionRecommendation(name='kepub_replace_lang', recommended_value=True, help=_('Select this to replace the defined language in each content file inside the ePub.')),
-        OptionRecommendation(name='kepub_clean_markup', recommended_value=True, help=_('Select this to clean up the internal ePub markup.'))
+        OptionRecommendation(
+            name='kepub_hyphenate',
+            recommended_value=True,
+            help=_("Select this to add a CSS file which enables hyphenation.")
+            + " " +
+            _("The language used will be the language defined for the book in calibre.")
+            + " " +
+            _("Please see the README file for directions on updating hyphenation dictionaries.")),
+        OptionRecommendation(
+            name="kepub_disable_hyphenation",
+            recommended_value=False,
+            help=_("Select this to disable all hyphenation in a book.") + " " +
+            _("This takes precedence over the hyphenation option.")),
+        OptionRecommendation(
+            name='kepub_replace_lang',
+            recommended_value=True,
+            help=_(
+                'Select this to replace the defined language in each content file inside the ePub.')),
+        OptionRecommendation(
+            name='kepub_clean_markup',
+            recommended_value=True,
+            help=_('Select this to clean up the internal ePub markup.'))
     ])
     recommendations = set([])
 
     def __init__(self, *args, **kwargs):
         self.epub_output_plugin = EPUBOutput(*args, **kwargs)
         self.options = self.options.union(self.epub_output_plugin.options)
-        self.recommendations = self.recommendations.union(self.epub_output_plugin.recommendations)
+        self.recommendations = self.recommendations.union(
+            self.epub_output_plugin.recommendations)
         OutputFormatPlugin.__init__(self, *args, **kwargs)
 
-    def gui_configuration_widget(self, parent, get_option_by_name, get_option_help, db, book_id=None):
+    def gui_configuration_widget(self,
+                                 parent,
+                                 get_option_by_name,
+                                 get_option_help,
+                                 db,
+                                 book_id=None):
         from calibre_plugins.kepubout.conversion.output_config import PluginWidget
-        return PluginWidget(parent, get_option_by_name, get_option_help, db, book_id)
+        return PluginWidget(parent, get_option_by_name, get_option_help, db,
+                            book_id)
 
     def convert(self, oeb_book, output, input_plugin, opts, log):
-        self.epub_output_plugin.convert(oeb_book, output, input_plugin, opts, log)
+        self.epub_output_plugin.convert(oeb_book, output, input_plugin, opts,
+                                        log)
         container = KEPubContainer(output, default_log)
 
         if container.is_drm_encumbered:
@@ -71,14 +96,17 @@ class KEPubOutput(OutputFormatPlugin):
         kte_data_file = self.temporary_file('_KePubOutputPluginInfo')
         kte_data_file.write(json.dumps(o))
         kte_data_file.close()
-        container.copy_file_to_container(kte_data_file.name, name='plugininfo.kte', mt='application/json')
+        container.copy_file_to_container(kte_data_file.name,
+                                         name='plugininfo.kte',
+                                         mt='application/json')
 
         title = container.opf_xpath("./opf:metadata/dc:title/text()")
         if len(title) > 0:
             title = title[0]
         else:
             title = NULL_VALUES['title']
-        authors = container.opf_xpath('./opf:metadata/dc:creator[@opf:role="aut"]/text()')
+        authors = container.opf_xpath(
+            './opf:metadata/dc:creator[@opf:role="aut"]/text()')
         if len(authors) < 1:
             authors = NULL_VALUES['authors']
         mi = Metadata(title, authors)
@@ -91,11 +119,14 @@ class KEPubOutput(OutputFormatPlugin):
             language = NULL_VALUES['language']
         mi.language
 
-        modify_epub(container, output, metadata=mi, opts={
-            'clean_markup': opts.kepub_clean_markup,
-            'hyphenate': opts.kepub_hyphenate,
-            'no-hyphens': opts.kepub_disable_hyphenation,
-            'replace_lang': opts.kepub_replace_lang,
-            'smarten_punctuation': False,
-            'extended_kepub_features': True
-        })
+        modify_epub(container,
+                    output,
+                    metadata=mi,
+                    opts={
+                        'clean_markup': opts.kepub_clean_markup,
+                        'hyphenate': opts.kepub_hyphenate,
+                        'no-hyphens': opts.kepub_disable_hyphenation,
+                        'replace_lang': opts.kepub_replace_lang,
+                        'smarten_punctuation': False,
+                        'extended_kepub_features': True
+                    })

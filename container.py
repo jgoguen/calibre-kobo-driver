@@ -30,9 +30,11 @@ except NameError:
     pass
 
 HTML_MIMETYPES = frozenset(['text/html', 'application/xhtml+xml'])
-EXCLUDE_FROM_ZIP = frozenset(['mimetype', '.DS_Store', 'thumbs.db', '.directory'])
+EXCLUDE_FROM_ZIP = frozenset(['mimetype', '.DS_Store', 'thumbs.db',
+                              '.directory'])
 NO_SPACE_BEFORE_CHARS = frozenset([c for c in string.punctuation] + [u'\xbb'])
-ENCRYPTION_NAMESPACES = {'enc': 'http://www.w3.org/2001/04/xmlenc#', 'deenc': 'http://ns.adobe.com/digitaleditions/enc'}
+ENCRYPTION_NAMESPACES = {'enc': 'http://www.w3.org/2001/04/xmlenc#',
+                         'deenc': 'http://ns.adobe.com/digitaleditions/enc'}
 XHTML_NAMESPACE = 'http://www.w3.org/1999/xhtml'
 SPECIAL_TAGS = frozenset(['img'])
 
@@ -42,11 +44,11 @@ class InvalidEpub(ValueError):
 
 
 class ParseError(ValueError):
-
     def __init__(self, name, desc):
         self.name = name
         self.desc = desc
-        ValueError.__init__(self, 'Failed to parse: {0} with error: {1}'.format(name, desc))
+        ValueError.__init__(
+            self, 'Failed to parse: {0} with error: {1}'.format(name, desc))
 
 
 class KEPubContainer(EpubContainer):
@@ -57,9 +59,11 @@ class KEPubContainer(EpubContainer):
         """A generator function that yields only HTML file names from
         the ePub.
         """
-        for node in self.opf_xpath('//opf:manifest/opf:item[@href and @media-type]'):
+        for node in self.opf_xpath(
+                '//opf:manifest/opf:item[@href and @media-type]'):
             if node.get("media-type") in HTML_MIMETYPES:
-                href = os.path.join(os.path.dirname(self.opf_name), node.get("href"))
+                href = os.path.join(
+                    os.path.dirname(self.opf_name), node.get("href"))
                 href = os.path.normpath(href).replace(os.sep, '/')
                 yield href
 
@@ -78,7 +82,9 @@ class KEPubContainer(EpubContainer):
                 xml = self.parsed('META-INF/encryption.xml')
                 if xml is None:
                     return True  # If encryption.xml can't be parsed, assume its presence means an encumbered file
-                for elem in xml.xpath('./enc:EncryptedData/enc:EncryptionMethod[@Algorithm]', namespaces=ENCRYPTION_NAMESPACES):
+                for elem in xml.xpath(
+                        './enc:EncryptedData/enc:EncryptionMethod[@Algorithm]',
+                        namespaces=ENCRYPTION_NAMESPACES):
                     alg = elem.get('Algorithm')
 
                     # Anything not in acceptable_encryption_algorithms is a sign of an
@@ -121,7 +127,8 @@ class KEPubContainer(EpubContainer):
         item = self.generate_item(name, media_type=mt)
         name = self.href_to_name(item.get('href'), self.opf_name)
 
-        self.log.info("Copying file '{0}' to '{1}' as '{2}'".format(path, self.root, name))
+        self.log.info("Copying file '{0}' to '{1}' as '{2}'".format(
+            path, self.root, name))
 
         try:
             # Throws an error that we can ignore if the directory already exists
@@ -138,26 +145,43 @@ class KEPubContainer(EpubContainer):
         supported.
         '''
         if name not in self.name_path_map or name not in self.mime_map:
-            raise ValueError(_("A valid file name must be given (got: {filename})").format(filename=name))
+            raise ValueError(_(
+                "A valid file name must be given (got: {filename})").format(
+                    filename=name))
         for infile in self.get_html_names():
-            self.log.info("Adding reference to {0} to file {1}".format(name, infile))
+            self.log.info("Adding reference to {0} to file {1}".format(name,
+                                                                       infile))
             root = self.parsed(infile)
             if root is None:
-                self.log.error("Could not retrieve content file {0}".format(infile))
+                self.log.error("Could not retrieve content file {0}".format(
+                    infile))
                 continue
-            head = root.xpath('./xhtml:head', namespaces={'xhtml': XHTML_NAMESPACE})
+            head = root.xpath('./xhtml:head',
+                              namespaces={'xhtml': XHTML_NAMESPACE})
             if head is None:
-                self.log.error("Could not find a <head> element in content file {0}".format(infile))
+                self.log.error(
+                    "Could not find a <head> element in content file {0}".format(
+                        infile))
                 continue
             head = head[0]
             if head is None:
-                self.log.error("A <head> section was found but was undefined in content file {0}".format(infile))
+                self.log.error(
+                    "A <head> section was found but was undefined in content file {0}".format(
+                        infile))
                 continue
 
             if self.mime_map[name] == guess_type('a.css')[0]:
-                elem = head.makeelement("{%s}link" % XHTML_NAMESPACE, rel='stylesheet', href=os.path.relpath(name, os.path.dirname(infile)).replace(os.sep, '/'))
+                elem = head.makeelement(
+                    "{%s}link" % XHTML_NAMESPACE,
+                    rel='stylesheet',
+                    href=os.path.relpath(
+                        name, os.path.dirname(infile)).replace(os.sep, '/'))
             elif self.mime_map[name] == guess_type('a.js')[0]:
-                elem = head.makeelement("{%s}script" % XHTML_NAMESPACE, type='text/javascript', src=os.path.relpath(name, os.path.dirname(infile)).replace(os.sep, '/'))
+                elem = head.makeelement(
+                    "{%s}script" % XHTML_NAMESPACE,
+                    type='text/javascript',
+                    src=os.path.relpath(name, os.path.dirname(infile)).replace(
+                        os.sep, '/'))
             else:
                 elem = None
 
@@ -188,7 +212,9 @@ class KEPubContainer(EpubContainer):
                 return False
             else:
                 # split text in sentences
-                groups = re.split(ur'(.*?[\.\!\?\:][\'"\u201d\u2019]?\s*)', text, flags=re.UNICODE | re.MULTILINE)
+                groups = re.split(ur'(.*?[\.\!\?\:][\'"\u201d\u2019]?\s*)',
+                                  text,
+                                  flags=re.UNICODE | re.MULTILINE)
                 # remove empty strings resulting from split()
                 groups = [g.decode("utf-8") for g in groups if g != '']
 
@@ -197,7 +223,11 @@ class KEPubContainer(EpubContainer):
                 # the space stays in the span at the end.
                 # add each sentence in its own span
                 for g in groups:
-                    span = etree.Element("{%s}span" % (XHTML_NAMESPACE,), attrib={"id": "kobo.{0}.{1}".format(self.paragraph_counter, self.segment_counter), "class": "koboSpan"})
+                    span = etree.Element("{%s}span" % (XHTML_NAMESPACE, ),
+                                         attrib={"id": "kobo.{0}.{1}".format(
+                                             self.paragraph_counter,
+                                             self.segment_counter),
+                                                 "class": "koboSpan"})
                     span.text = g
                     node.append(span)
                     self.segment_counter += 1
@@ -206,11 +236,17 @@ class KEPubContainer(EpubContainer):
 
     def __add_kobo_spans_to_node(self, node):
         # process node only if it is not a comment or a processing instruction
-        if not (node is None or isinstance(node, etree._Comment) or isinstance(node, etree._ProcessingInstruction)):
+        if not (node is None or isinstance(node, etree._Comment) or isinstance(
+                node, etree._ProcessingInstruction)):
             # Special case: <img> tags
             special_tag_match = re.search(r'^(?:\{[^\}]+\})?(\w+)$', node.tag)
-            if special_tag_match and special_tag_match.group(1) in SPECIAL_TAGS:
-                span = etree.Element("{%s}span" % (XHTML_NAMESPACE,), attrib={"id": "kobo.{0}.{1}".format(self.paragraph_counter, self.segment_counter), "class": "koboSpan"})
+            if special_tag_match and special_tag_match.group(
+                    1) in SPECIAL_TAGS:
+                span = etree.Element("{%s}span" % (XHTML_NAMESPACE, ),
+                                     attrib={"id": "kobo.{0}.{1}".format(
+                                         self.paragraph_counter,
+                                         self.segment_counter),
+                                             "class": "koboSpan"})
                 span.append(node)
                 return span
 
@@ -257,7 +293,8 @@ class KEPubContainer(EpubContainer):
 
     def __add_kobo_divs_to_node(self, node):
         # process node only if it is not a comment or a processing instruction
-        if not (node is None or isinstance(node, etree._Comment) or isinstance(node, etree._ProcessingInstruction)):
+        if not (node is None or isinstance(node, etree._Comment) or isinstance(
+                node, etree._ProcessingInstruction)):
             # save node content for later
             nodetext = node.text
             nodechildren = deepcopy(node.getchildren())
@@ -273,7 +310,8 @@ class KEPubContainer(EpubContainer):
                 node.set(key, nodeattrs[key])
 
             # Wrap the full body in a div
-            div = etree.Element("{%s}div" % (XHTML_NAMESPACE,), attrib={"id": "book-inner"})
+            div = etree.Element("{%s}div" % (XHTML_NAMESPACE, ),
+                                attrib={"id": "book-inner"})
 
             # Handle the node text
             if nodetext is not None:
@@ -290,7 +328,8 @@ class KEPubContainer(EpubContainer):
                     div[-1].tail = childtail
 
             # Finally, wrap that div in another one...
-            outer_div = etree.Element("{%s}div" % (XHTML_NAMESPACE,), attrib={"id": "book-columns"})
+            outer_div = etree.Element("{%s}div" % (XHTML_NAMESPACE, ),
+                                      attrib={"id": "book-columns"})
             outer_div.append(div)
 
             # And re-chuck the full div pyramid in the now empty body
@@ -303,12 +342,15 @@ class KEPubContainer(EpubContainer):
         for name in self.get_html_names():
             self.log.info("Adding Kobo spans to {0}".format(name))
             root = self.parsed(name)
-            if len(root.xpath('.//xhtml:span[@class="koboSpan" or starts-with(@id, "kobo.")]', namespaces={'xhtml': XHTML_NAMESPACE})) > 0:
+            if len(root.xpath(
+                    './/xhtml:span[@class="koboSpan" or starts-with(@id, "kobo.")]',
+                    namespaces={'xhtml': XHTML_NAMESPACE})) > 0:
                 self.log.info("\tSkipping file")
                 continue
             self.paragraph_counter = 1
             self.segment_counter = 1
-            body = root.xpath('./xhtml:body', namespaces={'xhtml': XHTML_NAMESPACE})[0]
+            body = root.xpath('./xhtml:body',
+                              namespaces={'xhtml': XHTML_NAMESPACE})[0]
             body = self.__add_kobo_spans_to_node(body)
             root = etree.tostring(root, pretty_print=True)
             # Re-open self-closing paragraph tags
@@ -321,16 +363,21 @@ class KEPubContainer(EpubContainer):
         for name in self.get_html_names():
             self.log.info("Adding Kobo divs to {0}".format(name))
             root = self.parsed(name)
-            if len(root.xpath('.//xhtml:div[@id="book-inner"]', namespaces={'xhtml': XHTML_NAMESPACE})) > 0:
+            if len(root.xpath('.//xhtml:div[@id="book-inner"]',
+                              namespaces={'xhtml': XHTML_NAMESPACE})) > 0:
                 self.log.info("\tSkipping file")
                 continue
             # NOTE: Hackish heuristic: Forgo this if we have more div's than p's, which would potentially indicate a book using div's instead of p's...
             # Apparently, doing this on those books appears to blow up in a spectacular way, so, err, don't ;).
             # FIXME: Try to figure out what's really happening instead of sidestepping the issue?
-            if root.xpath('count(//xhtml:div)', namespaces={'xhtml': XHTML_NAMESPACE}) > root.xpath('count(//xhtml:p)', namespaces={'xhtml': XHTML_NAMESPACE}):
+            if root.xpath('count(//xhtml:div)',
+                          namespaces={'xhtml': XHTML_NAMESPACE}) > root.xpath(
+                              'count(//xhtml:p)',
+                              namespaces={'xhtml': XHTML_NAMESPACE}):
                 self.log.info("\tSkipping file (many divs! handle it!)")
                 continue
-            body = root.xpath('./xhtml:body', namespaces={'xhtml': XHTML_NAMESPACE})[0]
+            body = root.xpath('./xhtml:body',
+                              namespaces={'xhtml': XHTML_NAMESPACE})[0]
             body = self.__add_kobo_divs_to_node(body)
             self.dirty(name)
         self.flush_cache()
@@ -351,7 +398,10 @@ class KEPubContainer(EpubContainer):
             # Smarten punctuation
             html = smartyPants(html)
             # Ellipsis to HTML entity
-            html = re.sub(ur'(?u)(?<=\w)\s?(\.\s+?){2}\.', '&hellip;', html, flags=re.UNICODE | re.MULTILINE)
+            html = re.sub(ur'(?u)(?<=\w)\s?(\.\s+?){2}\.',
+                          '&hellip;',
+                          html,
+                          flags=re.UNICODE | re.MULTILINE)
             # Double-dash and unicode char code to em-dash
             html = string.replace(html, '---', ' &#x2013; ')
             html = string.replace(html, u"\x97", ' &#x2013; ')
@@ -378,11 +428,20 @@ class KEPubContainer(EpubContainer):
             html = html.encode("UTF-8")
 
             # Get rid of Microsoft cruft
-            html = re.sub(ur'\s*<o:p>\s*</o:p>', ' ', html, flags=re.UNICODE | re.MULTILINE)
-            html = re.sub(r'(?i)</?st1:\w+>', '', html, flags=re.UNICODE | re.MULTILINE)
+            html = re.sub(ur'\s*<o:p>\s*</o:p>',
+                          ' ',
+                          html,
+                          flags=re.UNICODE | re.MULTILINE)
+            html = re.sub(r'(?i)</?st1:\w+>',
+                          '',
+                          html,
+                          flags=re.UNICODE | re.MULTILINE)
 
             # Remove empty headings
-            html = re.sub(r'(?i)<h\d+>\s*</h\d+>', '', html, flags=re.UNICODE | re.MULTILINE)
+            html = re.sub(r'(?i)<h\d+>\s*</h\d+>',
+                          '',
+                          html,
+                          flags=re.UNICODE | re.MULTILINE)
 
             # Remove Unicode replacement characters
             html = string.replace(html, u"\uFFFD", "")
@@ -396,20 +455,32 @@ class KEPubContainer(EpubContainer):
             html = self.get_raw(name)
             if html is None:
                 continue
-            encoding_match = re.search(r'^\<\?.+encoding="([^"]+)"', html[:75], re.MULTILINE)
-            if encoding_match and encoding_match.group(1) and encoding_match.group(1).upper() != "UTF-8":
+            encoding_match = re.search(r'^\<\?.+encoding="([^"]+)"', html[:75],
+                                       re.MULTILINE)
+            if encoding_match and encoding_match.group(
+                    1) and encoding_match.group(1).upper() != "UTF-8":
                 html = html.decode(encoding_match.group(1))
-                html = re.sub(encoding_match.group(1), 'UTF-8', html, 1, re.MULTILINE)
+                html = re.sub(
+                    encoding_match.group(1), 'UTF-8', html, 1, re.MULTILINE)
             html = html.encode("UTF-8")
 
             # Force meta and link tags to be self-closing
-            html = re.sub(ur'<(meta|link) ([^>]+)></(?:meta|link)>', ur'<\1 \2 />', html, flags=re.UNICODE | re.MULTILINE)
+            html = re.sub(ur'<(meta|link) ([^>]+)></(?:meta|link)>',
+                          ur'<\1 \2 />',
+                          html,
+                          flags=re.UNICODE | re.MULTILINE)
 
             # Force open script tags
-            html = re.sub(ur'<script (.+) ?/>', ur'<script \1></script>', html, flags=re.UNICODE | re.MULTILINE)
+            html = re.sub(ur'<script (.+) ?/>',
+                          ur'<script \1></script>',
+                          html,
+                          flags=re.UNICODE | re.MULTILINE)
 
             # Force open self-closing paragraph tags
-            html = re.sub(ur'<p[^>/]*/>', ur'<p></p>', html, flags=re.UNICODE | re.MULTILINE)
+            html = re.sub(ur'<p[^>/]*/>',
+                          ur'<p></p>',
+                          html,
+                          flags=re.UNICODE | re.MULTILINE)
 
             self.dirty(name)
         self.flush_cache()
