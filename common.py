@@ -23,7 +23,7 @@ XML_NAMESPACE = 'http://www.w3.org/XML/1998/namespace'
 configdir = os.path.join(config_dir, 'plugins')
 reference_kepub = os.path.join(configdir, 'reference.kepub.epub')
 plugin_version = (2, 7, 2)
-plugin_minimum_calibre_version = (2, 61, 0)
+plugin_minimum_calibre_version = (2, 60, 0)
 
 
 # The logic here to detect a cover image is mostly duplicated from
