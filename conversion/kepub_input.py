@@ -92,7 +92,9 @@ class KEPUBInput(EPUBInput):
             for elem in opf.iterguide():
                 elem.set('href', delta + elem.get('href'))
 
-        self.removed_cover = self.rationalize_cover(opf, log)
+        f = self.rationalize_cover3 if opf.package_version >= 3.0 else \
+            self.rationalize_cover2
+        self.removed_cover = f(opf, log)
 
         self.optimize_opf_parsing = opf
         for x in opf.itermanifest():
