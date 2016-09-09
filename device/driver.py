@@ -8,7 +8,6 @@ import json
 import os
 import re
 import shutil
-import sqlite3 as sqlite
 import sys
 
 from ConfigParser import SafeConfigParser
@@ -226,7 +225,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
                         metadata=metadata,
                         opts={
                             'clean_markup': self.clean_markup,
-                            'hyphenate': self.skip_failed and
+                            'hyphenate': self.hyphenate and
                             not self.disable_hyphenation,
                             'no-hyphens': self.disable_hyphenation,
                             'replace_lang': self.replace_lang,
@@ -360,10 +359,11 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 
             select_query = "SELECT ContentId FROM content WHERE ContentType = ? AND (ImageId IS NULL OR ImageId = '')"
             update_query = "UPDATE content SET ImageId = ? WHERE ContentId = ?"
-            db = sqlite.connect(
-                os.path.join(self._main_prefix, ".kobo", "KoboReader.sqlite"),
-                isolation_level=None)
-            db.text_factory = lambda x: unicode(x, "utf-8", "ignore")
+            try:
+                db = self.device_database_connection()
+            except AttributeError:
+                import apsw
+                db = apsw.Connection(self.device_database_path())
 
             def __rows_needing_imageid():
                 """Returns a dict object with keys being the ContentID of a row without an ImageID.
@@ -393,7 +393,6 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
                     "KoboTouchExtended:sync_booklists:Updating {0} ImageIDs...".format(
                         str(len(nulls[:100]))))
                 cursor.executemany(update_query, nulls[:100])
-                db.commit()
                 del (nulls[:100])
             cursor.close()
             db.close()

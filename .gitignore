@@ -49,3 +49,4 @@ nosetests.xml
 /TODO
 /.checkstyle
 /__init__.py
+.DS_Store

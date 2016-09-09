@@ -12,6 +12,7 @@ import os
 import re
 
 from calibre.constants import config_dir
+from calibre.devices.usbms.driver import debug_print
 from calibre.ebooks.metadata.book.base import NULL_VALUES
 from calibre.ebooks.oeb.polish.container import OPF_NAMESPACES
 from calibre.ebooks.oeb.polish.container import EpubContainer
@@ -22,7 +23,7 @@ kobo_js_re = re.compile(r'.*/?kobo.*\.js$', re.IGNORECASE)
 XML_NAMESPACE = 'http://www.w3.org/XML/1998/namespace'
 configdir = os.path.join(config_dir, 'plugins')
 reference_kepub = os.path.join(configdir, 'reference.kepub.epub')
-plugin_version = (2, 7, 3)
+plugin_version = (2, 8, 1)
 plugin_minimum_calibre_version = (2, 60, 0)
 
 
@@ -30,7 +31,7 @@ plugin_minimum_calibre_version = (2, 60, 0)
 # metadata/writer.py. Updates to the logic here probably need an accompanying
 # update over there.
 def modify_epub(container, filename, metadata=None, opts={}):
-    print(str(opts))
+    debug_print('modify_epub opts: ' + str(opts))
     # Search for the ePub cover
     found_cover = False
     opf = container.opf
@@ -41,8 +42,9 @@ def modify_epub(container, filename, metadata=None, opts={}):
         cover_id = cover_meta_node.attrib[
             "content"] if "content" in cover_meta_node.attrib else None
         if cover_id is not None:
-            print("KoboTouchExtended:common:modify_epub:Found cover image ID "
-                  "'{0}'".format(cover_id))
+            debug_print(
+                "KoboTouchExtended:common:modify_epub:Found cover image ID "
+                "'{0}'".format(cover_id))
             cover_node = opf.xpath(
                 './opf:manifest/opf:item[@id="{0}"]'.format(cover_id),
                 namespaces=OPF_NAMESPACES)
@@ -50,14 +52,14 @@ def modify_epub(container, filename, metadata=None, opts={}):
                 cover_node = cover_node[0]
                 if "properties" not in cover_node.attrib or cover_node.attrib[
                         "properties"] != "cover-image":
-                    print(
+                    debug_print(
                         "KoboTouchExtended:common:modify_epub:Setting cover-image property")
                     cover_node.set("properties", "cover-image")
                     container.dirty(container.opf_name)
                     found_cover = True
     # It's possible that the cover image can't be detected this way. Try looking for the cover image ID in the OPF manifest.
     if not found_cover:
-        print(
+        debug_print(
             "KoboTouchExtended:common:modify_epub:Looking for cover image in OPF manifest")
         node_list = opf.xpath(
             './opf:manifest/opf:item[(translate(@id, \'ABCDEFGHIJKLMNOPQRSTUVWXYZ\', \'abcdefghijklmnopqrstuvwxyz\')="cover" or starts-with(translate(@id, \'ABCDEFGHIJKLMNOPQRSTUVWXYZ\', \'abcdefghijklmnopqrstuvwxyz\'), "cover")) and starts-with(@media-type, "image")]',
@@ -66,7 +68,7 @@ def modify_epub(container, filename, metadata=None, opts={}):
             node = node_list[0]
             if "properties" not in node.attrib or node.attrib[
                     "properties"] != 'cover-image':
-                print(
+                debug_print(
                     "KoboTouchExtended:common:modify_epub:Setting cover-image")
                 node.set("properties", "cover-image")
                 container.dirty(container.opf_name)
@@ -91,7 +93,7 @@ def modify_epub(container, filename, metadata=None, opts={}):
                 opts['replace_lang'] is not True) or (
                     metadata is not None and
                     metadata.language == NULL_VALUES['language']):
-            print(
+            debug_print(
                 "KoboTouchExtended:common:modify_epub:WARNING - Hyphenation is enabled but not overriding content file language. Hyphenation may use the wrong dictionary.")
         hyphenation_css = PersistentTemporaryFile(suffix='_hyphenate',
                                                   prefix='kepub_')
@@ -109,12 +111,13 @@ def modify_epub(container, filename, metadata=None, opts={}):
         # First override for the OPF file
         lang_node = container.opf_xpath('//opf:metadata/dc:language')
         if len(lang_node) > 0:
-            print(
+            debug_print(
                 "KoboTouchExtended:common:modify_epub:Overriding OPF language")
             lang_node = lang_node[0]
             lang_node.text = metadata.language
         else:
-            print("KoboTouchExtended:common:modify_epub:Setting OPF language")
+            debug_print(
+                "KoboTouchExtended:common:modify_epub:Setting OPF language")
             metadata_node = container.opf_xpath('//opf:metadata')[0]
             lang_node = metadata_node.makeelement("{%s}language" %
                                                   OPF_NAMESPACES['dc'])
@@ -124,7 +127,7 @@ def modify_epub(container, filename, metadata=None, opts={}):
 
         # Now override for content files
         for name in container.get_html_names():
-            print(
+            debug_print(
                 "KoboTouchExtended:common:modify_epub:Overriding content file language :: {0}".format(
                     name))
             root = container.parsed(name)
@@ -138,7 +141,7 @@ def modify_epub(container, filename, metadata=None, opts={}):
     if 'extended_kepub_features' in opts and opts[
             'extended_kepub_features'] is True:
         if metadata is not None:
-            print(
+            debug_print(
                 "KoboTouchExtended:common:modify_epub:Adding extended Kobo features to {0} by {1}".format(
                     metadata.title, ' and '.join(metadata.authors)))
         # Add the Kobo span tags
