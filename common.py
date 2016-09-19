@@ -23,7 +23,7 @@ kobo_js_re = re.compile(r'.*/?kobo.*\.js$', re.IGNORECASE)
 XML_NAMESPACE = 'http://www.w3.org/XML/1998/namespace'
 configdir = os.path.join(config_dir, 'plugins')
 reference_kepub = os.path.join(configdir, 'reference.kepub.epub')
-plugin_version = (2, 8, 1)
+plugin_version = (2, 8, 2)
 plugin_minimum_calibre_version = (2, 60, 0)
 
 

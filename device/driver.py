@@ -196,7 +196,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
                 "KoboTouchExtended:_modify_epub:Calibre details file :: {0}".format(
                     calibre_details_file))
             o = {}
-            if os.path.isfile:
+            if os.path.isfile(calibre_details_file):
                 f = open(calibre_details_file, 'rb')
                 o = json.loads(f.read())
                 f.close()
