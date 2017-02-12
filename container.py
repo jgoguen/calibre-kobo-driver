@@ -1,11 +1,12 @@
 # vim:fileencoding=UTF-8:ts=4:sw=4:sta:et:sts=4:ai
 
 __license__ = 'GPL v3'
-__copyright__ = '2010, Kovid Goyal <kovid@kovidgoyal.net>; 2013, Joel Goguen <jgoguen@jgoguen.ca>'
+__copyright__ = '2010, Kovid Goyal <kovid@kovidgoyal.net>; ' + \
+    '2013, Joel Goguen <jgoguen@jgoguen.ca>'
 __docformat__ = 'restructuredtext en'
 
-# Be careful editing this! This file has to work in two different packages at once,
-# so don't import anything from calibre_plugins.kobotouch_extended or
+# Be careful editing this! This file has to work in two different packages at
+# once, so don't import anything from calibre_plugins.kobotouch_extended or
 # calibre_plugins.kepubout or calibre_plugins.kepubin
 
 import os
@@ -81,14 +82,16 @@ class KEPubContainer(EpubContainer):
             try:
                 xml = self.parsed('META-INF/encryption.xml')
                 if xml is None:
-                    return True  # If encryption.xml can't be parsed, assume its presence means an encumbered file
+                    # If encryption.xml can't be parsed, assume its presence
+                    # means an encumbered file
+                    return True
                 for elem in xml.xpath(
                         './enc:EncryptedData/enc:EncryptionMethod[@Algorithm]',
                         namespaces=ENCRYPTION_NAMESPACES):
                     alg = elem.get('Algorithm')
 
-                    # Anything not in acceptable_encryption_algorithms is a sign of an
-                    # encumbered file.
+                    # Anything not in acceptable_encryption_algorithms is a
+                    # sign of an encumbered file.
                     if alg not in {ADOBE_OBFUSCATION, IDPF_OBFUSCATION}:
                         is_encumbered = True
             except Exception as e:
@@ -115,8 +118,10 @@ class KEPubContainer(EpubContainer):
         '''Copy a file into this Container instance.
 
         @param path: The path to the file to copy into this Container.
-        @param name: The name to give to the copied file, relative to the Container root. Set to None to use the basename of path.
-        @param mt: The MIME type of the file to set in the manifest. Set to None to auto-detect.
+        @param name: The name to give to the copied file, relative to the
+        Container root. Set to None to use the basename of path.
+        @param mt: The MIME type of the file to set in the manifest. Set to
+        None to auto-detect.
 
         @return: The name of the file relative to the Container root
         '''
@@ -140,9 +145,10 @@ class KEPubContainer(EpubContainer):
         return name
 
     def add_content_file_reference(self, name):
-        '''Add a reference to the named file (from self.name_path_map) to all content files (self.get_html_names()). Currently
-        only CSS files with a MIME type of text/css and JavaScript files with a MIME type of application/x-javascript are
-        supported.
+        '''Add a reference to the named file (from self.name_path_map) to all
+        content files (self.get_html_names()). Currently only CSS files with a
+        MIME type of text/css and JavaScript files with a MIME type of
+        application/x-javascript are supported.
         '''
         if name not in self.name_path_map or name not in self.mime_map:
             raise ValueError(_(
@@ -160,14 +166,16 @@ class KEPubContainer(EpubContainer):
                               namespaces={'xhtml': XHTML_NAMESPACE})
             if head is None:
                 self.log.error(
-                    "Could not find a <head> element in content file {0}".format(
-                        infile))
+                    "Could not find a <head> element in content file {0}"
+                        .format(infile)
+                )
                 continue
             head = head[0]
             if head is None:
                 self.log.error(
-                    "A <head> section was found but was undefined in content file {0}".format(
-                        infile))
+                    "A <head> section was found but was undefined in " +
+                    "content file {0}".format(infile)
+                )
                 continue
 
             if self.mime_map[name] == guess_type('a.css')[0]:
@@ -208,11 +216,14 @@ class KEPubContainer(EpubContainer):
     def __append_kobo_spans_from_text(self, node, text):
         if text is not None:
             # if text is only whitespace, don't add spans
-            if re.match(ur'^\s+$', text, flags=re.UNICODE | re.MULTILINE):
+            if re.match(
+                    ur'^\s+$', text,  # noqa: E999
+                    flags=re.UNICODE | re.MULTILINE,
+                ):
                 return False
             else:
                 # split text in sentences
-                groups = re.split(ur'(.*?[\.\!\?\:][\'"\u201d\u2019]?\s*)',
+                groups = re.split(ur'(.*?[\.\!\?\:][\'"\u201d\u2019“]?\s*)',
                                   text,
                                   flags=re.UNICODE | re.MULTILINE)
                 # remove empty strings resulting from split()
@@ -343,7 +354,8 @@ class KEPubContainer(EpubContainer):
             self.log.info("Adding Kobo spans to {0}".format(name))
             root = self.parsed(name)
             if len(root.xpath(
-                    './/xhtml:span[@class="koboSpan" or starts-with(@id, "kobo.")]',
+                    './/xhtml:span[@class="koboSpan" ' +
+                    'or starts-with(@id, "kobo.")]',
                     namespaces={'xhtml': XHTML_NAMESPACE})) > 0:
                 self.log.info("\tSkipping file")
                 continue
@@ -367,9 +379,13 @@ class KEPubContainer(EpubContainer):
                               namespaces={'xhtml': XHTML_NAMESPACE})) > 0:
                 self.log.info("\tSkipping file")
                 continue
-            # NOTE: Hackish heuristic: Forgo this if we have more div's than p's, which would potentially indicate a book using div's instead of p's...
-            # Apparently, doing this on those books appears to blow up in a spectacular way, so, err, don't ;).
-            # FIXME: Try to figure out what's really happening instead of sidestepping the issue?
+            # NOTE: Hackish heuristic: Forgo this if we have more div's than
+            # p's, which would potentially indicate a book using div's instead
+            # of p's...
+            # Apparently, doing this on those books appears to blow up in a
+            # spectacular way, so, err, don't ;).
+            # FIXME: Try to figure out what's really happening instead of
+            # sidestepping the issue?
             if root.xpath('count(//xhtml:div)',
                           namespaces={'xhtml': XHTML_NAMESPACE}) > root.xpath(
                               'count(//xhtml:p)',

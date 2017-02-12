@@ -4,8 +4,8 @@ __license__ = 'GPL v3'
 __copyright__ = '2013, Joel Goguen <jgoguen@jgoguen.ca>'
 __docformat__ = 'markdown en'
 
-# Be careful editing this! This file has to work in two different packages at once,
-# so don't import anything from calibre_plugins.kobotouch_extended or
+# Be careful editing this! This file has to work in two different packages at
+# once, so don't import anything from calibre_plugins.kobotouch_extended or
 # calibre_plugins.kepubout or calibre_plugins.kepubin
 
 import os
@@ -23,7 +23,7 @@ kobo_js_re = re.compile(r'.*/?kobo.*\.js$', re.IGNORECASE)
 XML_NAMESPACE = 'http://www.w3.org/XML/1998/namespace'
 configdir = os.path.join(config_dir, 'plugins')
 reference_kepub = os.path.join(configdir, 'reference.kepub.epub')
-plugin_version = (2, 8, 2)
+plugin_version = (2, 8, 3)
 plugin_minimum_calibre_version = (2, 60, 0)
 
 
@@ -53,17 +53,27 @@ def modify_epub(container, filename, metadata=None, opts={}):
                 if "properties" not in cover_node.attrib or cover_node.attrib[
                         "properties"] != "cover-image":
                     debug_print(
-                        "KoboTouchExtended:common:modify_epub:Setting cover-image property")
+                        "KoboTouchExtended:common:modify_epub:" +
+                        "Setting cover-image property"
+                    )
                     cover_node.set("properties", "cover-image")
                     container.dirty(container.opf_name)
                     found_cover = True
-    # It's possible that the cover image can't be detected this way. Try looking for the cover image ID in the OPF manifest.
+    # It's possible that the cover image can't be detected this way. Try
+    # looking for the cover image ID in the OPF manifest.
     if not found_cover:
         debug_print(
-            "KoboTouchExtended:common:modify_epub:Looking for cover image in OPF manifest")
+            "KoboTouchExtended:common:modify_epub:" +
+            "Looking for cover image in OPF manifest"
+        )
         node_list = opf.xpath(
-            './opf:manifest/opf:item[(translate(@id, \'ABCDEFGHIJKLMNOPQRSTUVWXYZ\', \'abcdefghijklmnopqrstuvwxyz\')="cover" or starts-with(translate(@id, \'ABCDEFGHIJKLMNOPQRSTUVWXYZ\', \'abcdefghijklmnopqrstuvwxyz\'), "cover")) and starts-with(@media-type, "image")]',
-            namespaces=OPF_NAMESPACES)
+            './opf:manifest/opf:item[(translate(@id, ' +
+            "'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz')" +
+            '="cover" or starts-with(translate(@id, ' +
+            "'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz')" +
+            ', "cover")) and starts-with(@media-type, "image")]',
+            namespaces=OPF_NAMESPACES,
+        )
         if len(node_list) > 0:
             node = node_list[0]
             if "properties" not in node.attrib or node.attrib[
@@ -74,7 +84,8 @@ def modify_epub(container, filename, metadata=None, opts={}):
                 container.dirty(container.opf_name)
                 found_cover = True
 
-    # Because of the changes made to the markup here, cleanup needs to be done before any other content file processing
+    # Because of the changes made to the markup here, cleanup needs to be done
+    # before any other content file processing
     container.forced_cleanup()
     if 'clean_markup' in opts and opts['clean_markup'] is True:
         container.clean_markup()
@@ -83,7 +94,7 @@ def modify_epub(container, filename, metadata=None, opts={}):
     if 'no-hyphens' in opts and opts['no-hyphens'] is True:
         nohyphen_css = PersistentTemporaryFile(suffix="_nohyphen",
                                                prefix="kepub_")
-        nohyphen_css.write(get_resources("css/no-hyphens.css"))
+        nohyphen_css.write(get_resources("css/no-hyphens.css"))  # noqa: F821
         nohyphen_css.close()
         css_path = os.path.basename(container.copy_file_to_container(
             nohyphen_css.name, name='kte-css/no-hyphens.css'))
@@ -94,13 +105,18 @@ def modify_epub(container, filename, metadata=None, opts={}):
                     metadata is not None and
                     metadata.language == NULL_VALUES['language']):
             debug_print(
-                "KoboTouchExtended:common:modify_epub:WARNING - Hyphenation is enabled but not overriding content file language. Hyphenation may use the wrong dictionary.")
-        hyphenation_css = PersistentTemporaryFile(suffix='_hyphenate',
-                                                  prefix='kepub_')
-        hyphenation_css.write(get_resources('css/hyphenation.css'))
-        hyphenation_css.close()
+                "KoboTouchExtended:common:modify_epub:WARNING - Hyphenation " +
+                "is enabled but not overriding content file language. " +
+                "Hyphenation may use the wrong dictionary."
+            )
+        hyphen_css = PersistentTemporaryFile(
+            suffix='_hyphenate',
+            prefix='kepub_',
+        )
+        hyphen_css.write(get_resources('css/hyphenation.css'))  # noqa: F821
+        hyphen_css.close()
         css_path = os.path.basename(
-            container.copy_file_to_container(hyphenation_css.name,
+            container.copy_file_to_container(hyphen_css.name,
                                              name='kte-css/hyphenation.css'))
         container.add_content_file_reference("kte-css/{0}".format(css_path))
 
@@ -128,8 +144,9 @@ def modify_epub(container, filename, metadata=None, opts={}):
         # Now override for content files
         for name in container.get_html_names():
             debug_print(
-                "KoboTouchExtended:common:modify_epub:Overriding content file language :: {0}".format(
-                    name))
+                "KoboTouchExtended:common:modify_epub:" +
+                "Overriding content file language :: {0}".format(name)
+            )
             root = container.parsed(name)
             root.attrib["{%s}lang" % XML_NAMESPACE] = metadata.language
             root.attrib["lang"] = metadata.language
@@ -142,8 +159,10 @@ def modify_epub(container, filename, metadata=None, opts={}):
             'extended_kepub_features'] is True:
         if metadata is not None:
             debug_print(
-                "KoboTouchExtended:common:modify_epub:Adding extended Kobo features to {0} by {1}".format(
-                    metadata.title, ' and '.join(metadata.authors)))
+                "KoboTouchExtended:common:modify_epub:" +
+                "Adding extended Kobo features to {0} by {1}".format(
+                    metadata.title, ' and '.join(metadata.authors))
+            )
         # Add the Kobo span tags
         container.add_kobo_spans()
         # Add the Kobo style hacks div tags
@@ -170,7 +189,7 @@ def modify_epub(container, filename, metadata=None, opts={}):
         # Add the Kobo style hacks
         stylehacks_css = PersistentTemporaryFile(suffix='_stylehacks',
                                                  prefix='kepub_')
-        stylehacks_css.write(get_resources('css/style-hacks.css'))
+        stylehacks_css.write(get_resources('css/style-hacks.css'))  # noqa: F821
         stylehacks_css.close()
         css_path = os.path.basename(
             container.copy_file_to_container(stylehacks_css.name,
