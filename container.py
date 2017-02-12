@@ -223,7 +223,7 @@ class KEPubContainer(EpubContainer):
                 return False
             else:
                 # split text in sentences
-                groups = re.split(ur'(.*?[\.\!\?\:][\'"\u201d\u2019“]?\s*)',
+                groups = re.split(ur'(.*?[\.\!\?\:][\'"\u201d\u2019“…]?\s*)',
                                   text,
                                   flags=re.UNICODE | re.MULTILINE)
                 # remove empty strings resulting from split()
