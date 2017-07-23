@@ -29,10 +29,14 @@ class KEPUBInput(EPUBInput):
         OptionRecommendation(
             name='strip_kobo_spans',
             recommended_value=True,
-            help=_(
-                'Kepubs have spans wrapping each sentence. These are used by the ereader for the reading location '
-                'and bookmark location. They are not used by an ePub reader but are valid code and can be safely be '
-                'left in the ePub. If you plan to edit the ePub, it is recommended that you remove the spans.')),
+            help=_(  # noqa: F821
+                'Kepubs have spans wrapping each sentence. These are used by '
+                'the ereader for the reading location and bookmark location. '
+                'They are not used by an ePub reader but are valid code and '
+                'can be safely be left in the ePub. If you plan to edit the '
+                'ePub, it is recommended that you remove the spans.'
+            )
+        ),
     }
 
     recommendations = set([])
@@ -73,7 +77,10 @@ class KEPUBInput(EPUBInput):
 
         if opf is None:
             raise ValueError(
-                _('%s is not a valid KEPUB file (could not find opf)') % path)
+                _(  # noqa: F821
+                    '{0} is not a valid KEPUB file (could not find opf)'
+                ).format(path)
+            )
 
         encfile = os.path.abspath('rights.xml')
         if os.path.exists(encfile):
@@ -99,8 +106,11 @@ class KEPUBInput(EPUBInput):
         self.optimize_opf_parsing = opf
         for x in opf.itermanifest():
             if x.get('media-type', '') == 'application/x-dtbook+xml':
-                raise ValueError(_(
-                    'EPUB files with DTBook markup are not supported'))
+                raise ValueError(
+                    _(  # noqa: F821
+                        'EPUB files with DTBook markup are not supported'
+                    )
+                )
 
         not_for_spine = set()
         for y in opf.itermanifest():
@@ -122,7 +132,9 @@ class KEPUBInput(EPUBInput):
             seen.add(ref)
 
         if len(list(opf.iterspine())) == 0:
-            raise ValueError(_('No valid entries in the spine of this EPUB'))
+            raise ValueError(
+                _('No valid entries in the spine of this EPUB')  # noqa: F821
+            )
 
         with open('content.opf', 'wb') as nopf:
             nopf.write(opf.render())
@@ -152,6 +164,7 @@ class KEPUBInput(EPUBInput):
                 p[idx].tail += a.tail if a.tail else ''
 
         super(KEPUBInput, self).postprocess_book(oeb, opts, log)
+
         if not opts.strip_kobo_spans:
             log("KEPUBInput::postprocess_book - not stripping kobo spans")
             return
@@ -161,8 +174,8 @@ class KEPUBInput(EPUBInput):
             if not hasattr(item.data, 'xpath'):
                 continue
 
-            for a in item.data.xpath('//h:span[@class="koboSpan"]',
-                                     namespaces={'h': XHTML_NS}):
+            for a in item.data.xpath(
+                    '//h:span[@class="koboSpan"]', namespaces={'h': XHTML_NS}):
                 refactor_span(a)
 
         log("KEPUBInput::postprocess_book - end")

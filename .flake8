@@ -1,0 +1,15 @@
+[flake8]
+max-line-length = 80
+exclude =
+    # The default
+    .svn,
+    CVS,
+    .bzr,
+    .hg,
+    .git,
+    __pycache__,
+    .tox,
+    # The *_init.py files make an import that's only referenced within calibre
+    *_init.py,
+    # Source control directories have nothing of interest
+    .hgignore

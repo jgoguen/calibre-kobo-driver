@@ -9,18 +9,16 @@ __license__ = 'GPL v3'
 __copyright__ = '2016, David Forrester, Joel Goguen <contact@jgoguen.ca>'
 __docformat__ = 'markdown en'
 
-from PyQt5.Qt import QCheckBox
-from PyQt5.Qt import QDialog
-from PyQt5.Qt import QDialogButtonBox
 from PyQt5.Qt import QGridLayout
 from PyQt5.Qt import QLabel
 from PyQt5.Qt import QLineEdit
 from PyQt5.Qt import QVBoxLayout
 from calibre.devices.kobo.kobotouch_config import KOBOTOUCHConfig
 from calibre.gui2.device_drivers.tabbed_device_config import DeviceConfigTab
-from calibre.gui2.device_drivers.tabbed_device_config import DeviceOptionsGroupBox
+from calibre.gui2.device_drivers.tabbed_device_config \
+    import DeviceOptionsGroupBox
 from calibre.gui2.device_drivers.tabbed_device_config import create_checkbox
-from calibre.devices.usbms.driver import debug_print
+from calibre.utils.logging import default_log
 
 
 class KOBOTOUCHEXTENDEDConfig(KOBOTOUCHConfig):
@@ -40,10 +38,10 @@ class KOBOTOUCHEXTENDEDConfig(KOBOTOUCHConfig):
             extra_customization_choices, parent)
 
         self.tabExtended = TabExtendedConfig(self, self.device)
-        self.addDeviceTab(self.tabExtended, _("Extended"))
+        self.addDeviceTab(self.tabExtended, _("Extended"))  # noqa: F821
 
     def commit(self):
-        debug_print("KOBOTOUCHEXTENDEDConfig::commit: start")
+        default_log("KOBOTOUCHEXTENDEDConfig::commit: start")
         p = super(KOBOTOUCHEXTENDEDConfig, self).commit()
 
         p['extra_features'] = self.extra_features
@@ -74,94 +72,128 @@ class TabExtendedConfig(DeviceConfigTab):
 
 class ExtendedGroupBox(DeviceOptionsGroupBox):
     def __init__(self, parent, device):
-        super(ExtendedGroupBox, self).__init__(parent, device,
-                                               _("Extended driver"))
+        super(ExtendedGroupBox, self).__init__(
+            parent,
+            device,
+            _("Extended driver"),  # noqa: F821
+        )
 
         self.options_layout = QGridLayout()
         self.options_layout.setObjectName("options_layout")
         self.setLayout(self.options_layout)
 
         self.extra_features_checkbox = create_checkbox(
-            _('Enable Extended Kobo Features'),
-            _('Choose whether to enable extra customizations'),
-            device.get_pref('extra_features'))
+            _('Enable Extended Kobo Features'),  # noqa: F821
+            _('Choose whether to enable extra customizations'),  # noqa: F821
+            device.get_pref('extra_features')
+        )
 
         self.upload_encumbered_checkbox = create_checkbox(
-            _('Upload DRM-encumbered ePub files'),
-            _('Select this to upload ePub files encumbered by DRM. If this is '
-              'not selected, it is a fatal error to upload an encumbered file'),
-            device.get_pref('upload_encumbered'))
+            _('Upload DRM-encumbered ePub files'),  # noqa: F821
+            _(  # noqa: F821
+                'Select this to upload ePub files encumbered by DRM. If this '
+                'is not selected, it is a fatal error to upload an encumbered '
+                'file'
+            ),
+            device.get_pref('upload_encumbered')
+        )
 
         self.skip_failed_checkbox = create_checkbox(
-            _('Silently Ignore Failed Conversions'),
-            _('Select this to not upload any book that fails conversion to '
-              'kepub. If this is not selected, the upload process will be '
-              'stopped at the first book that fails. If this is selected, '
-              'failed books will be silently removed from the upload queue.'),
-            device.get_pref('skip_failed'))
+            _('Silently Ignore Failed Conversions'),  # noqa: F821
+            _(  # noqa: F821
+                'Select this to not upload any book that fails conversion to '
+                'kepub. If this is not selected, the upload process will be '
+                'stopped at the first book that fails. If this is selected, '
+                'failed books will be silently removed from the upload queue.'
+            ),
+            device.get_pref('skip_failed')
+        )
 
         self.hyphenate_checkbox = create_checkbox(
-            _('Hyphenate Files'),
-            _('Select this to add a CSS file which enables hyphenation. The '
-              'language used will be the language defined for the book in '
-              'calibre. Please see the README file for directions on updating '
-              'hyphenation dictionaries.'), device.get_pref('hyphenate'))
+            _('Hyphenate Files'),  # noqa: F821
+            _(  # noqa: F821
+                'Select this to add a CSS file which enables hyphenation. The '
+                'language used will be the language defined for the book in '
+                'calibre. Please see the README file for directions on '
+                'updating hyphenation dictionaries.'
+            ),
+            device.get_pref('hyphenate')
+        )
 
         self.replace_lang_checkbox = create_checkbox(
-            _('Replace Content Language Code'),
-            _('Select this to replace the defined language in each content '
-              'file inside the ePub.'), device.get_pref('replace_lang'))
+            _('Replace Content Language Code'),  # noqa: F821
+            _(  # noqa: F821
+                'Select this to replace the defined language in each content '
+                'file inside the ePub.'
+            ),
+            device.get_pref('replace_lang')
+        )
 
         self.smarten_punctuation_checkbox = create_checkbox(
-            _('Smarten Punctuation'),
-            _('Select this to smarten punctuation in the ePub'),
-            device.get_pref('smarten_punctuation'))
+            _('Smarten Punctuation'),  # noqa: F821
+            _('Select this to smarten punctuation in the ePub'),  # noqa: F821
+            device.get_pref('smarten_punctuation')
+        )
 
         self.clean_markup_checkbox = create_checkbox(
-            _('Clean up ePub Markup'),
-            _('Select this to clean up the internal ePub markup.'),
-            device.get_pref('clean_markup'))
+            _('Clean up ePub Markup'),  # noqa: F821
+            _(  # noqa: F821
+                'Select this to clean up the internal ePub markup.'),
+            device.get_pref('clean_markup')
+        )
 
         self.file_copy_dir_checkbox = create_checkbox(
-            _('Copy generated KePub files to a directory'),
-            _('Enter an absolute directory path to copy all generated KePub '
-              'files into for debugging purposes.'),
-            device.get_pref('file_copy_dir'))
-        self.file_copy_dir_label = QLabel(_(
-            'Copy generated KePub files to a directory'))
+            _('Copy generated KePub files to a directory'),  # noqa: F821
+            _(  # noqa: F821
+                'Enter an absolute directory path to copy all generated KePub '
+                'files into for debugging purposes.'
+            ),
+            device.get_pref('file_copy_dir')
+        )
+        self.file_copy_dir_label = QLabel(
+            _('Copy generated KePub files to a directory')  # noqa: F821
+        )
         self.file_copy_dir_edit = QLineEdit(self)
         self.file_copy_dir_edit.setToolTip(
-            _('Enter an absolute directory path to copy all generated KePub '
-              'files into for debugging purposes.'))
+            _(  # noqa: F821
+                'Enter an absolute directory path to copy all generated KePub '
+                'files into for debugging purposes.'
+            )
+        )
         self.file_copy_dir_edit.setText(device.get_pref('file_copy_dir'))
         self.file_copy_dir_label.setBuddy(self.file_copy_dir_edit)
 
         self.full_page_numbers_checkbox = create_checkbox(
-            _('Use full book page numbers'),
-            _('Select this to show page numbers for the whole book, instead of '
-              'each chapter. This will also affect regular ePub page number '
-              'display!'), device.get_pref('full_page_numbers'))
+            _('Use full book page numbers'),  # noqa: F821
+            _(  # noqa: F821
+                'Select this to show page numbers for the whole book, instead '
+                'of each chapter. This will also affect regular ePub page '
+                'number display!'
+            ),
+            device.get_pref('full_page_numbers')
+        )
 
         self.disable_hyphenation_checkbox = create_checkbox(
-            _('Disable hyphenation'),
-            _('Select this to disable hyphenation for books.'),
-            device.get_pref('disable_hyphenation'))
+            _('Disable hyphenation'),  # noqa: F821
+            _('Select this to disable hyphenation for books.'),  # noqa: F821
+            device.get_pref('disable_hyphenation')
+        )
 
         self.options_layout.addWidget(self.extra_features_checkbox, 0, 0, 1, 1)
-        self.options_layout.addWidget(self.upload_encumbered_checkbox, 0, 1, 1,
-                                      1)
+        self.options_layout.addWidget(
+            self.upload_encumbered_checkbox, 0, 1, 1, 1)
         self.options_layout.addWidget(self.skip_failed_checkbox, 1, 0, 1, 1)
         self.options_layout.addWidget(self.hyphenate_checkbox, 1, 1, 1, 1)
         self.options_layout.addWidget(self.replace_lang_checkbox, 2, 0, 1, 1)
-        self.options_layout.addWidget(self.smarten_punctuation_checkbox, 2, 1,
-                                      1, 1)
+        self.options_layout.addWidget(
+            self.smarten_punctuation_checkbox, 2, 1, 1, 1)
         self.options_layout.addWidget(self.clean_markup_checkbox, 3, 0, 1, 1)
         self.options_layout.addWidget(self.file_copy_dir_label, 4, 0, 1, 1)
         self.options_layout.addWidget(self.file_copy_dir_edit, 4, 1, 1, 1)
-        self.options_layout.addWidget(self.full_page_numbers_checkbox, 5, 0, 1,
-                                      1)
-        self.options_layout.addWidget(self.disable_hyphenation_checkbox, 5, 1,
-                                      1, 1)
+        self.options_layout.addWidget(
+            self.full_page_numbers_checkbox, 5, 0, 1, 1)
+        self.options_layout.addWidget(
+            self.disable_hyphenation_checkbox, 5, 1, 1, 1)
         self.options_layout.setRowStretch(6, 2)
 
     @property

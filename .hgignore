@@ -1,0 +1,53 @@
+syntax: regexp
+\.py[cod]
+
+# C extensions
+\.so
+
+# Packages
+\.egg
+\.egg\-info
+dist
+build
+eggs
+parts
+bin
+var
+sdist
+develop-eggs
+\.installed\.cfg
+lib
+lib64
+
+# Installer logs
+pip\-log\.txt
+
+# Unit test / coverage reports
+\.coverage
+\.tox
+nosetests\.xml
+
+# Mr Developer
+\.mr\.developer\.cfg
+\.project
+\.pydevproject
+
+# IDE files
+^\.settings
+^\.includepath
+^\.classpath
+^.*\.xcodeproj
+^.*\.kpf
+^.*\.komodoproject
+^\.komodotools
+
+# CTags
+^\.tags
+^\.tags_sorted_by_file
+
+^test-books/
+^.*\.zip
+^TODO
+^\.checkstyle
+^__init__.py
+\.DS_Store

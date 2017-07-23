@@ -5,7 +5,7 @@
 # Minimally patched to make it even more xgettext compatible
 # by Peter Funk <pf@artcom-gmbh.de>
 #
-# 2002-11-22 Jürgen Hermann <jh@web.de>
+# 2002-11-22 Jï¿½rgen Hermann <jh@web.de>
 # Added checks that _() only contains string literals, and
 # command line args are resolved to module lists, i.e. you
 # can now pass a filename, a module or package name, or a
@@ -18,7 +18,8 @@ try:
     import fintl
     _ = fintl.gettext
 except ImportError:
-    _ = lambda s: s
+    def _(s):
+        return s
 
 __doc__ = _("""pygettext -- Python equivalent of xgettext(1)
 
@@ -172,8 +173,6 @@ DEFAULTKEYWORDS = ', '.join(default_keywords)
 
 EMPTYSTRING = ''
 
-
-
 # The normal pot-file header. msgmerge and Emacs's po-mode work better if it's
 # there.
 pot_header = _('''\
@@ -203,14 +202,14 @@ def usage(code, msg=''):
     sys.exit(code)
 
 
-
 escapes = []
+
 
 def make_escapes(pass_iso8859):
     global escapes
     if pass_iso8859:
         # Allow iso-8859 characters to pass through so that e.g. 'msgid
-        # "Höhe"' would result not result in 'msgid "H\366he"'.  Otherwise we
+        # "Hï¿½he"' would result not result in 'msgid "H\366he"'.  Otherwise we
         # escape any character outside the 32..126 range.
         mod = 128
     else:
@@ -237,7 +236,7 @@ def escape(s):
 
 def safe_eval(s):
     # unwrap quotes, safely
-    return eval(s, {'__builtins__':{}}, {})
+    return eval(s, {'__builtins__': {}}, {})
 
 
 def normalize(s):
@@ -265,7 +264,7 @@ def containsAny(str, set):
 def _visit_pyfiles(list, dirname, names):
     """Helper for getFilesForName()."""
     # get extension for python source files
-    if not globals().has_key('_py_ext'):
+    if '_py_ext' not in globals():
         global _py_ext
         _py_ext = [triple[0] for triple in imp.get_suffixes()
                    if triple[2] == imp.PY_SOURCE][0]
@@ -295,7 +294,8 @@ def _get_modpkg_path(dotted_name, pathlist=None):
         # we have a dotted path, import top-level package
         try:
             file, pathname, description = imp.find_module(parts[0], pathlist)
-            if file: file.close()
+            if file:
+                file.close()
         except ImportError:
             return None
 
@@ -361,10 +361,6 @@ class TokenEater:
         self.__curfile = None
 
     def __call__(self, ttype, tstring, stup, etup, line):
-        # dispatch
-##        import token
-##        print >> sys.stderr, 'ttype:', token.tok_name[ttype], \
-##              'tstring:', tstring
         self.__state(ttype, tstring, stup[0])
 
     def __waiting(self, ttype, tstring, lineno):
@@ -435,7 +431,7 @@ class TokenEater:
     def __addentry(self, msg, lineno=None, isdocstring=0):
         if lineno is None:
             lineno = self.__lineno
-        if not msg in self.__options.toexclude:
+        if msg not in self.__options.toexclude:
             entry = (self.__curfile, lineno)
             self.__messages.setdefault(msg, {})[entry] = isdocstring
 
@@ -501,7 +497,6 @@ class TokenEater:
                 print >> fp, 'msgstr ""\n'
 
 
-
 def main():
     global default_keywords
     try:
@@ -523,7 +518,7 @@ def main():
         GNU = 1
         SOLARIS = 2
         # defaults
-        extractall = 0 # FIXME: currently this option has no effect at all.
+        extractall = 0  # FIXME: currently this option has no effect at all.
         escape = 0
         keywords = []
         outpath = ''
@@ -537,9 +532,10 @@ def main():
         nodocstrings = {}
 
     options = Options()
-    locations = {'gnu' : options.GNU,
-                 'solaris' : options.SOLARIS,
-                 }
+    locations = {
+        'gnu': options.GNU,
+        'solaris': options.SOLARIS,
+    }
 
     # parse options
     for opt, arg in opts:

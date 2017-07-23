@@ -41,25 +41,41 @@ class KEPubOutput(OutputFormatPlugin):
         OptionRecommendation(
             name='kepub_hyphenate',
             recommended_value=True,
-            help=_("Select this to add a CSS file which enables hyphenation.")
-            + " " +
-            _("The language used will be the language defined for the book in calibre.")
-            + " " +
-            _("Please see the README file for directions on updating hyphenation dictionaries.")),
+            help=' '.join([
+                _(  # noqa: F821
+                    "Select this to add a CSS file which enables hyphenation."),
+                _(  # noqa: F821
+                    "The language used will be the language defined for the "
+                    "book in calibre."),
+                _(  # noqa: F821
+                    "Please see the README file for directions on updating "
+                    "hyphenation dictionaries."),
+            ]),
+        ),
         OptionRecommendation(
             name="kepub_disable_hyphenation",
             recommended_value=False,
-            help=_("Select this to disable all hyphenation in a book.") + " " +
-            _("This takes precedence over the hyphenation option.")),
+            help=' '.join([
+                _(  # noqa: F821
+                    "Select this to disable all hyphenation in a book."),
+                _(  # noqa: F821
+                    "This takes precedence over the hyphenation option."),
+            ]),
+        ),
         OptionRecommendation(
             name='kepub_replace_lang',
             recommended_value=True,
-            help=_(
-                'Select this to replace the defined language in each content file inside the ePub.')),
+            help=_(  # noqa: F821
+                'Select this to replace the defined language in each content '
+                'file inside the ePub.'
+            ),
+        ),
         OptionRecommendation(
             name='kepub_clean_markup',
             recommended_value=True,
-            help=_('Select this to clean up the internal ePub markup.'))
+            help=_(  # noqa: F821
+                'Select this to clean up the internal ePub markup.'),
+        ),
     ])
     recommendations = set([])
 
@@ -76,13 +92,14 @@ class KEPubOutput(OutputFormatPlugin):
                                  get_option_help,
                                  db,
                                  book_id=None):
-        from calibre_plugins.kepubout.conversion.output_config import PluginWidget
-        return PluginWidget(parent, get_option_by_name, get_option_help, db,
-                            book_id)
+        from calibre_plugins.kepubout.conversion.output_config \
+            import PluginWidget
+        return PluginWidget(
+            parent, get_option_by_name, get_option_help, db, book_id)
 
     def convert(self, oeb_book, output, input_plugin, opts, log):
-        self.epub_output_plugin.convert(oeb_book, output, input_plugin, opts,
-                                        log)
+        self.epub_output_plugin.convert(
+            oeb_book, output, input_plugin, opts, log)
         container = KEPubContainer(output, default_log)
 
         if container.is_drm_encumbered:
@@ -96,9 +113,11 @@ class KEPubOutput(OutputFormatPlugin):
         kte_data_file = self.temporary_file('_KePubOutputPluginInfo')
         kte_data_file.write(json.dumps(o))
         kte_data_file.close()
-        container.copy_file_to_container(kte_data_file.name,
-                                         name='plugininfo.kte',
-                                         mt='application/json')
+        container.copy_file_to_container(
+            kte_data_file.name,
+            name='plugininfo.kte',
+            mt='application/json',
+        )
 
         title = container.opf_xpath("./opf:metadata/dc:title/text()")
         if len(title) > 0:
