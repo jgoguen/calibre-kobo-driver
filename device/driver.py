@@ -13,6 +13,7 @@ import sys
 from ConfigParser import SafeConfigParser
 from calibre.constants import config_dir
 from calibre.devices.kobo.driver import KOBOTOUCH
+from calibre.ebooks.oeb.polish.errors import DRMError
 from calibre.utils.logging import default_log
 from calibre_plugins.kobotouch_extended.common \
     import plugin_minimum_calibre_version
@@ -193,22 +194,28 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
                 "exceptions"
             )
 
-        if container is None:
-            container = KEPubContainer(infile, default_log)
+        is_encumbered_book = False
+        try:
+            if container is None:
+                container = KEPubContainer(infile, default_log)
+            else:
+                is_encumbered_book = container.is_drm_encumbered
+        except DRMError:
+            default_log(
+                "KoboTouchExtended:_modify_epub:ERROR: ePub is "
+                "DRM-encumbered, not modifying"
+            )
+            is_encumbered_book = True
+
+        if is_encumbered_book:
+            self.skip_renaming_files.add(metadata.uuid)
+            if self.upload_encumbered:
+                return super(KOBOTOUCHEXTENDED, self)._modify_epub(
+                    infile, metadata, container)
+            else:
+                return False
 
         try:
-            if container.is_drm_encumbered:
-                default_log(
-                    "KoboTouchExtended:_modify_epub:ERROR: ePub is "
-                    "DRM-encumbered, not modifying"
-                )
-                self.skip_renaming_files.add(metadata.uuid)
-                if self.upload_encumbered:
-                    return super(KOBOTOUCHEXTENDED, self)._modify_epub(
-                        infile, metadata, container)
-                else:
-                    return False
-
             # Add the conversion info file
             calibre_details_file = self.normalize_path(
                 os.path.join(self._main_prefix, 'driveinfo.calibre'))
