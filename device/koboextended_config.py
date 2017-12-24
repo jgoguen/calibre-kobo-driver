@@ -20,6 +20,12 @@ from calibre.gui2.device_drivers.tabbed_device_config \
 from calibre.gui2.device_drivers.tabbed_device_config import create_checkbox
 from calibre.utils.logging import default_log
 
+# Support load_translations() without forcing calibre 1.9+
+try:
+    load_translations()
+except NameError:
+    pass
+
 
 class KOBOTOUCHEXTENDEDConfig(KOBOTOUCHConfig):
     def __init__(self,

@@ -17,6 +17,12 @@ from calibre.utils.zipfile import safe_replace
 from calibre_plugins.kepubmdwriter.common import plugin_minimum_calibre_version
 from calibre_plugins.kepubmdwriter.common import plugin_version
 
+# Support load_translations() without forcing calibre 1.9+
+try:
+    load_translations()
+except NameError:
+    pass
+
 
 class KEPUBMetadataWriter(EPUBMetadataWriter):
     name = 'KePub Metadata Writer'
