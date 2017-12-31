@@ -37,7 +37,7 @@ class KEPUBMetadataWriter(EPUBMetadataWriter):
     # accompanying update there.
     def set_metadata(self, stream, mi, type):
         default_log(
-            "KEPUBMetadataWriter::set_metadata - self.__class__={0}}".format(
+            "KEPUBMetadataWriter::set_metadata - self.__class__={0}".format(
                 self.__class__
             )
         )
