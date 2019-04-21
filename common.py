@@ -128,8 +128,7 @@ def modify_epub(container,  # type: EpubContainer
         container.add_content_file_reference("kte-css/{0}".format(css_path))
         os.unlink(nohyphen_css.name)
     elif opts.get('hyphenate', False):
-        if not opts.get('replace_lang', False) or \
-                (metadata and metadata.language == NULL_VALUES['language']):
+        if metadata and metadata.language == NULL_VALUES['language']:
             default_log.warning(
                 'Hyphenation is enabled but not overriding content file '
                 'language. Hyphenation may use the wrong dictionary.'
@@ -149,34 +148,6 @@ def modify_epub(container,  # type: EpubContainer
         )  # type: str
         container.add_content_file_reference("kte-css/{0}".format(css_path))
         os.unlink(hyphen_css.name)
-
-    # Override content file language
-    if opts.get('replace_lang', False) and \
-            (metadata and metadata.language != NULL_VALUES['language']):
-        # First override for the OPF file
-        lang_node_list = container.opf_xpath('//opf:metadata/dc:language')  # noqa: E501, type: List[Element]
-        if len(lang_node_list) > 0:
-            default_log('Overriding OPF language')
-            lang_node = lang_node_list[0]  # type: _Element
-            lang_node.text = metadata.language  # type: str
-        else:
-            default_log('Setting OPF language')
-            metadata_node = container.opf_xpath('//opf:metadata')[0]  # noqa: E501, type: _Element
-            lang_node = metadata_node.makeelement(
-                "{%s}language" % (OPF_NAMESPACES['dc'],),
-            )  # type: _Element
-            lang_node.text = metadata.language
-            container.insert_into_xml(metadata_node, lang_node)
-        container.dirty(container.opf_name)
-
-        # Now override for content files
-        for name in container.html_names():
-            default_log(
-                'Overriding content file language for {0}'.format(name),
-            )
-            root = container.parsed(name)
-            root.attrib["{%s}lang" % XML_NAMESPACE] = metadata.language
-            root.attrib['lang'] = metadata.language
 
     # Now smarten punctuation
     if opts.get('smarten_punctuation', False):

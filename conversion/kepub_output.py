@@ -63,14 +63,6 @@ class KEPubOutput(OutputFormatPlugin):
             ]),
         ),
         OptionRecommendation(
-            name='kepub_replace_lang',
-            recommended_value=True,
-            help=_(  # noqa: F821
-                'Select this to replace the defined language in each content '
-                'file inside the ePub.'
-            ),
-        ),
-        OptionRecommendation(
             name='kepub_clean_markup',
             recommended_value=True,
             help=_(  # noqa: F821
@@ -145,7 +137,6 @@ class KEPubOutput(OutputFormatPlugin):
                         'clean_markup': opts.kepub_clean_markup,
                         'hyphenate': opts.kepub_hyphenate,
                         'no-hyphens': opts.kepub_disable_hyphenation,
-                        'replace_lang': opts.kepub_replace_lang,
                         'smarten_punctuation': False,
                         'extended_kepub_features': True
                     })

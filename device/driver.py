@@ -90,7 +90,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 
     def modifying_epub(self):
         return self.modifying_css() or self.clean_markup or \
-               self.extra_features or self.replace_lang or self.skip_failed or \
+               self.extra_features or self.skip_failed or \
                self.smarten_punctuation or self.disable_hyphenation
 
     @classmethod
@@ -260,7 +260,6 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
                     'hyphenate': self.hyphenate and
                     not self.disable_hyphenation,
                     'no-hyphens': self.disable_hyphenation,
-                    'replace_lang': self.replace_lang,
                     'smarten_punctuation': self.smarten_punctuation,
                     'extended_kepub_features': self.extra_features
                 }
@@ -483,12 +482,14 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
         c.add_opt('upload_encumbered', default=False)
         c.add_opt('skip_failed', default=False)
         c.add_opt('hyphenate', default=False)
-        c.add_opt('replace_lang', default=False)
         c.add_opt('smarten_punctuation', default=False)
         c.add_opt('clean_markup', default=False)
         c.add_opt('full_page_numbers', default=False)
         c.add_opt('disable_hyphenation', default=False)
         c.add_opt('file_copy_dir', default='')
+
+        # remove_opt verifies the preference is present first
+        c.remove_opt('replace_lang')
 
         return c
 
@@ -505,8 +506,6 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
         OPT_SKIP_FAILED = count_options
         count_options += 1
         OPT_HYPHENATE = count_options
-        count_options += 1
-        OPT_REPLACE_LANG = count_options
         count_options += 1
         OPT_SMARTEN_PUNCTUATION = count_options
         count_options += 1
@@ -541,11 +540,6 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
             try:
                 settings.hyphenate = settings.extra_customization[
                     OPT_HYPHENATE]
-            except IndexError:
-                pass
-            try:
-                settings.replace_lang = settings.extra_customization[
-                    OPT_REPLACE_LANG]
             except IndexError:
                 pass
             try:
@@ -591,10 +585,6 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
     @property
     def hyphenate(self):
         return self.get_pref('hyphenate')
-
-    @property
-    def replace_lang(self):
-        return self.get_pref('replace_lang')
 
     @property
     def smarten_punctuation(self):

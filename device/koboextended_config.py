@@ -54,7 +54,6 @@ class KOBOTOUCHEXTENDEDConfig(KOBOTOUCHConfig):
         p['upload_encumbered'] = self.upload_encumbered
         p['skip_failed'] = self.skip_failed
         p['hyphenate'] = self.hyphenate
-        p['replace_lang'] = self.replace_lang
         p['smarten_punctuation'] = self.smarten_punctuation
         p['clean_markup'] = self.clean_markup
         p['full_page_numbers'] = self.full_page_numbers
@@ -126,15 +125,6 @@ class ExtendedGroupBox(DeviceOptionsGroupBox):
             device.get_pref('hyphenate')
         )
 
-        self.replace_lang_checkbox = create_checkbox(
-            _('Replace Content Language Code'),  # noqa: F821
-            _(  # noqa: F821
-                'Select this to replace the defined language in each content '
-                'file inside the ePub.'
-            ),
-            device.get_pref('replace_lang')
-        )
-
         self.smarten_punctuation_checkbox = create_checkbox(
             _('Smarten Punctuation'),  # noqa: F821
             _('Select this to smarten punctuation in the ePub'),  # noqa: F821
@@ -190,7 +180,6 @@ class ExtendedGroupBox(DeviceOptionsGroupBox):
             self.upload_encumbered_checkbox, 0, 1, 1, 1)
         self.options_layout.addWidget(self.skip_failed_checkbox, 1, 0, 1, 1)
         self.options_layout.addWidget(self.hyphenate_checkbox, 1, 1, 1, 1)
-        self.options_layout.addWidget(self.replace_lang_checkbox, 2, 0, 1, 1)
         self.options_layout.addWidget(
             self.smarten_punctuation_checkbox, 2, 1, 1, 1)
         self.options_layout.addWidget(self.clean_markup_checkbox, 3, 0, 1, 1)
@@ -217,10 +206,6 @@ class ExtendedGroupBox(DeviceOptionsGroupBox):
     @property
     def hyphenate(self):
         return self.hyphenate_checkbox.isChecked()
-
-    @property
-    def replace_lang(self):
-        return self.replace_lang_checkbox.isChecked()
 
     @property
     def smarten_punctuation(self):

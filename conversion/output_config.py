@@ -29,8 +29,7 @@ class PluginWidget(EPUBPluginWidget, EPUBUIForm):
             ['dont_split_on_page_breaks', 'flow_size', 'no_default_epub_cover',
              'no_svg_cover', 'epub_inline_toc', 'epub_toc_at_end', 'toc_title',
              'preserve_cover_aspect_ratio', 'epub_flatten', 'kepub_hyphenate',
-             'kepub_replace_lang', 'kepub_clean_markup',
-             'kepub_disable_hyphenation'])
+             'kepub_clean_markup', 'kepub_disable_hyphenation'])
         for i in range(2):
             self.opt_no_svg_cover.toggle()
         self.db, self.book_id = db, book_id
@@ -82,16 +81,6 @@ class PluginWidget(EPUBPluginWidget, EPUBUIForm):
             )
         )
         self.gridLayout.addWidget(self.opt_kepub_clean_markup, rows, 0, 1, 1)
-
-        self.opt_kepub_replace_lang = QtGui.QCheckBox(Form)
-        self.opt_kepub_replace_lang.setObjectName(
-            unicode("opt_kepub_replace_lang"))
-        self.opt_kepub_replace_lang.setText(
-            _(  # noqa: F821
-                "Replace Content Language Code"
-            )
-        )
-        self.gridLayout.addWidget(self.opt_kepub_replace_lang, rows, 1, 1, 1)
 
         rows = rows + 1
 
