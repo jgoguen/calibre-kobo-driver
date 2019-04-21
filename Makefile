@@ -5,7 +5,7 @@ TRANSLATIONS = $(wildcard translations/*.mo)
 ALL_SOURCES = $(shell find . -type f -name '*.py' -not -name 'pygettext.py')
 ALL_TESTS = $(shell find tests -type f -name '*.py')
 
-all: test $(ZIPS)
+all: $(ZIPS)
 
 KoboTouchExtended.zip: common.py container.py $(wildcard device/*.py) \
 	$(TRANSLATIONS) $(CSS) plugin-import-name-kobotouch_extended.txt \
