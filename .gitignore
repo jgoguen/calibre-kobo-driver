@@ -1,0 +1,24 @@
+*.pyc
+*.pyo
+*.pyd
+*.pyw
+
+# IDE files
+.settings
+.includepath
+.classpath
+*.xcodeproj
+*.kpf
+*.komodoproject
+.komodotools
+
+# CTags
+.tags
+.tags_sorted_by_file
+
+test-books/
+*.zip
+TODO
+.checkstyle
+__init__.py
+.DS_Store
