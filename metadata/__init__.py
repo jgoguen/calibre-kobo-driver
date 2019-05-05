@@ -1,0 +1,1 @@
+"""KePub metadata handling."""

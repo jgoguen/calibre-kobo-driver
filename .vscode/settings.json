@@ -1,5 +1,6 @@
 {
 	"python.autoComplete.extraPaths": [
 		"~/Code/calibre/src"
-	]
+	],
+	"python.pythonPath": "/usr/bin/python"
 }
