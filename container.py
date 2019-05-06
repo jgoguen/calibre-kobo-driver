@@ -22,8 +22,6 @@ import re
 import shutil
 import string
 from copy import deepcopy
-from typing import Dict
-from typing import Set
 
 from calibre import guess_type
 from calibre.ebooks.conversion.plugins.epub_input import ADOBE_OBFUSCATION

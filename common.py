@@ -16,10 +16,6 @@ __docformat__ = "markdown en"
 
 import os
 import re
-from typing import Dict
-from typing import List
-from typing import Optional
-from typing import Union
 
 from calibre.constants import config_dir
 from calibre.ebooks.metadata.book.base import Metadata
