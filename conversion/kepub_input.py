@@ -8,6 +8,7 @@ __copyright__ = "2015, David Forrester <davidfor@internode.on.net>"
 __docformat__ = "markdown en"
 
 import os
+import sys
 
 from calibre.customize.conversion import OptionRecommendation
 from calibre.ebooks.conversion.plugins.epub_input import EPUBInput
@@ -19,6 +20,12 @@ try:
     load_translations()
 except NameError:
     pass
+
+
+if sys.version_info >= (3,):
+
+    def unicode(x):
+        return str(x)
 
 
 class KEPUBInput(EPUBInput):
@@ -65,7 +72,7 @@ class KEPUBInput(EPUBInput):
 
         try:
             zf = ZipFile(stream)
-            zf.extractall(os.getcwd())
+            zf.extractall(unicode(os.getcwd()))
         except Exception:
             log.exception(
                 "KEPUB appears to be invalid ZIP file, trying a "
@@ -98,7 +105,7 @@ class KEPUBInput(EPUBInput):
         if os.path.exists(encfile):
             raise DRMError(os.path.basename(path))
 
-        opf = os.path.relpath(opf, os.getcwd())
+        opf = os.path.relpath(opf, unicode(os.getcwd()))
         parts = os.path.split(opf)
         opf = OPF(opf, os.path.dirname(os.path.abspath(opf)))
 

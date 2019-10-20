@@ -314,9 +314,9 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
         if not self.extra_features:
             self.skip_renaming_files.add(metadata.uuid)
 
-        dpath = self.file_copy_dir
-        dpath = os.path.expanduser(dpath).strip()
+        dpath = self.file_copy_dir or ""
         if dpath != "":
+            dpath = os.path.expanduser(dpath).strip()
             dpath = self.create_upload_path(dpath, metadata, metadata.kte_calibre_name)
             default_log(
                 "KoboTouchExtended:_modify_epub:Generated KePub file copy "
