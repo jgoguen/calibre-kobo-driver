@@ -11,8 +11,13 @@ import os
 import re
 import shutil
 import sys
-from ConfigParser import SafeConfigParser
 from datetime import datetime
+
+try:
+    # Python 3
+    from configparser import SafeConfigParser
+except ImportError:
+    from ConfigParser import SafeConfigParser
 
 from calibre.constants import config_dir
 from calibre.devices.kobo.driver import KOBOTOUCH
@@ -455,7 +460,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
             all_nulls = __rows_needing_imageid()
             default_log(
                 "KoboTouchExtended:sync_booklists:Got {0:d} rows to "
-                "update".format(len(all_nulls.keys()))
+                "update".format(len(list(all_nulls.keys())))
             )
             nulls = []
             for booklist in booklists:
@@ -504,7 +509,10 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
         """Migrate old settings to the new format."""
         default_log("KoboTouchExtended::migrate_old_settings - start")
         settings = super(KOBOTOUCHEXTENDED, cls).migrate_old_settings(settings)
-        default_log("KoboTouchExtended::migrate_old_settings - end", settings.extra_customization)
+        default_log(
+            "KoboTouchExtended::migrate_old_settings - end",
+            settings.extra_customization,
+        )
 
         count_options = 0
         opt_extra_features = count_options
@@ -579,8 +587,13 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
             except IndexError:
                 pass
 
-            settings.extra_customization = settings.extra_customization[count_options + 1:]
-            default_log("KoboTouchExtended::migrate_old_settings - end", settings.extra_customization)
+            settings.extra_customization = settings.extra_customization[
+                count_options + 1 :
+            ]
+            default_log(
+                "KoboTouchExtended::migrate_old_settings - end",
+                settings.extra_customization,
+            )
 
         return settings
 

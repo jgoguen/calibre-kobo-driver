@@ -7,7 +7,13 @@ __copyright__ = "2015, David Forrester <davidfor@internode.on.net>"
 __docformat__ = "markdown en"
 
 import os
-from cStringIO import StringIO
+
+try:
+    # Python 3
+    from io import StringIO
+except ImportError:
+    # Python 2
+    from cStringIO import StringIO
 
 from calibre.customize.builtins import EPUBMetadataWriter
 from calibre.ebooks.metadata.epub import get_zip_reader
@@ -37,7 +43,7 @@ class KEPUBMetadataWriter(EPUBMetadataWriter):
     name = "KePub Metadata Writer"
     author = "David Forrester"
     description = _("Set metadata in %s files") % "Kobo ePub"  # noqa: F821
-    file_types = set(["kepub"])
+    file_types = {"kepub"}
     version = plugin_version
     minimum_calibre_version = plugin_minimum_calibre_version
 
@@ -54,7 +60,7 @@ class KEPUBMetadataWriter(EPUBMetadataWriter):
         super(KEPUBMetadataWriter, self).set_metadata(stream, mi, type)
 
         stream.seek(0)
-        reader = get_zip_reader(stream, root=os.getcwdu())
+        reader = get_zip_reader(stream, root=os.getcwd())
 
         found_cover = False
         covers = reader.opf.raster_cover_path(reader.opf.metadata)

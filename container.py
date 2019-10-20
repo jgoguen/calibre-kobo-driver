@@ -32,6 +32,14 @@ from calibre.utils.smartypants import smartyPants
 
 from lxml import etree
 
+try:
+    # Python 3
+    from typing import Dict
+    from typing import Set
+except ImportError:
+    # Python 2
+    pass
+
 # Support load_translations() without forcing calibre 1.9+
 try:
     load_translations()
@@ -398,7 +406,7 @@ class KEPubContainer(EpubContainer):
         body_text = body.text
         body_children = deepcopy(body.getchildren())
         body_attrs = {}
-        for key in body.keys():
+        for key in list(body.keys()):
             body_attrs[key] = body.get(key)
 
         # reset current node, to start from scratch
@@ -488,7 +496,7 @@ class KEPubContainer(EpubContainer):
             node_text = node.text
             node_children = deepcopy(node.getchildren())
             node_attrs = {}
-            for key in node.keys():
+            for key in list(node.keys()):
                 node_attrs[key] = node.get(key)
 
             # reset current node, to start from scratch

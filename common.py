@@ -27,11 +27,21 @@ from calibre.utils.logging import default_log
 
 from lxml.etree import _Element
 
+try:
+    # Python 2
+    from typing import Dict
+    from typing import List
+    from typing import Optional
+    from typing import Union
+except ImportError:
+    # Python 2
+    pass
+
 kobo_js_re = re.compile(r".*/?kobo.*\.js$", re.IGNORECASE)
 XML_NAMESPACE = "http://www.w3.org/XML/1998/namespace"
 configdir = os.path.join(config_dir, "plugins")  # type: str
 reference_kepub = os.path.join(configdir, "reference.kepub.epub")  # type: str
-plugin_version = (3, 1, 5)
+plugin_version = (3, 2, 0)
 plugin_minimum_calibre_version = (2, 60, 0)
 
 

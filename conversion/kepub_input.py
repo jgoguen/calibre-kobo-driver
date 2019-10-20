@@ -1,5 +1,6 @@
 """Input processing of KePub files."""
 
+from __future__ import unicode_literals
 from __future__ import with_statement
 
 __license__ = "GPL v3"
@@ -26,7 +27,7 @@ class KEPUBInput(EPUBInput):
     name = "KePub Input"
     description = "Convert KEPUB files (.kepub) to HTML"
     author = "David Forrester"
-    file_types = set(["kepub"])
+    file_types = {"kepub"}
     version = plugin_version
     minimum_calibre_version = (0, 1, 0)
 
@@ -64,7 +65,7 @@ class KEPUBInput(EPUBInput):
 
         try:
             zf = ZipFile(stream)
-            zf.extractall(os.getcwdu())
+            zf.extractall(os.getcwd())
         except Exception:
             log.exception(
                 "KEPUB appears to be invalid ZIP file, trying a "
@@ -76,7 +77,7 @@ class KEPUBInput(EPUBInput):
             extractall(stream)
         opf = self.find_opf()
         if opf is None:
-            for f in walk(u"."):
+            for f in walk("."):
                 if (
                     f.lower().endswith(".opf")
                     and "__MACOSX" not in f
@@ -97,7 +98,7 @@ class KEPUBInput(EPUBInput):
         if os.path.exists(encfile):
             raise DRMError(os.path.basename(path))
 
-        opf = os.path.relpath(opf, os.getcwdu())
+        opf = os.path.relpath(opf, os.getcwd())
         parts = os.path.split(opf)
         opf = OPF(opf, os.path.dirname(os.path.abspath(opf)))
 
@@ -152,7 +153,7 @@ class KEPUBInput(EPUBInput):
         with open("content.opf", "wb") as nopf:
             nopf.write(opf.render())
 
-        return os.path.abspath(u"content.opf")
+        return os.path.abspath("content.opf")
 
     def postprocess_book(self, oeb, opts, log):
         """Perform any needed post-input processing on the book."""

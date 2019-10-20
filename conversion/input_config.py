@@ -11,10 +11,17 @@ __license__ = "GPL v3"
 __copyright__ = "2015, David Forrester <davidfor@internode.on.net>"
 __docformat__ = "markdown en"
 
+import sys
+
 from calibre.gui2.convert import Widget
 from calibre.gui2.convert.epub_output import PluginWidget as EPUBPluginWidget
 from calibre.gui2.convert.epub_output_ui import Ui_Form as EPUBUIForm
 from calibre.gui2.preferences.conversion import OutputOptions as BaseOutputOptions
+
+if sys.version_info >= (3,):
+
+    def unicode(x):
+        return str(x)
 
 
 try:
