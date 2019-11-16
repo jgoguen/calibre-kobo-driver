@@ -309,9 +309,9 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
         if not self.extra_features:
             self.skip_renaming_files.add(metadata.uuid)
 
-        dpath = self.file_copy_dir
-        dpath = os.path.expanduser(dpath).strip()
+        dpath = self.file_copy_dir or ""
         if dpath != "":
+            dpath = os.path.expanduser(dpath).strip()
             dpath = self.create_upload_path(dpath, metadata, metadata.kte_calibre_name)
             default_log(
                 "KoboTouchExtended:_modify_epub:Generated KePub file copy "
@@ -504,7 +504,10 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
         """Migrate old settings to the new format."""
         default_log("KoboTouchExtended::migrate_old_settings - start")
         settings = super(KOBOTOUCHEXTENDED, cls).migrate_old_settings(settings)
-        default_log("KoboTouchExtended::migrate_old_settings - end", settings.extra_customization)
+        default_log(
+            "KoboTouchExtended::migrate_old_settings - end",
+            settings.extra_customization,
+        )
 
         count_options = 0
         opt_extra_features = count_options
@@ -579,8 +582,13 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
             except IndexError:
                 pass
 
-            settings.extra_customization = settings.extra_customization[count_options + 1:]
-            default_log("KoboTouchExtended::migrate_old_settings - end", settings.extra_customization)
+            settings.extra_customization = settings.extra_customization[
+                count_options + 1 :
+            ]
+            default_log(
+                "KoboTouchExtended::migrate_old_settings - end",
+                settings.extra_customization,
+            )
 
         return settings
 
