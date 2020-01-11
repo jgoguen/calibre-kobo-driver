@@ -2,6 +2,8 @@
 
 """Configuration for exporting KePub files."""
 
+from __future__ import unicode_literals
+
 __license__ = "GPL v3"
 __copyright__ = "2013, Joel Goguen <jgoguen@jgoguen.ca>"
 __docformat__ = "markdown en"
@@ -68,15 +70,13 @@ class PluginWidget(EPUBPluginWidget, EPUBUIForm):
         self.gridLayout.removeItem(spacer)
 
         self.opt_kepub_hyphenate = QtGui.QCheckBox(Form)
-        self.opt_kepub_hyphenate.setObjectName(
-            unicode("opt_kepub_hyphenate")  # noqa: F821
-        )
+        self.opt_kepub_hyphenate.setObjectName("opt_kepub_hyphenate")  # noqa: F821
         self.opt_kepub_hyphenate.setText(_("Hyphenate Files"))  # noqa: F821
         self.gridLayout.addWidget(self.opt_kepub_hyphenate, rows, 0, 1, 1)
 
         self.opt_kepub_disable_hyphenation = QtGui.QCheckBox(Form)
         self.opt_kepub_disable_hyphenation.setObjectName(
-            unicode("opt_kepub_disable_hyphenation")  # noqa: F821
+            "opt_kepub_disable_hyphenation"  # noqa: F821
         )
         self.opt_kepub_disable_hyphenation.setText(
             _("Disable hyphenation")  # noqa: F821
@@ -87,7 +87,7 @@ class PluginWidget(EPUBPluginWidget, EPUBUIForm):
 
         self.opt_kepub_clean_markup = QtGui.QCheckBox(Form)
         self.opt_kepub_clean_markup.setObjectName(
-            unicode("opt_kepub_clean_markup")  # noqa: F821
+            "opt_kepub_clean_markup"  # noqa: F821
         )
         self.opt_kepub_clean_markup.setText(_("Clean up ePub markup"))  # noqa: F821
         self.gridLayout.addWidget(self.opt_kepub_clean_markup, rows, 0, 1, 1)

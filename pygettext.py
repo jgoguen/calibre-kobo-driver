@@ -16,6 +16,7 @@
 """Generates gettext templates."""
 
 from __future__ import print_function
+from __future__ import unicode_literals
 
 import getopt
 import glob
@@ -478,27 +479,23 @@ class TokenEater:
         # Sort the entries.  First sort each particular entry's keys, then
         # sort all the entries by their first item.
         reverse = {}
-        for k, v in self.__messages.items():
-            keys = v.keys()
-            keys.sort()
+        for k, v in list(self.__messages.items()):
+            keys = sorted(v.keys())
             reverse.setdefault(tuple(keys), []).append((k, v))
-        rkeys = reverse.keys()
-        rkeys.sort()
+        rkeys = sorted(reverse.keys())
         for rkey in rkeys:
-            rentries = reverse[rkey]
-            rentries.sort()
+            rentries = sorted(reverse[rkey])
             for k, v in rentries:
                 isdocstring = 0
                 # If the entry was gleaned out of a docstring, then add a
                 # comment stating so.  This is to aid translators who may wish
                 # to skip translating some unimportant docstrings.
-                if reduce(operator.__add__, v.values()):
+                if reduce(operator.__add__, list(v.values())):
                     isdocstring = 1
                 # k is the message string, v is a dictionary-set of (filename,
                 # lineno) tuples.  We want to sort the entries in v first by
                 # file name and then by line number.
-                v = v.keys()
-                v.sort()
+                v = sorted(v.keys())
                 if not options.writelocations:
                     pass
                 # location comments are different b/w Solaris and GNU:
@@ -621,7 +618,7 @@ def main():
         elif opt in ("-X", "--no-docstrings"):
             fp = open(arg)
             try:
-                while 1:
+                while True:
                     line = fp.readline()
                     if not line:
                         break
@@ -706,7 +703,7 @@ def main():
 if __name__ == "__main__":
     main()
     # some more test strings
-    _(u"a unicode string")
+    _("a unicode string")
     # this one creates a warning
     _('*** Seen unexpected token "%(token)s"') % {"token": "test"}
     _("more" "than" "one" "string")

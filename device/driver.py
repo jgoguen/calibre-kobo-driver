@@ -11,8 +11,13 @@ import os
 import re
 import shutil
 import sys
-from ConfigParser import SafeConfigParser
 from datetime import datetime
+
+try:
+    # Python 3
+    from configparser import SafeConfigParser
+except ImportError:
+    from ConfigParser import SafeConfigParser
 
 from calibre.constants import config_dir
 from calibre.devices.kobo.driver import KOBOTOUCH
@@ -455,7 +460,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
             all_nulls = __rows_needing_imageid()
             default_log(
                 "KoboTouchExtended:sync_booklists:Got {0:d} rows to "
-                "update".format(len(all_nulls.keys()))
+                "update".format(len(list(all_nulls.keys())))
             )
             nulls = []
             for booklist in booklists:
