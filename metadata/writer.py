@@ -19,9 +19,9 @@ from calibre.customize.builtins import EPUBMetadataWriter
 from calibre.ebooks.metadata.epub import get_zip_reader
 from calibre.ebooks.metadata.opf2 import OPF
 from calibre.utils.localunzip import LocalZipFile
-from calibre.utils.logging import default_log
 from calibre.utils.zipfile import safe_replace
 
+from calibre_plugins.kepubmdwriter.common import log
 from calibre_plugins.kepubmdwriter.common import plugin_minimum_calibre_version
 from calibre_plugins.kepubmdwriter.common import plugin_version
 
@@ -52,7 +52,7 @@ class KEPUBMetadataWriter(EPUBMetadataWriter):
     # accompanying update there.
     def set_metadata(self, stream, mi, type):
         """Set standard ePub metadata then properly set the cover image."""
-        default_log(
+        log.debug(
             "KEPUBMetadataWriter::set_metadata - self.__class__={0}".format(
                 self.__class__
             )
@@ -65,21 +65,21 @@ class KEPUBMetadataWriter(EPUBMetadataWriter):
         found_cover = False
         covers = reader.opf.raster_cover_path(reader.opf.metadata)
         if len(covers) > 0:
-            default_log("KEPUBMetadataWriter::set_metadata - covers={0}".format(covers))
+            log.debug("KEPUBMetadataWriter::set_metadata - covers={0}".format(covers))
             cover_id = covers[0].get("content")
-            default_log(
+            log.debug(
                 "KEPUBMetadataWriter::set_metadata - cover_id={0}".format(cover_id)
             )
             for item in reader.opf.itermanifest():
                 if item.get("id", None) == cover_id:
                     mt = item.get("media-type", "")
                     if mt and mt.startswith("image/"):
-                        default_log("KEPUBMetadataWriter::set_metadata - found cover")
+                        log.debug("KEPUBMetadataWriter::set_metadata - found cover")
                         item.set("properties", "cover-image")
                         found_cover = True
                         break
             if not found_cover:
-                default_log(
+                log.debug(
                     "KEPUBMetadataWriter::set_metadata - looking for cover "
                     "using href"
                 )
@@ -87,9 +87,7 @@ class KEPUBMetadataWriter(EPUBMetadataWriter):
                     if item.get("href", None) == cover_id:
                         mt = item.get("media-type", "")
                         if mt and mt.startswith("image/"):
-                            default_log(
-                                "KEPUBMetadataWriter::set_metadata -found " "cover"
-                            )
+                            log("KEPUBMetadataWriter::set_metadata -found " "cover")
                             item.set("properties", "cover-image")
                             found_cover = True
 

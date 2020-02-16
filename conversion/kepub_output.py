@@ -16,8 +16,8 @@ from calibre.customize.conversion import OutputFormatPlugin
 from calibre.ebooks.conversion.plugins.epub_output import EPUBOutput
 from calibre.ebooks.metadata.book.base import Metadata
 from calibre.ebooks.metadata.book.base import NULL_VALUES
-from calibre.utils.logging import default_log
 
+from calibre_plugins.kepubout.common import log
 from calibre_plugins.kepubout.common import modify_epub
 from calibre_plugins.kepubout.common import plugin_minimum_calibre_version
 from calibre_plugins.kepubout.common import plugin_version
@@ -43,47 +43,45 @@ class KEPubOutput(OutputFormatPlugin):
     configdir = os.path.join(config_dir, "plugins")
     reference_kepub = os.path.join(configdir, "reference.kepub.epub")
     options = {
-            OptionRecommendation(
-                name="kepub_hyphenate",
-                recommended_value=True,
-                help=" ".join(
-                    [
-                        _(  # noqa: F821
-                            "Select this to add a CSS file which enables hyphenation."
-                        ),
-                        _(  # noqa: F821
-                            "The language used will be the language defined for the "
-                            "book in calibre."
-                        ),
-                        _(  # noqa: F821
-                            "Please see the README file for directions on updating "
-                            "hyphenation dictionaries."
-                        ),
-                    ]
-                ),
+        OptionRecommendation(
+            name="kepub_hyphenate",
+            recommended_value=True,
+            help=" ".join(
+                [
+                    _(  # noqa: F821
+                        "Select this to add a CSS file which enables hyphenation."
+                    ),
+                    _(  # noqa: F821
+                        "The language used will be the language defined for the "
+                        "book in calibre."
+                    ),
+                    _(  # noqa: F821
+                        "Please see the README file for directions on updating "
+                        "hyphenation dictionaries."
+                    ),
+                ]
             ),
-            OptionRecommendation(
-                name="kepub_disable_hyphenation",
-                recommended_value=False,
-                help=" ".join(
-                    [
-                        _(  # noqa: F821
-                            "Select this to disable all hyphenation in a book."
-                        ),
-                        _(  # noqa: F821
-                            "This takes precedence over the hyphenation option."
-                        ),
-                    ]
-                ),
+        ),
+        OptionRecommendation(
+            name="kepub_disable_hyphenation",
+            recommended_value=False,
+            help=" ".join(
+                [
+                    _(  # noqa: F821
+                        "Select this to disable all hyphenation in a book."
+                    ),
+                    _(  # noqa: F821
+                        "This takes precedence over the hyphenation option."
+                    ),
+                ]
             ),
-            OptionRecommendation(
-                name="kepub_clean_markup",
-                recommended_value=True,
-                help=_(  # noqa: F821
-                    "Select this to clean up the internal ePub markup."
-                ),
-            ),
-        }
+        ),
+        OptionRecommendation(
+            name="kepub_clean_markup",
+            recommended_value=True,
+            help=_("Select this to clean up the internal ePub markup."),  # noqa: F821
+        ),
+    }
     recommendations = set([])
 
     def __init__(self, *args, **kwargs):
@@ -103,10 +101,10 @@ class KEPubOutput(OutputFormatPlugin):
 
         return PluginWidget(parent, get_option_by_name, get_option_help, db, book_id)
 
-    def convert(self, oeb_book, output, input_plugin, opts, log):
+    def convert(self, oeb_book, output, input_plugin, opts, logger):
         """Convert from calibre's internal format to KePub."""
-        self.epub_output_plugin.convert(oeb_book, output, input_plugin, opts, log)
-        container = KEPubContainer(output, default_log)
+        self.epub_output_plugin.convert(oeb_book, output, input_plugin, opts, logger)
+        container = KEPubContainer(output, log)
 
         if container.is_drm_encumbered:
             return
@@ -141,7 +139,6 @@ class KEPubOutput(OutputFormatPlugin):
         else:
             mi.languages = NULL_VALUES["languages"]
             language = NULL_VALUES["language"]
-        mi.language
 
         modify_epub(
             container,

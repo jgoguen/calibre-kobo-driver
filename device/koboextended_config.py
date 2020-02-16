@@ -21,7 +21,8 @@ from calibre.devices.kobo.kobotouch_config import KOBOTOUCHConfig
 from calibre.gui2.device_drivers.tabbed_device_config import DeviceConfigTab
 from calibre.gui2.device_drivers.tabbed_device_config import DeviceOptionsGroupBox
 from calibre.gui2.device_drivers.tabbed_device_config import create_checkbox
-from calibre.utils.logging import default_log
+
+from calibre_plugins.kobotouch_extended.common import log
 
 # Support load_translations() without forcing calibre 1.9+
 try:
@@ -63,7 +64,7 @@ class KOBOTOUCHEXTENDEDConfig(KOBOTOUCHConfig):
 
     def commit(self):
         """Process driver options for saving."""
-        default_log("KOBOTOUCHEXTENDEDConfig::commit: start")
+        log.debug("KOBOTOUCHEXTENDEDConfig::commit: start")
         p = super(KOBOTOUCHEXTENDEDConfig, self).commit()
 
         p["extra_features"] = self.extra_features

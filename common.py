@@ -16,6 +16,7 @@ __docformat__ = "markdown en"
 
 import os
 import re
+import sys
 
 from calibre.constants import config_dir
 from calibre.ebooks.metadata.book.base import Metadata
@@ -23,12 +24,14 @@ from calibre.ebooks.metadata.book.base import NULL_VALUES
 from calibre.ebooks.oeb.polish.container import EpubContainer
 from calibre.ebooks.oeb.polish.container import OPF_NAMESPACES
 from calibre.ptempfile import PersistentTemporaryFile
-from calibre.utils.logging import default_log
+from calibre.utils.logging import DEBUG
+from calibre.utils.logging import INFO
+from calibre.utils.logging import ThreadSafeLog
 
 from lxml.etree import _Element
 
 try:
-    # Python 2
+    # Python 3
     from typing import Dict
     from typing import List
     from typing import Optional
@@ -43,6 +46,22 @@ configdir = os.path.join(config_dir, "plugins")  # type: str
 reference_kepub = os.path.join(configdir, "reference.kepub.epub")  # type: str
 plugin_version = (3, 2, 0)
 plugin_minimum_calibre_version = (2, 60, 0)
+
+
+class Logger(ThreadSafeLog):
+    def __init__(self):
+        log_level = INFO
+        if (
+            "CALIBRE_DEVELOP_FROM" in os.environ
+            or "CALIBRE_DEBUG" in os.environ
+            or "calibre-debug" in sys.argv[0]
+        ):
+            log_level = DEBUG
+
+        super(ThreadSafeLog, self).__init__(log_level)
+
+
+log = Logger()
 
 
 # The logic here to detect a cover image is mostly duplicated from
@@ -65,34 +84,35 @@ def modify_epub(
     )  # List[_Element]
 
     if len(cover_meta_node_list) > 0:
-        default_log("Found meta node with name=cover")
-
         cover_meta_node = cover_meta_node_list[0]  # type: _Element
         cover_id = cover_meta_node.attrib.get("content", None)
 
+        log.debug("Found meta node with name=cover: {0}".format(cover_meta_node))
+
         if cover_id:
-            default_log("Found cover image ID '{0}'".format(cover_id))
+            log.info("Found cover image ID '{0}'".format(cover_id))
 
             cover_node_list = opf.xpath(
                 './opf:manifest/opf:item[@id="{0}"]'.format(cover_id),
                 namespaces=OPF_NAMESPACES,
             )  # type: List[_Element]
             if len(cover_node_list) > 0:
-                default_log("Found an item node with cover ID")
-
                 cover_node = cover_node_list[0]  # type: _Element
+
+                log.debug("Found an item node with cover ID: {0}".format(cover_node))
+
                 if cover_node.attrib.get("properties", "") != "cover-image":
-                    default_log("Setting cover-image property")
+                    log.info("Setting cover-image property")
                     cover_node.set("properties", "cover-image")
                     container.dirty(container.opf_name)
                 else:
-                    default_log("Item node is already set as cover-image")
+                    log.warning("Item node is already set as cover-image")
                 found_cover = True
 
     # It's possible that the cover image can't be detected this way. Try
     # looking for the cover image ID in the OPF manifest.
     if not found_cover:
-        default_log("Looking for cover image in OPF manifest")
+        log.debug("Looking for cover image in OPF manifest")
 
         node_list = opf.xpath(
             "./opf:manifest/opf:item[(translate(@id, "
@@ -103,18 +123,18 @@ def modify_epub(
             namespaces=OPF_NAMESPACES,
         )  # type: List[_Element]
         if len(node_list) > 0:
-            default_log(
+            log.info(
                 "Found {0:d} nodes, assuming the first is the "
                 "right node".format(len(node_list))
             )
 
             node = node_list[0]  # type: _Element
             if node.attrib.get("properties", "") != "cover-image":
-                default_log("Setting cover-image property")
+                log.info("Setting cover-image property")
                 node.set("properties", "cover-image")
                 container.dirty(container.opf_name)
             else:
-                default_log("Item node is already set as cover-image")
+                log.warning("Item node is already set as cover-image")
             found_cover = True
 
     # Because of the changes made to the markup here, cleanup needs to be done
@@ -140,7 +160,7 @@ def modify_epub(
         os.unlink(nohyphen_css.name)
     elif opts.get("hyphenate", False):
         if metadata and metadata.language == NULL_VALUES["language"]:
-            default_log.warning(
+            log.warning(
                 "Hyphenation is enabled but not overriding content file "
                 "language. Hyphenation may use the wrong dictionary."
             )
@@ -164,7 +184,7 @@ def modify_epub(
 
     if opts.get("extended_kepub_features", True):
         if metadata is not None:
-            default_log(
+            log.info(
                 "Adding extended Kobo features to {0} by {1}".format(
                     metadata.title, " and ".join(metadata.authors)
                 )
@@ -185,7 +205,7 @@ def modify_epub(
 
         if not skip_js:
             if os.path.isfile(reference_kepub):
-                reference_container = EpubContainer(reference_kepub, default_log)
+                reference_container = EpubContainer(reference_kepub, log)
                 for name in reference_container.name_path_map:
                     if kobo_js_re.match(name):
                         jsname = container.copy_file_to_container(
