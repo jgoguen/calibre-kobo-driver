@@ -1,6 +1,7 @@
 {
 	"python.autoComplete.extraPaths": [
-		"~/Code/calibre/src"
+		"${workspaceFolder:calibre}/src"
 	],
-	"python.pythonPath": "/usr/bin/python"
+	"python.formatting.blackPath": "/usr/bin/black",
+	"python.pythonPath": "/usr/bin/python2"
 }
