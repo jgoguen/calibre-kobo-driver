@@ -17,6 +17,10 @@ __docformat__ = "markdown en"
 import os
 import re
 import sys
+import time
+import traceback
+from functools import partial
+from multiprocessing import Lock
 
 from calibre.constants import config_dir
 from calibre.ebooks.metadata.book.base import Metadata
@@ -24,9 +28,7 @@ from calibre.ebooks.metadata.book.base import NULL_VALUES
 from calibre.ebooks.oeb.polish.container import EpubContainer
 from calibre.ebooks.oeb.polish.container import OPF_NAMESPACES
 from calibre.ptempfile import PersistentTemporaryFile
-from calibre.utils.logging import DEBUG
-from calibre.utils.logging import INFO
-from calibre.utils.logging import ThreadSafeLog
+from calibre.utils.logging import ANSIStream
 
 from lxml.etree import _Element
 
@@ -44,21 +46,56 @@ kobo_js_re = re.compile(r".*/?kobo.*\.js$", re.IGNORECASE)
 XML_NAMESPACE = "http://www.w3.org/XML/1998/namespace"
 configdir = os.path.join(config_dir, "plugins")  # type: str
 reference_kepub = os.path.join(configdir, "reference.kepub.epub")  # type: str
-plugin_version = (3, 2, 1)
+plugin_version = (3, 2, 0)
 plugin_minimum_calibre_version = (2, 60, 0)
 
 
-class Logger(ThreadSafeLog):
+class Logger:
+    LEVELS = {"DEBUG": 0, "INFO": 1, "WARN": 2, "ERROR": 3}
+
     def __init__(self):
-        log_level = INFO
+        self.log_level = "INFO"
         if (
             "CALIBRE_DEVELOP_FROM" in os.environ
             or "CALIBRE_DEBUG" in os.environ
             or "calibre-debug" in sys.argv[0]
         ):
-            log_level = DEBUG
+            self.log_level = "DEBUG"
 
-        super(ThreadSafeLog, self).__init__(log_level)
+        self._lock = Lock()
+        self.outputs = [ANSIStream()]
+
+        self.debug = partial(self.print_formatted_log, "DEBUG")
+        self.info = partial(self.print_formatted_log, "INFO")
+        self.warn = self.warning = partial(self.print_formatted_log, "WARN")
+        self.error = partial(self.print_formatted_log, "ERROR")
+
+    def _tag_args(self, level, *args):
+        # Each of args is a string
+        return [
+            "{0} [{1}] {2}".format(
+                time.strftime("%Y-%m-%d %H:%M:%S %Z", time.localtime()), level, arg
+            )
+            for arg in args
+        ]
+
+    def _prints(self, level, *args, **kwargs):
+        for o in self.outputs:
+            o.prints(self.LEVELS[level], *args, **kwargs)
+            if hasattr(o, "flush"):
+                o.flush()
+
+    def print_formatted_log(self, level, *args, **kwargs):
+        with self._lock:
+            tagged_args = self._tag_args(level, *args)
+            self._prints(level, *tagged_args, **kwargs)
+
+    def exception(self, *args, **kwargs):
+        limit = kwargs.pop("limit", None)
+        with self._lock:
+            tagged_args = self._tag_args("ERROR", *args)
+            self._prints("ERROR", *tagged_args, **kwargs)
+            self._prints("ERROR", traceback.format_exc(limit))
 
 
 log = Logger()
@@ -74,6 +111,8 @@ def modify_epub(
     opts={},  # type: Dict[str, Union[str, bool]]
 ):  # type: (...) -> None
     """Modify the ePub file to make it KePub-compliant."""
+    _modify_start = time.time()
+
     # Search for the ePub cover
     # TODO: Refactor out cover detection logic so it can be directly used in
     # metadata/writer.py
@@ -227,3 +266,6 @@ def modify_epub(
         container.add_content_file_reference("kte-css/{0}".format(css_path))
     os.unlink(filename)
     container.commit(filename)
+
+    _modify_time = time.time() - _modify_start
+    log.info("modify_epub took {0:f} seconds".format(_modify_time))

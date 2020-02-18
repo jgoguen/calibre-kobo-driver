@@ -209,7 +209,7 @@ class KEPubContainer(EpubContainer):
                 ).format(filename=name)
             )
         for infile in self.html_names():
-            self.log.info("Adding reference to {0} to file {1}".format(name, infile))
+            self.log.debug("Adding reference to {0} to file {1}".format(name, infile))
             root = self.parsed(infile)
             if root is None:
                 self.log.error("Could not retrieve content file {0}".format(infile))
@@ -278,7 +278,7 @@ class KEPubContainer(EpubContainer):
     def forced_cleanup(self):
         """Perform cleanup considered essential for standards compliance."""
         for name in self.html_names():
-            self.log.info("Forcing cleanup for file {0}".format(name))
+            self.log.debug("Forcing cleanup for file {0}".format(name))
             html = self.get_raw(name, force_unicode=True)
             if html is None:
                 continue
@@ -312,7 +312,7 @@ class KEPubContainer(EpubContainer):
         non-compliant but can cause problems.
         """
         for name in self.html_names():
-            self.log.info("Cleaning markup for file {0}".format(name))
+            self.log.debug("Cleaning markup for file {0}".format(name))
             html = self.get_raw(name, force_unicode=True)
             if html is None:
                 continue
@@ -332,7 +332,7 @@ class KEPubContainer(EpubContainer):
         preprocessor = HeuristicProcessor(log=self.log)
 
         for name in self.html_names():
-            self.log.info("Smartening punctuation for file {0}".format(name))
+            self.log.debug("Smartening punctuation for file {0}".format(name))
             html = self.get_raw(name, force_unicode=True)
             if html is None:
                 continue
@@ -363,14 +363,14 @@ class KEPubContainer(EpubContainer):
     def add_kobo_divs(self):
         """Add KePub divs to each HTML file in the book."""
         for name in self.html_names():
-            self.log.info("Adding Kobo divs to {0}".format(name))
+            self.log.debug("Adding Kobo divs to {0}".format(name))
             root = self.parsed(name)
             kobo_div_count = root.xpath(
                 'count(//xhtml:div[@id="book-inner"])',
                 namespaces={"xhtml": XHTML_NAMESPACE},
             )
             if kobo_div_count > 0:
-                self.log.info("\tSkipping file")
+                self.log.debug("Skipping file, Kobo divs present")
                 continue
             # NOTE: Hackish heuristic: Forgo this if we have more div's than
             # p's, which would potentially indicate a book using div's instead
@@ -386,8 +386,8 @@ class KEPubContainer(EpubContainer):
                 root.xpath("count(//xhtml:p)", namespaces={"xhtml": XHTML_NAMESPACE})
             )
             if div_count > p_count:
-                self.log.info(
-                    "\tSkipping file ({0:d} div tags, {1:d} p tags)".format(
+                self.log.debug(
+                    "Skipping file ({0:d} div tags, {1:d} p tags)".format(
                         div_count, p_count
                     )
                 )
@@ -447,7 +447,7 @@ class KEPubContainer(EpubContainer):
     def add_kobo_spans(self):
         """Add KePub spans (used for in-book location) to each HTML file."""
         for name in self.html_names():
-            self.log.info("Adding Kobo spans to {0}".format(name))
+            self.log.debug("Adding Kobo spans to {0}".format(name))
             root = self.parsed(name)
             kobo_span_count = root.xpath(
                 'count(.//xhtml:span[@class="koboSpan" '
@@ -455,7 +455,7 @@ class KEPubContainer(EpubContainer):
                 namespaces={"xhtml": XHTML_NAMESPACE},
             )
             if kobo_span_count > 0:
-                self.log.info("\tSkipping file")
+                self.log.debug("Skipping file, Kobo spans present")
                 continue
 
             self.__paragraph_counter = 1

@@ -103,10 +103,13 @@ class KEPubOutput(OutputFormatPlugin):
 
     def convert(self, oeb_book, output, input_plugin, opts, logger):
         """Convert from calibre's internal format to KePub."""
-        self.epub_output_plugin.convert(oeb_book, output, input_plugin, opts, logger)
+        log.debug("Running ePub conversion")
+        self.epub_output_plugin.convert(oeb_book, output, input_plugin, opts, log)
+        log.debug("Done ePub conversion")
         container = KEPubContainer(output, log)
 
         if container.is_drm_encumbered:
+            log.error("DRM-encumbered container, skipping conversion")
             return
 
         # Write the details file
@@ -115,7 +118,7 @@ class KEPubOutput(OutputFormatPlugin):
             "kepub_output_currenttime": datetime.utcnow().ctime(),
         }
         kte_data_file = self.temporary_file("_KePubOutputPluginInfo")
-        kte_data_file.write(json.dumps(o))
+        kte_data_file.write(json.dumps(o).encode("UTF-8"))
         kte_data_file.close()
         container.copy_file_to_container(
             kte_data_file.name, name="plugininfo.kte", mt="application/json"
@@ -140,15 +143,19 @@ class KEPubOutput(OutputFormatPlugin):
             mi.languages = NULL_VALUES["languages"]
             language = NULL_VALUES["language"]
 
-        modify_epub(
-            container,
-            output,
-            metadata=mi,
-            opts={
-                "clean_markup": opts.kepub_clean_markup,
-                "hyphenate": opts.kepub_hyphenate,
-                "no-hyphens": opts.kepub_disable_hyphenation,
-                "smarten_punctuation": False,
-                "extended_kepub_features": True,
-            },
-        )
+        try:
+            modify_epub(
+                container,
+                output,
+                metadata=mi,
+                opts={
+                    "clean_markup": opts.kepub_clean_markup,
+                    "hyphenate": opts.kepub_hyphenate,
+                    "no-hyphens": opts.kepub_disable_hyphenation,
+                    "smarten_punctuation": False,
+                    "extended_kepub_features": True,
+                },
+            )
+        except Exception:
+            log.exception("Failed converting!")
+            raise
