@@ -379,7 +379,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
                 "FullBookPageNumbers",
                 "true" if self.full_page_numbers else "false",
             )
-            with open(kobo_config_file, "wb") as cfgfile:
+            with open(kobo_config_file, "w") as cfgfile:
                 cfg.write(cfgfile)
 
         return super(KOBOTOUCHEXTENDED, self).upload_books(

@@ -142,21 +142,6 @@ class KEPubContainer(EpubContainer):
 
         return is_encumbered
 
-    def get_raw(self, name, force_unicode=False):
-        """Get the raw, unparsed contents of an ePub inner file."""
-        self.commit_item(name, keep_parsed=False)
-        try:
-            f = open(self.name_path_map[name], "rb")
-        except Exception:
-            return None
-        data = f.read()
-        f.close()
-
-        if force_unicode:
-            data = data.encode("UTF-8")
-
-        return data
-
     def flush_cache(self):
         """Flush the cache, writing all cached values to disk."""
         for name in [n for n in self.dirtied]:
@@ -279,19 +264,18 @@ class KEPubContainer(EpubContainer):
         """Perform cleanup considered essential for standards compliance."""
         for name in self.html_names():
             self.log.debug("Forcing cleanup for file {0}".format(name))
-            html = self.get_raw(name, force_unicode=True)
+            html = self.raw_data(name, decode=True, normalize_to_nfc=True)
             if html is None:
                 continue
 
-            encoding_match = ENCODING_RE.search(html[:75])
-            if (
-                encoding_match
-                and encoding_match.group(1)
-                and encoding_match.group(1).upper() != "UTF-8"
-            ):
-                html = html.decode(encoding_match.group(1))
+            encoding_match = ENCODING_RE.search(str(html[:75]))
+            encoding = "UTF-8"
+            if encoding_match and encoding_match.group(1):
+                encoding = encoding_match.group(1).upper()
+            if hasattr(html, "decode"):
+                html = html.decode(encoding)
+            if encoding_match and encoding_match.group(1).upper() != "UTF-8":
                 html = re.sub(encoding_match.group(1), "UTF-8", html, 1, re.MULTILINE)
-            html = html.encode("UTF-8")
 
             # Force meta and link tags to be self-closing
             html = SELF_CLOSING_RE.sub(r"<\1 \2 />", html)
@@ -300,10 +284,13 @@ class KEPubContainer(EpubContainer):
             html = FORCE_OPEN_TAG_RE.sub(r"<\1 \2></\1>", html)
 
             # Remove Unicode replacement characters
-            html = string.replace(html, "\uFFFD", "")
+            html = html.replace("\uFFFD", "")
 
-            self.dirty(name)
-        self.flush_cache()
+            with self.open(name, "wb") as f:
+                f.write(html.encode(self.encoding_map.get(name, self.used_encoding)))
+
+        #     self.dirty(name)
+        # self.flush_cache()
 
     def clean_markup(self):
         """Clean HTML markup.
@@ -313,7 +300,7 @@ class KEPubContainer(EpubContainer):
         """
         for name in self.html_names():
             self.log.debug("Cleaning markup for file {0}".format(name))
-            html = self.get_raw(name, force_unicode=True)
+            html = self.raw_data(name, decode=True, normalize_to_nfc=True)
             if html is None:
                 continue
 
@@ -333,7 +320,7 @@ class KEPubContainer(EpubContainer):
 
         for name in self.html_names():
             self.log.debug("Smartening punctuation for file {0}".format(name))
-            html = self.get_raw(name, force_unicode=True)
+            html = self.raw_data(name, decode=True, normalize_to_nfc=True)
             if html is None:
                 continue
 
@@ -357,8 +344,11 @@ class KEPubContainer(EpubContainer):
             html = string.replace(html, "<! &#x2014; ", "<!-- ")
             html = string.replace(html, " &#x2014; >", " -->")
 
-            self.dirty(name)
-        self.flush_cache()
+            with self.open(name, "wb") as f:
+                f.write(html.encode(self.encoding_map.get(name, self.used_encoding)))
+
+        #     self.dirty(name)
+        # self.flush_cache()
 
     def add_kobo_divs(self):
         """Add KePub divs to each HTML file in the book."""
@@ -548,7 +538,10 @@ class KEPubContainer(EpubContainer):
                     flags=re.UNICODE | re.MULTILINE,
                 )
                 # remove empty strings resulting from split()
-                groups = [g.decode("utf-8") for g in groups if g != ""]
+                groups = [g for g in groups if g != ""]
+                for idx in range(len(groups)):
+                    if hasattr(groups[idx], "decode"):
+                        groups[idx] = groups[idx].decode("UTF-8")
 
                 # TODO: To match Kobo KePubs, the trailing whitespace needs to
                 # be prepended to the next group. Probably equivalent to make

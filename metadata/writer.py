@@ -15,6 +15,7 @@ except ImportError:
     # Python 2
     from cStringIO import StringIO
 
+
 from calibre.customize.builtins import EPUBMetadataWriter
 from calibre.ebooks.metadata.epub import get_zip_reader
 from calibre.ebooks.metadata.opf2 import OPF
@@ -92,7 +93,7 @@ class KEPUBMetadataWriter(EPUBMetadataWriter):
                             found_cover = True
 
             if found_cover:
-                newopf = StringIO(reader.opf.render())
+                newopf = StringIO(reader.opf.render().decode("UTF-8"))
                 if isinstance(reader.archive, LocalZipFile):
                     reader.archive.safe_replace(reader.container[OPF.MIMETYPE], newopf)
                 else:
