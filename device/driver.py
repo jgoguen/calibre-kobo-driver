@@ -255,7 +255,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
             o["kobotouchextended_options"] = str(opts.extra_customization)
             o["kobotouchextended_currenttime"] = datetime.utcnow().ctime()
             kte_data_file = self.temporary_file("_KoboTouchExtendedDriverInfo")
-            log.deug(
+            log.debug(
                 "KoboTouchExtended:_modify_epub:Driver data file :: {0}".format(
                     kte_data_file.name
                 )
