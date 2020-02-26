@@ -260,7 +260,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
                     kte_data_file.name
                 )
             )
-            kte_data_file.write(json.dumps(o))
+            kte_data_file.write(json.dumps(o).encode("UTF-8"))
             kte_data_file.close()
             container.copy_file_to_container(
                 kte_data_file.name, name="driverinfo.kte", mt="application/json"
