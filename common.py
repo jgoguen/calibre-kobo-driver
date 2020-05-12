@@ -23,6 +23,7 @@ from functools import partial
 from multiprocessing import Lock
 
 from calibre.constants import config_dir
+from calibre.constants import preferred_encoding
 from calibre.ebooks.metadata.book.base import Metadata
 from calibre.ebooks.metadata.book.base import NULL_VALUES
 from calibre.ebooks.oeb.polish.container import EpubContainer
@@ -38,15 +39,19 @@ try:
     from typing import List
     from typing import Optional
     from typing import Union
+
+    unicode_type = str
 except ImportError:
     # Python 2
-    pass
+    # Ignore flake8 F821 (undefined name): type checking is done exclusvely in Python 3
+    # which does not define 'unicode'.
+    unicode_type = unicode  # noqa: F821
 
 kobo_js_re = re.compile(r".*/?kobo.*\.js$", re.IGNORECASE)
 XML_NAMESPACE = "http://www.w3.org/XML/1998/namespace"
 configdir = os.path.join(config_dir, "plugins")  # type: str
 reference_kepub = os.path.join(configdir, "reference.kepub.epub")  # type: str
-plugin_version = (3, 2, 2)
+plugin_version = (3, 2, 3)
 plugin_minimum_calibre_version = (2, 60, 0)
 
 
@@ -76,7 +81,7 @@ class Logger:
             "{0} [{1}] {2}".format(
                 time.strftime("%Y-%m-%d %H:%M:%S %Z", time.localtime()), level, arg
             )
-            for arg in args
+            for arg in self._ensure_unicode(args)
         ]
 
     def _prints(self, level, *args, **kwargs):
@@ -96,6 +101,19 @@ class Logger:
             tagged_args = self._tag_args("ERROR", *args)
             self._prints("ERROR", *tagged_args, **kwargs)
             self._prints("ERROR", traceback.format_exc(limit))
+
+    def _ensure_unicode(self, text, enc=preferred_encoding):
+        if isinstance(text, unicode_type):
+            return text
+        if isinstance(text, bytes):
+            return text.decode(enc, errors="replace")
+        if isinstance(text, (list, tuple)):
+            return [self._ensure_unicode(s) for s in text]
+        if isinstance(text, dict):
+            return {
+                self._ensure_unicode(k): self._ensure_unicode(v)
+                for k, v in text.iteritems()
+            }
 
 
 log = Logger()
