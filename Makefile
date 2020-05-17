@@ -64,7 +64,7 @@ test_py%:
 		for plugin in $(CURDIR)/*.zip; do \
 			$(CURDIR)/calibre-py$*/calibre-customize -a "$$plugin"; \
 		done; \
-		$(CURDIR)/calibre-py$*/calibre-debug "$$test_file"; \
+		PYTHONDONTWRITEBYTECODE="true" $(CURDIR)/calibre-py$*/calibre-debug "$$test_file"; \
 		rm -rf "$$CALIBRE_DIR"; \
 		unset CALIBRE_CONFIG_DIRECTORY CALIBRE_TEMP_DIR; \
 	done;
