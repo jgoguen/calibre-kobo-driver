@@ -22,6 +22,7 @@ import traceback
 from functools import partial
 from multiprocessing import Lock
 
+from calibre import prints
 from calibre.constants import config_dir
 from calibre.constants import preferred_encoding
 from calibre.ebooks.metadata.book.base import Metadata
@@ -35,6 +36,7 @@ from lxml.etree import _Element
 
 try:
     # Python 3
+    from io import StringIO
     from typing import Dict
     from typing import List
     from typing import Optional
@@ -43,6 +45,8 @@ try:
     unicode_type = str
 except ImportError:
     # Python 2
+    from cStringIO import StringIO
+
     # Ignore flake8 F821 (undefined name): type checking is done exclusvely in Python 3
     # which does not define 'unicode'.
     unicode_type = unicode  # noqa: F821
@@ -51,7 +55,7 @@ kobo_js_re = re.compile(r".*/?kobo.*\.js$", re.IGNORECASE)
 XML_NAMESPACE = "http://www.w3.org/XML/1998/namespace"
 configdir = os.path.join(config_dir, "plugins")  # type: str
 reference_kepub = os.path.join(configdir, "reference.kepub.epub")  # type: str
-plugin_version = (3, 2, 3)
+plugin_version = (3, 2, 7)
 plugin_minimum_calibre_version = (2, 60, 0)
 
 
@@ -68,6 +72,10 @@ class Logger:
             self.log_level = "DEBUG"
 
         self._lock = Lock()
+        # According to Kovid, calibre always uses UTF-8 for the Python 3 version
+        self.preferred_encoding = (
+            "UTF-8" if sys.version_info.major > 2 else preferred_encoding
+        )
         self.outputs = [ANSIStream()]
 
         self.debug = partial(self.print_formatted_log, "DEBUG")
@@ -76,13 +84,20 @@ class Logger:
         self.error = partial(self.print_formatted_log, "ERROR")
 
     def _tag_args(self, level, *args):
-        # Each of args is a string
-        return [
-            "{0} [{1}] {2}".format(
-                time.strftime("%Y-%m-%d %H:%M:%S %Z", time.localtime()), level, arg
-            )
-            for arg in self._ensure_unicode(args)
-        ]
+        now = time.localtime()
+        buf = StringIO()
+        tagged_args = []
+        for arg in args:
+            prints(time.strftime("%Y-%m-%d %H:%M:%S", now), file=buf, end=" ")
+            buf.write("[")
+            prints(level, file=buf, end="")
+            buf.write("] ")
+            prints(arg, file=buf, end="")
+
+            tagged_args.append(buf.getvalue())
+            buf.truncate(0)
+
+        return tagged_args
 
     def _prints(self, level, *args, **kwargs):
         for o in self.outputs:
@@ -101,19 +116,6 @@ class Logger:
             tagged_args = self._tag_args("ERROR", *args)
             self._prints("ERROR", *tagged_args, **kwargs)
             self._prints("ERROR", traceback.format_exc(limit))
-
-    def _ensure_unicode(self, text, enc=preferred_encoding):
-        if isinstance(text, unicode_type):
-            return text
-        if isinstance(text, bytes):
-            return text.decode(enc, errors="replace")
-        if isinstance(text, (list, tuple)):
-            return [self._ensure_unicode(s) for s in text]
-        if isinstance(text, dict):
-            return {
-                self._ensure_unicode(k): self._ensure_unicode(v)
-                for k, v in text.iteritems()
-            }
 
 
 log = Logger()
