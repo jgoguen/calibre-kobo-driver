@@ -18,11 +18,6 @@ from calibre.gui2.convert.epub_output import PluginWidget as EPUBPluginWidget
 from calibre.gui2.convert.epub_output_ui import Ui_Form as EPUBUIForm
 from calibre.gui2.preferences.conversion import OutputOptions as BaseOutputOptions
 
-if sys.version_info >= (3,):
-
-    def unicode(x):
-        return str(x)
-
 
 try:
     from PyQt5.Qt import QIcon
@@ -79,9 +74,7 @@ class PluginWidget(EPUBPluginWidget, EPUBUIForm):
         self.gridLayout.removeItem(spacer)
 
         self.opt_strip_kobo_spans = QtGui.QCheckBox(Form)
-        self.opt_strip_kobo_spans.setObjectName(
-            unicode("opt_strip_kobo_spans")  # noqa: F821
-        )
+        self.opt_strip_kobo_spans.setObjectName("opt_strip_kobo_spans")
         self.opt_strip_kobo_spans.setText(_("Strip Kobo spans"))  # noqa: F821
         self.gridLayout.addWidget(self.opt_strip_kobo_spans, rows, 0, 1, 1)
         rows = rows + 1
