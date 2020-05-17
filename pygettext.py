@@ -667,12 +667,13 @@ def main():
         else:
             if options.verbose:
                 print(_("Working on {0}").format(filename))
-            fp = open(filename)
+            fp = open(filename, "rt")
             closep = 1
         try:
             eater.set_filename(filename)
             try:
-                tokenize.tokenize(fp.readline, eater)
+                for tok in tokenize.generate_tokens(fp.readline):
+                    eater(*tok)
             except tokenize.TokenError as e:
                 print(
                     "{0}: {1}, line {2}, column {3}".format(
