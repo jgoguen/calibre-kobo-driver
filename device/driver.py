@@ -2,6 +2,11 @@
 
 """The main driver for the KoboTouchExtended driver. Everything starts here."""
 
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
 __license__ = "GPL v3"
 __copyright__ = "2013, Joel Goguen <jgoguen@jgoguen.ca>"
 __docformat__ = "markdown en"
@@ -568,7 +573,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
                 pass
 
             settings.extra_customization = settings.extra_customization[
-                count_options + 1 :
+                count_options + 1 :  # noqa:E203 - thanks Black formatting!
             ]
             log.info(
                 "KoboTouchExtended::migrate_old_settings - end",
