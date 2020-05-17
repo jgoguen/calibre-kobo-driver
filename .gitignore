@@ -2,6 +2,7 @@
 *.pyo
 *.pyd
 *.pyw
+calibre-py[23]
 
 # IDE files
 .settings

@@ -13,3 +13,7 @@ exclude =
     *_init.py,
     # Source control directories have nothing of interest
     .hgignore
+per-file-ignores =
+    # Calibre tests need some code before calibre imports are done, which means
+    # imports are not done strictly at the top of the file.
+    tests/test_*.py:E402

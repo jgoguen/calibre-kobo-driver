@@ -53,13 +53,26 @@ KePub\ Metadata\ Writer.zip: common.py metadata/writer.py metadata/__init__.py \
 %_init: %_init.py
 	cp -f $@.py $(dir $@)__init__.py
 
-test:
-	PYTHONPATH=../calibre/src:. /usr/bin/env python2 -B -m unittest discover -s 'test' -v
+test: $(ZIPS) test_py2 test_py3
+
+test_py%:
+	@for test_file in $(CURDIR)/tests/test_*.py; do \
+		CALIBRE_DIR=$(shell mktemp -d); \
+		mkdir -p "$$CALIBRE_DIR/config" "$$CALIBRE_DIR/tmp"; \
+		export CALIBRE_CONFIG_DIRECTORY="$$CALIBRE_DIR/config"; \
+		export CALIBRE_TEMP_DIR="$$CALIBRE_DIR/tmp"; \
+		for plugin in $(CURDIR)/*.zip; do \
+			$(CURDIR)/calibre-py$*/calibre-customize -a "$$plugin"; \
+		done; \
+		$(CURDIR)/calibre-py$*/calibre-debug "$$test_file"; \
+		rm -rf "$$CALIBRE_DIR"; \
+		unset CALIBRE_CONFIG_DIRECTORY CALIBRE_TEMP_DIR; \
+	done;
 
 pot: translations/messages.pot
 
 translations/messages.pot: $(ALL_SOURCES)
-	/usr/bin/env python2 -B ./pygettext.py -p translations $(ALL_SOURCES)
+	/usr/bin/env python3 -B ./pygettext.py -p translations $(ALL_SOURCES)
 
 clean:
 	rm -f *.zip
