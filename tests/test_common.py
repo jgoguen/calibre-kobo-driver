@@ -11,18 +11,17 @@ import os
 import sys
 import unittest
 
-is_py2 = sys.version_info.major == 2
+test_dir = os.path.dirname(os.path.abspath(__file__))
+src_dir = os.path.dirname(test_dir)
+test_libdir = os.path.join(
+    src_dir, "pylib", "python{major}".format(major=sys.version_info.major)
+)
+sys.path += glob.glob(os.path.join(test_libdir, "*.zip"))
 
 try:
     from unittest import mock
 except ImportError:
     # Python 2
-    test_dir = os.path.dirname(os.path.abspath(__file__))
-    src_dir = os.path.dirname(test_dir)
-    test_libdir = os.path.join(
-        src_dir, "pylib", "python{major}".format(major=sys.version_info.major)
-    )
-    sys.path += glob.glob(os.path.join(test_libdir, "*.zip"))
     import mock
 
 from calibre_plugins.kobotouch_extended import common
