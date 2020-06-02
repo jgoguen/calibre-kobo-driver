@@ -61,19 +61,21 @@ def gen_lang_code():
         yield enc
 
 
-class TestLogger(unittest.TestCase):
-    def setUp(self):
+class TestCommon(unittest.TestCase):
+    orig_lang = ""  # type: str
+
+    def setUp(self):  # type: () -> None
         self.orig_lang = os.environ.get("LANG", None)
 
-    def tearDown(self):
-        if self.orig_lang is None:
+    def tearDown(self):  # type: () -> None
+        if not self.orig_lang:
             if "LANG" in os.environ:
                 del os.environ["LANG"]
         else:
             os.environ["LANG"] = self.orig_lang
-        self.orig_lang = None
+        self.orig_lang = ""
 
-    def test_logger_log_level(self):
+    def test_logger_log_level(self):  # type: () -> None
         for envvar in ("CALIBRE_DEVELOP_FROM", "CALIBRE_DEBUG"):
             if envvar in os.environ:
                 del os.environ[envvar]
@@ -90,7 +92,7 @@ class TestLogger(unittest.TestCase):
         self.assertEqual(logger.log_level, "DEBUG")
         del os.environ["CALIBRE_DEBUG"]
 
-    def _run_logger_unicode_test(self, as_bytes):
+    def _run_logger_unicode_test(self, as_bytes):  # type: (bool) -> None
         for o in TEST_STRINGS:
             for enc in o["encodings"]:
                 with mock.patch(
@@ -112,7 +114,7 @@ class TestLogger(unittest.TestCase):
                             ],
                         )
 
-    def test_logger_ensure_unicode_from_bytes(self):
+    def test_logger_ensure_unicode_from_bytes(self):  # type: () -> None
         self._run_logger_unicode_test(True)
         self._run_logger_unicode_test(False)
 
