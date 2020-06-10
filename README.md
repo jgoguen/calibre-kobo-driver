@@ -143,7 +143,7 @@ Wondering how to do something? Want to know if something is possible? Ask your q
 - [`KePub Metadata Reader`][mdreader]
 
 # Reporting a Bug
-Found a bug with this plugin? Great! Please use the [BitBucket issue tracker][bugtracker] to send me reports of issues or feature requests. Under no circumstances should I be emailed directly unless I have asked to have something sent to me. Any emails I haven't asked for **may be silently ignored** at my sole discretion. Everyone can benefit from a public bug tracker, but only one person benefits from a private email.
+Found a bug with this plugin? Great! I want to hear from you! Go to [GitHub and submit a new bug report](https://github.com/jgoguen/calibre-kobo-driver/issues/new). Under no circumstances should I be emailed directly unless I have asked to have something sent to me. Any emails I haven't asked for **may be silently ignored** at my sole discretion. Everyone can benefit from a public bug tracker, but only one person benefits from a private email.
 
 When submitting a bug, I require the following information as a minimum, but any additional information is good to include:
 
