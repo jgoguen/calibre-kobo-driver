@@ -55,6 +55,9 @@ To use the conversion input format plugin after installing:
 1. Choose the desired target format from the list of output formats (top-right of the conversion window)
 1. Click **OK**
 
+# Special Note
+It is recommended that you disable the built-in KoboTouch driver (authored by David Forrester) while this plugin is installed. On rare occasions, calibre may inadvertently select the built-in KoboTouch driver instead of this plugin.  But do not disable the built-in Kobo driver. 
+
 ## Adding Arbitrary CSS
 
 The device driver plugin, through the base KoboTouch driver provided with calibre, has the ability to copy all rules from a specific CSS file into each book as it is uploaded. To support easily maintaining device-specific CSS files, the device driver can copy a CSS file into the correct place to allow adding it to each book. To do this, locate the calibre plugin directory, create a CSS file in there, and ensure that the **Modify CSS** option is selected in the driver preferences. To locate the calibre plugin directory, open calibre's preferences, choose **Miscellaneous**, and click the **Open calibre configuration directory** button. The plugin directory is in there.
