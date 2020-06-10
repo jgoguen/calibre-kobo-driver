@@ -96,7 +96,7 @@ msgid "Failed to parse '{book}' by '{author}' with error: '{error}' (file: {file
 msgstr ""
 
 #: ./device/driver.py:69
-msgid "Communicate with the Kobo Touch, Glo, Mini, Aura HD, and Aura firmwares and enable extended Kobo ePub features."
+msgid "Communicate with the Kobo Forma, Libra, Kobo Touch, Glo, Mini, Aura HD,  Aura firmwares and enable extended Kobo ePub features."
 msgstr ""
 
 #: ./device/koboextended_config.py:41
