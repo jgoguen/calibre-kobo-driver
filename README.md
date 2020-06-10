@@ -55,7 +55,7 @@ To use the conversion input format plugin after installing:
 1. Choose the desired target format from the list of output formats (top-right of the conversion window)
 1. Click **OK**
 
-# Special Note
+## Special Note
 It is recommended that you disable the built-in KoboTouch driver (authored by David Forrester) while this plugin is installed. On rare occasions, calibre may inadvertently select the built-in KoboTouch driver instead of this plugin.  But do not disable the built-in Kobo driver. 
 
 ## Adding Arbitrary CSS
