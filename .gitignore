@@ -18,7 +18,7 @@ calibre-py[23]
 .tags_sorted_by_file
 
 test-books/
-*.zip
+/*.zip
 TODO
 .checkstyle
 __init__.py
