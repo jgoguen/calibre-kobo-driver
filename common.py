@@ -83,6 +83,9 @@ class Logger:
         self.warn = self.warning = partial(self.print_formatted_log, "WARN")
         self.error = partial(self.print_formatted_log, "ERROR")
 
+    def __call__(self, logmsg):
+        self.info(logmsg)
+
     def _tag_args(self, level, *args):
         now = time.localtime()
         buf = StringIO()

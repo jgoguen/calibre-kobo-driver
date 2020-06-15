@@ -118,6 +118,34 @@ class TestCommon(unittest.TestCase):
         self._run_logger_unicode_test(True)
         self._run_logger_unicode_test(False)
 
+    @mock.patch(
+        "calibre_plugins.kobotouch_extended.common.Logger.print_formatted_log",
+        mock.MagicMock(),
+    )
+    @mock.patch(
+        "calibre_plugins.kobotouch_extended.common.Logger._prints", mock.MagicMock(),
+    )
+    @mock.patch(
+        "calibre_plugins.kobotouch_extended.common.Logger._tag_args",
+        mock.MagicMock(return_value="Goodbye, World"),
+    )
+    def test_logger_logs(self):
+        logger = common.Logger()
+
+        logger.debug("Hello, World")
+        logger.print_formatted_log.assert_called_with("DEBUG", "Hello, World")
+
+        logger("Hello, World")
+        logger.print_formatted_log.assert_called_with("INFO", "Hello, World")
+
+        logger.print_formatted_log.reset_mock()
+        logger._prints.reset_mock()
+        logger._tag_args.reset_mock()
+
+        logger.exception("Oh noes!")
+        logger._tag_args.assert_called_with("ERROR", "Oh noes!")
+        self.assertEqual(logger._prints.call_count, 2)
+
 
 if __name__ == "__main__":
     unittest.main(module="test_common", verbosity=2)
