@@ -63,13 +63,16 @@ XHTML_NAMESPACE = "http://www.w3.org/1999/xhtml"  # type: str
 SPECIAL_TAGS = frozenset(["img"])  # type: Set[str]
 ENCODING_RE = re.compile(r'^\<\?.+encoding="([^"]+)"', re.MULTILINE)
 SELF_CLOSING_RE = re.compile(
-    r"<(meta|link) ([^>]+)></(?:meta|link)>", re.UNICODE | re.MULTILINE
+    r"<(meta|link) ([^>]+)>.*?</\1>", re.UNICODE | re.MULTILINE
 )
-FORCE_OPEN_TAG_RE = re.compile(r"<(script|p) (.+) ?/>", re.UNICODE | re.MULTILINE)
-EMPTY_HEADINGS = re.compile(r"(?i)<h\d+[^>]+?>\s*</h\d+>", re.UNICODE | re.MULTILINE)
+FORCE_OPEN_TAG_RE = re.compile(r"<(script|p) (.+?) ?/>", re.UNICODE | re.MULTILINE)
+EMPTY_HEADINGS_RE = re.compile(r"(?i)<(h\d+)[^>]*?>\s*</\1>", re.UNICODE | re.MULTILINE)
 ELLIPSIS_RE = re.compile(r"(?u)(?<=\w)\s?(\.\s+?){2}\.", re.UNICODE | re.MULTILINE)
-MS_CRUFT_RE_1 = re.compile(r"\s*<o:p>\s*</o:p>", re.UNICODE | re.MULTILINE)
+MS_CRUFT_RE_1 = re.compile(r"<o:p>\s*</o:p>", re.UNICODE | re.MULTILINE)
 MS_CRUFT_RE_2 = re.compile(r"(?i)</?st1:\w+>", re.UNICODE | re.MULTILINE)
+TEXT_SPLIT_RE = re.compile(
+    r'(.*?[\.\!\?\:][\'"\u201c\u201d\u2018\u2019\u2026]?\s*)', re.UNICODE | re.MULTILINE
+)
 
 
 # TODO: Refactor InvalidEpub from here and device/driver.py to be a common class
@@ -94,8 +97,12 @@ class ParseError(ValueError):
 class KEPubContainer(EpubContainer):
     """Extends an EpubContainer to work for a KePub."""
 
-    __paragraph_counter = 0  # type: int
-    __segment_counter = 0  # type: int
+    _paragraph_counter = 0  # type: int
+    _segment_counter = 0  # type: int
+
+    def __init__(self, epub_path, log, *args, **kwargs):  # type: (...) -> None
+        super(KEPubContainer, self).__init__(epub_path, log, *args, **kwargs)
+        self.log = log
 
     def html_names(self):
         """Get all HTML files in the OPF file.
@@ -254,7 +261,7 @@ class KEPubContainer(EpubContainer):
             # element.
             # Move this element's tail to the previous element (note: .text is
             # only the text after the last child element, text before that and
-            # surrounding elements are attributes of the elemenets)
+            # surrounding elements are attributes of the elements)
             item.tail = parent[idx - 1].tail
             # If this is the last child element, it gets the remaining text.
             if idx == len(parent) - 1:
@@ -286,11 +293,9 @@ class KEPubContainer(EpubContainer):
             # Remove Unicode replacement characters
             html = html.replace("\uFFFD", "")
 
-            with self.open(name, "wb") as f:
-                f.write(html.encode(self.encoding_map.get(name, self.used_encoding)))
+            self.replace(name, self.parse_xhtml(html))
 
-        #     self.dirty(name)
-        # self.flush_cache()
+        self.flush_cache()
 
     def clean_markup(self):
         """Clean HTML markup.
@@ -309,9 +314,10 @@ class KEPubContainer(EpubContainer):
             html = MS_CRUFT_RE_2.sub("", html)
 
             # Remove empty headings
-            html = EMPTY_HEADINGS.sub("", html)
+            html = EMPTY_HEADINGS_RE.sub("", html)
 
-            self.dirty(name)
+            self.replace(name, self.parse_xhtml(html))
+
         self.flush_cache()
 
     def smarten_punctuation(self):
@@ -344,13 +350,11 @@ class KEPubContainer(EpubContainer):
             html = string.replace(html, "<! &#x2014; ", "<!-- ")
             html = string.replace(html, " &#x2014; >", " -->")
 
-            with self.open(name, "wb") as f:
-                f.write(html.encode(self.encoding_map.get(name, self.used_encoding)))
+            self.replace(name, self.parse_xhtml(html))
 
-        #     self.dirty(name)
-        # self.flush_cache()
+        self.flush_cache()
 
-    def add_kobo_divs(self):
+    def add_kobo_divs(self):  # type: (...) -> bool
         """Add KePub divs to each HTML file in the book."""
         for name in self.html_names():
             self.log.debug("Adding Kobo divs to {0}".format(name))
@@ -383,8 +387,9 @@ class KEPubContainer(EpubContainer):
                 )
                 continue
             self.__add_kobo_divs_to_body(root)
-            self.parsed_cache[name] = root
-            self.dirty(name)
+
+            self.replace(name, root)
+
         self.flush_cache()
 
         return True
@@ -448,119 +453,117 @@ class KEPubContainer(EpubContainer):
                 self.log.debug("Skipping file, Kobo spans present")
                 continue
 
-            self.__paragraph_counter = 1
-            self.__segment_counter = 1
+            self._paragraph_counter = 1
+            self._segment_counter = 1
             body = root.xpath("./xhtml:body", namespaces={"xhtml": XHTML_NAMESPACE})[0]
-            self.__add_kobo_spans_to_node(body)
-            self.parsed_cache[name] = root
-            self.dirty(name)
+            self._add_kobo_spans_to_node(body)
+
+            self.replace(name, root)
+
         self.flush_cache()
 
         return True
 
-    def __add_kobo_spans_to_node(self, node):
+    def _add_kobo_spans_to_node(self, node):
         # process node only if it is not a comment or a processing instruction
-        if not (
+        if (
             node is None
             or isinstance(node, etree._Comment)
             or isinstance(node, etree._ProcessingInstruction)
         ):
-            # Special case: <img> tags
-            special_tag_match = re.search(r"^(?:\{[^\}]+\})?(\w+)$", node.tag)
-            if special_tag_match and special_tag_match.group(1) in SPECIAL_TAGS:
-                span = etree.Element(
-                    "{%s}span" % (XHTML_NAMESPACE,),
-                    attrib={
-                        "id": "kobo.{0}.{1}".format(
-                            self.__paragraph_counter, self.__segment_counter
-                        ),
-                        "class": "koboSpan",
-                    },
-                )
-                span.append(node)
-                self.__paragraph_counter += 1
-                self.__segment_counter = 1
-                return span
-
-            # save node content for later
-            node_text = node.text
-            node_children = deepcopy(node.getchildren())
-            node_attrs = {}
-            for key in list(node.keys()):
-                node_attrs[key] = node.get(key)
-
-            # reset current node, to start from scratch
-            node.clear()
-
-            # restore node attributes
-            for key in node_attrs:
-                node.set(key, node_attrs[key])
-
-            # the node text is converted to spans
-            if node_text is not None:
-                if not self.__append_kobo_spans_from_text(node, node_text):
-                    # didn't add spans, restore text
-                    node.text = node_text
-
-            # re-add the node children
-            for child in node_children:
-                # save child tail for later
-                child_tail = child.tail
-                child.tail = None
-                node.append(self.__add_kobo_spans_to_node(child))
-                # the child tail is converted to spans
-                if child_tail is not None:
-                    self.__paragraph_counter += 1
-                    self.__segment_counter = 1
-                    if not self.__append_kobo_spans_from_text(node, child_tail):
-                        # didn't add spans, restore tail on last child
-                        self.__paragraph_counter -= 1
-                        node[-1].tail = child_tail
-
-                self.__paragraph_counter += 1
-                self.__segment_counter = 1
-        else:
             if node is not None:
                 node.tail = None
+            return node
+
+        # Special case: <img> tags
+        special_tag_match = re.search(r"^(?:\{[^\}]+\})?(\w+)$", node.tag)
+        if special_tag_match and special_tag_match.group(1) in SPECIAL_TAGS:
+            span = etree.Element(
+                "{%s}span" % (XHTML_NAMESPACE,),
+                attrib={
+                    "id": "kobo.{0}.{1}".format(
+                        self._paragraph_counter, self._segment_counter
+                    ),
+                    "class": "koboSpan",
+                },
+            )
+            span.append(node)
+            self._paragraph_counter += 1
+            self._segment_counter = 1
+            return span
+
+        # save node content for later
+        node_text = node.text
+        node_children = deepcopy(node.getchildren())
+        node_attrs = {}
+        for key in list(node.keys()):
+            node_attrs[key] = node.get(key)
+
+        # reset current node, to start from scratch
+        node.clear()
+
+        # restore node attributes
+        for key in node_attrs:
+            node.set(key, node_attrs[key])
+
+        # the node text is converted to spans
+        if node_text is not None:
+            if not self._append_kobo_spans_from_text(node, node_text):
+                # didn't add spans, restore text
+                node.text = node_text
+
+        # re-add the node children
+        for child in node_children:
+            # save child tail for later
+            child_tail = child.tail
+            child.tail = None
+            node.append(self._add_kobo_spans_to_node(child))
+            # the child tail is converted to spans
+            if child_tail is not None:
+                self._paragraph_counter += 1
+                self._segment_counter = 1
+                if not self._append_kobo_spans_from_text(node, child_tail):
+                    # didn't add spans, restore tail on last child
+                    self._paragraph_counter -= 1
+                    node[-1].tail = child_tail
+
+            self._paragraph_counter += 1
+            self._segment_counter = 1
 
         return node
 
-    def __append_kobo_spans_from_text(self, node, text):
-        if text is not None:
-            # if text is only whitespace, don't add spans
-            if re.match(r"^\s+$", text, flags=re.UNICODE | re.MULTILINE):
-                return False
-            else:
-                # split text in sentences
-                groups = re.split(
-                    r'(.*?[\.\!\?\:][\'"\u201d\u2019“…]?\s*)',
-                    text,
-                    flags=re.UNICODE | re.MULTILINE,
-                )
-                # remove empty strings resulting from split()
-                groups = [g for g in groups if g != ""]
-                for idx in range(len(groups)):
-                    if hasattr(groups[idx], "decode"):
-                        groups[idx] = groups[idx].decode("UTF-8")
-
-                # TODO: To match Kobo KePubs, the trailing whitespace needs to
-                # be prepended to the next group. Probably equivalent to make
-                # sure the space stays in the span at the end.
-                # add each sentence in its own span
-                for g in groups:
-                    span = etree.Element(
-                        "{%s}span" % (XHTML_NAMESPACE,),
-                        attrib={
-                            "id": "kobo.{0}.{1}".format(
-                                self.__paragraph_counter, self.__segment_counter
-                            ),
-                            "class": "koboSpan",
-                        },
-                    )
-                    span.text = g
-                    node.append(span)
-                    self.__segment_counter += 1
-
-                return True
-        else:
+    def _append_kobo_spans_from_text(self, node, text):
+        if not text:
             return False
+
+        # if text is only whitespace, don't add spans
+        if text.strip() == "":
+            return False
+
+        # split text in sentences
+        groups = TEXT_SPLIT_RE.split(text)
+        # remove empty strings resulting from split()
+        groups = [g.lstrip() for g in groups if g.strip() != ""]
+        for idx in range(len(groups)):
+            if hasattr(groups[idx], "decode"):
+                groups[idx] = groups[idx].decode("UTF-8")
+
+        # TODO: To match Kobo KePubs, the trailing whitespace needs to
+        # be prepended to the next group. Probably equivalent to make
+        # sure the space stays in the span at the end.
+        # add each sentence in its own span
+        for g in groups:
+            span = etree.Element(
+                "{%s}span" % (XHTML_NAMESPACE,),
+                attrib={
+                    "id": "kobo.{0}.{1}".format(
+                        self._paragraph_counter, self._segment_counter
+                    ),
+                    "class": "koboSpan",
+                },
+            )
+            span.text = g
+            node.append(span)
+            self._segment_counter += 1
+
+        return True

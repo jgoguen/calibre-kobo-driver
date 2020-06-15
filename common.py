@@ -51,12 +51,12 @@ except ImportError:
     # which does not define 'unicode'.
     unicode_type = unicode  # noqa: F821
 
-kobo_js_re = re.compile(r".*/?kobo.*\.js$", re.IGNORECASE)
+KOBO_JS_RE = re.compile(r".*/?kobo.*?\.js$", re.IGNORECASE)
 XML_NAMESPACE = "http://www.w3.org/XML/1998/namespace"
-configdir = os.path.join(config_dir, "plugins")  # type: str
-reference_kepub = os.path.join(configdir, "reference.kepub.epub")  # type: str
-plugin_version = (3, 2, 8)
-plugin_minimum_calibre_version = (2, 60, 0)
+CONFIGDIR = os.path.join(config_dir, "plugins")  # type: str
+REFERENCE_KEPUB = os.path.join(CONFIGDIR, "reference.kepub.epub")  # type: str
+PLUGIN_VERSION = (3, 2, 9)
+PLUGIN_MINIMUM_CALIBRE_VERSION = (2, 60, 0)
 
 
 class Logger:
@@ -258,15 +258,15 @@ def modify_epub(
         # Check to see if there's already a kobo*.js in the ePub
         skip_js = False  # type: str
         for name in container.name_path_map:
-            if kobo_js_re.match(name):
+            if KOBO_JS_RE.match(name):
                 skip_js = True
                 break
 
         if not skip_js:
-            if os.path.isfile(reference_kepub):
-                reference_container = EpubContainer(reference_kepub, log)
+            if os.path.isfile(REFERENCE_KEPUB):
+                reference_container = EpubContainer(REFERENCE_KEPUB, log)
                 for name in reference_container.name_path_map:
-                    if kobo_js_re.match(name):
+                    if KOBO_JS_RE.match(name):
                         jsname = container.copy_file_to_container(
                             os.path.join(reference_container.root, name), name="kobo.js"
                         )

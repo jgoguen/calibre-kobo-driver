@@ -56,6 +56,7 @@ KePub\ Metadata\ Writer.zip: common.py metadata/writer.py metadata/__init__.py \
 test: build test_py2 test_py3
 
 test_py%:
+	@cp $(CURDIR)/test_init.py $(CURDIR)/__init__.py
 	@for test_file in $(CURDIR)/tests/test_*.py; do \
 		CALIBRE_DIR=$(shell mktemp -d); \
 		mkdir -p "$$CALIBRE_DIR/config" "$$CALIBRE_DIR/tmp"; \
@@ -68,6 +69,7 @@ test_py%:
 		rm -rf "$$CALIBRE_DIR"; \
 		unset CALIBRE_CONFIG_DIRECTORY CALIBRE_TEMP_DIR; \
 	done;
+	@rm $(CURDIR)/__init__.py
 
 pot: translations/messages.pot
 
