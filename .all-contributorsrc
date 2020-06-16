@@ -1,7 +1,7 @@
 {
   "contributorsSortAlphabetically": true,
   "files": [
-    "CONTRIBUTORS",
+    "CONTRIBUTORS.md",
     "README.md"
   ],
   "projectName": "calibre-kobo-driver",
