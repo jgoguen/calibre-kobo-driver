@@ -72,11 +72,11 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
     """
 
     name = "KoboTouchExtended"
-    gui_name = "Kobo Touch/Glo/Mini/Aura HD/Aura"
+    gui_name = "Kobo Touch Extended"
     author = "Joel Goguen"
     description = _(  # noqa: F821
-        "Communicate with the Kobo Touch, Glo, Mini, Aura HD, and Aura "
-        "firmwares and enable extended Kobo ePub features."
+        "Communicate with Kobo Touch and later firmwares to enable extended Kobo "
+        "ePub features."
     )
     configdir = os.path.join(config_dir, "plugins")
     reference_kepub = os.path.join(configdir, "reference.kepub.epub")
@@ -333,10 +333,16 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
                     device_css_file_name = "kobo_extra_AURAHD.css"
                 elif self.isAura():
                     device_css_file_name = "kobo_extra_AURA.css"
+                elif self.isClaraHD():
+                    device_css_file_name = "kobo_extra_CLARA.css"
+                elif self.isForma():
+                    device_css_file_name = "kobo_extra_FORMA.css"
                 elif self.isGlo():
                     device_css_file_name = "kobo_extra_GLO.css"
                 elif self.isGloHD():
                     device_css_file_name = "kobo_extra_GLOHD.css"
+                elif self.isLibraH2O():
+                    device_css_file_name = "kobo_extra_LIBRA.css"
                 elif self.isMini():
                     device_css_file_name = "kobo_extra_MINI.css"
                 elif self.isTouch():
