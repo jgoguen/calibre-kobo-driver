@@ -3,9 +3,8 @@ ZIPS = KoboTouchExtended.zip KePub\ Output.zip KePub\ Input.zip \
 CSS = $(wildcard css/*.css)
 TRANSLATIONS = $(wildcard translations/*.mo)
 ALL_SOURCES = $(shell find . -type f -name '*.py' -not -name 'pygettext.py')
-ALL_TESTS = $(shell find tests -type f -name '*.py')
 
-all: $(ZIPS)
+build: $(ZIPS)
 
 KoboTouchExtended.zip: common.py container.py $(wildcard device/*.py) \
 	$(TRANSLATIONS) $(CSS) plugin-import-name-kobotouch_extended.txt \
@@ -53,9 +52,10 @@ KePub\ Metadata\ Writer.zip: common.py metadata/writer.py metadata/__init__.py \
 %_init: %_init.py
 	cp -f $@.py $(dir $@)__init__.py
 
-test: $(ZIPS) test_py2 test_py3
+test: build test_py2 test_py3
 
 test_py%:
+	@cp $(CURDIR)/test_init.py $(CURDIR)/__init__.py
 	@for test_file in $(CURDIR)/tests/test_*.py; do \
 		CALIBRE_DIR=$(shell mktemp -d); \
 		mkdir -p "$$CALIBRE_DIR/config" "$$CALIBRE_DIR/tmp"; \
@@ -68,6 +68,7 @@ test_py%:
 		rm -rf "$$CALIBRE_DIR"; \
 		unset CALIBRE_CONFIG_DIRECTORY CALIBRE_TEMP_DIR; \
 	done;
+	@rm $(CURDIR)/__init__.py
 
 pot: translations/messages.pot
 

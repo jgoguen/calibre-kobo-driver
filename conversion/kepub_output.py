@@ -17,11 +17,8 @@ from calibre.ebooks.conversion.plugins.epub_output import EPUBOutput
 from calibre.ebooks.metadata.book.base import Metadata
 from calibre.ebooks.metadata.book.base import NULL_VALUES
 
-from calibre_plugins.kepubout.common import log
-from calibre_plugins.kepubout.common import modify_epub
-from calibre_plugins.kepubout.common import plugin_minimum_calibre_version
-from calibre_plugins.kepubout.common import plugin_version
-from calibre_plugins.kepubout.container import KEPubContainer
+from calibre_plugins.kepubout import common
+
 
 # Support load_translations() without forcing calibre 1.9+
 try:
@@ -36,8 +33,8 @@ class KEPubOutput(OutputFormatPlugin):
     name = "KePub Output"
     author = "Joel Goguen"
     file_type = "kepub"
-    version = plugin_version
-    minimum_calibre_version = plugin_minimum_calibre_version
+    version = common.PLUGIN_VERSION
+    minimum_calibre_version = common.PLUGIN_MINIMUM_CALIBRE_VERSION
 
     epub_output_plugin = None
     configdir = os.path.join(config_dir, "plugins")
@@ -103,13 +100,15 @@ class KEPubOutput(OutputFormatPlugin):
 
     def convert(self, oeb_book, output, input_plugin, opts, logger):
         """Convert from calibre's internal format to KePub."""
-        log.debug("Running ePub conversion")
-        self.epub_output_plugin.convert(oeb_book, output, input_plugin, opts, log)
-        log.debug("Done ePub conversion")
-        container = KEPubContainer(output, log)
+        common.log.debug("Running ePub conversion")
+        self.epub_output_plugin.convert(
+            oeb_book, output, input_plugin, opts, common.log
+        )
+        common.log.debug("Done ePub conversion")
+        container = common.KEPubContainer(output, common.log)
 
         if container.is_drm_encumbered:
-            log.error("DRM-encumbered container, skipping conversion")
+            common.log.error("DRM-encumbered container, skipping conversion")
             return
 
         # Write the details file
@@ -144,7 +143,7 @@ class KEPubOutput(OutputFormatPlugin):
             language = NULL_VALUES["language"]
 
         try:
-            modify_epub(
+            common.modify_epub(
                 container,
                 output,
                 metadata=mi,
@@ -157,5 +156,5 @@ class KEPubOutput(OutputFormatPlugin):
                 },
             )
         except Exception:
-            log.exception("Failed converting!")
+            common.log.exception("Failed converting!")
             raise

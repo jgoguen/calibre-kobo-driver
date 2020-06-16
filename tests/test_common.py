@@ -11,18 +11,17 @@ import os
 import sys
 import unittest
 
-is_py2 = sys.version_info.major == 2
+test_dir = os.path.dirname(os.path.abspath(__file__))
+src_dir = os.path.dirname(test_dir)
+test_libdir = os.path.join(
+    src_dir, "pylib", "python{major}".format(major=sys.version_info.major)
+)
+sys.path += glob.glob(os.path.join(test_libdir, "*.zip"))
 
 try:
     from unittest import mock
 except ImportError:
     # Python 2
-    test_dir = os.path.dirname(os.path.abspath(__file__))
-    src_dir = os.path.dirname(test_dir)
-    test_libdir = os.path.join(
-        src_dir, "pylib", "python{major}".format(major=sys.version_info.major)
-    )
-    sys.path += glob.glob(os.path.join(test_libdir, "*.zip"))
     import mock
 
 from calibre_plugins.kobotouch_extended import common
@@ -62,19 +61,21 @@ def gen_lang_code():
         yield enc
 
 
-class TestLogger(unittest.TestCase):
-    def setUp(self):
+class TestCommon(unittest.TestCase):
+    orig_lang = ""  # type: str
+
+    def setUp(self):  # type: () -> None
         self.orig_lang = os.environ.get("LANG", None)
 
-    def tearDown(self):
-        if self.orig_lang is None:
+    def tearDown(self):  # type: () -> None
+        if not self.orig_lang:
             if "LANG" in os.environ:
                 del os.environ["LANG"]
         else:
             os.environ["LANG"] = self.orig_lang
-        self.orig_lang = None
+        self.orig_lang = ""
 
-    def test_logger_log_level(self):
+    def test_logger_log_level(self):  # type: () -> None
         for envvar in ("CALIBRE_DEVELOP_FROM", "CALIBRE_DEBUG"):
             if envvar in os.environ:
                 del os.environ[envvar]
@@ -91,7 +92,7 @@ class TestLogger(unittest.TestCase):
         self.assertEqual(logger.log_level, "DEBUG")
         del os.environ["CALIBRE_DEBUG"]
 
-    def _run_logger_unicode_test(self, as_bytes):
+    def _run_logger_unicode_test(self, as_bytes):  # type: (bool) -> None
         for o in TEST_STRINGS:
             for enc in o["encodings"]:
                 with mock.patch(
@@ -113,9 +114,37 @@ class TestLogger(unittest.TestCase):
                             ],
                         )
 
-    def test_logger_ensure_unicode_from_bytes(self):
+    def test_logger_ensure_unicode_from_bytes(self):  # type: () -> None
         self._run_logger_unicode_test(True)
         self._run_logger_unicode_test(False)
+
+    @mock.patch(
+        "calibre_plugins.kobotouch_extended.common.Logger.print_formatted_log",
+        mock.MagicMock(),
+    )
+    @mock.patch(
+        "calibre_plugins.kobotouch_extended.common.Logger._prints", mock.MagicMock(),
+    )
+    @mock.patch(
+        "calibre_plugins.kobotouch_extended.common.Logger._tag_args",
+        mock.MagicMock(return_value="Goodbye, World"),
+    )
+    def test_logger_logs(self):
+        logger = common.Logger()
+
+        logger.debug("Hello, World")
+        logger.print_formatted_log.assert_called_with("DEBUG", "Hello, World")
+
+        logger("Hello, World")
+        logger.print_formatted_log.assert_called_with("INFO", "Hello, World")
+
+        logger.print_formatted_log.reset_mock()
+        logger._prints.reset_mock()
+        logger._tag_args.reset_mock()
+
+        logger.exception("Oh noes!")
+        logger._tag_args.assert_called_with("ERROR", "Oh noes!")
+        self.assertEqual(logger._prints.call_count, 2)
 
 
 if __name__ == "__main__":

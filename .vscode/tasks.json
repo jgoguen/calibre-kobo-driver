@@ -1,0 +1,103 @@
+{
+	// See https://go.microsoft.com/fwlink/?LinkId=733558
+	// for the documentation about the tasks.json format
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Build",
+			"type": "process",
+			"command": "/usr/bin/make",
+			"args": [
+				"-f",
+				{
+					"quoting": "strong",
+					"value": "${workspaceFolder}/Makefile"
+				},
+				"build"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"presentation": {
+				"clear": true,
+				"panel": "dedicated"
+			},
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
+		},
+		{
+			"label": "Run Python 2 Unit Tests",
+			"type": "process",
+			"command": "/usr/bin/make",
+			"args": [
+				"-f",
+				{
+					"quoting": "strong",
+					"value": "${workspaceFolder}/Makefile"
+				},
+				"build",
+				"test_py2"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}",
+				"env": {
+					"PYTHONDONTWRITEBYTECODE": "true"
+				}
+			},
+			"presentation": {
+				"clear": true,
+				"panel": "dedicated"
+			},
+			"group": "test"
+		},
+		{
+			"label": "Run Python 3 Unit Tests",
+			"type": "process",
+			"command": "/usr/bin/make",
+			"args": [
+				"-f",
+				{
+					"quoting": "strong",
+					"value": "${workspaceFolder}/Makefile"
+				},
+				"build",
+				"test_py3"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}",
+				"env": {
+					"PYTHONDONTWRITEBYTECODE": "true"
+				}
+			},
+			"presentation": {
+				"clear": true,
+				"panel": "dedicated"
+			},
+			"group": "test"
+		},
+		{
+			"label": "Run Unit Tests",
+			"type": "process",
+			"command": "/usr/bin/make",
+			"args": [
+				"-f",
+				{
+					"quoting": "strong",
+					"value": "${workspaceFolder}/Makefile"
+				},
+				"test"
+			],
+			"presentation": {
+				"clear": true,
+				"panel": "dedicated"
+			},
+			"problemMatcher": [],
+			"group": {
+				"kind": "test",
+				"isDefault": true
+			}
+		}
+	]
+}

@@ -8,8 +8,7 @@ __docformat__ = "markdown en"
 
 from calibre.customize.builtins import EPUBMetadataReader
 
-from calibre_plugins.kepubmdreader.common import plugin_minimum_calibre_version
-from calibre_plugins.kepubmdreader.common import plugin_version
+from calibre_plugins.kepubmdreader import common
 
 # Support load_translations() without forcing calibre 1.9+
 try:
@@ -25,5 +24,5 @@ class KEPUBMetadataReader(EPUBMetadataReader):
     author = "David Forrester"
     description = _("Read metadata from %s files") % "Kobo ePub"  # noqa: F821
     file_types = {"kepub"}
-    version = plugin_version
-    minimum_calibre_version = plugin_minimum_calibre_version
+    version = common.PLUGIN_VERSION
+    minimum_calibre_version = common.PLUGIN_MINIMUM_CALIBRE_VERSION
