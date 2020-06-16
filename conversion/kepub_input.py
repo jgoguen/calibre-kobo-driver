@@ -13,7 +13,7 @@ import sys
 from calibre.customize.conversion import OptionRecommendation
 from calibre.ebooks.conversion.plugins.epub_input import EPUBInput
 
-from calibre_plugins.kepubin.common import plugin_version
+from calibre_plugins.kepubin import common
 
 # Support load_translations() without forcing calibre 1.9+
 try:
@@ -29,7 +29,7 @@ class KEPUBInput(EPUBInput):
     description = "Convert KEPUB files (.kepub) to HTML"
     author = "David Forrester"
     file_types = {"kepub"}
-    version = plugin_version
+    version = common.PLUGIN_VERSION
     minimum_calibre_version = (0, 1, 0)
 
     options = {

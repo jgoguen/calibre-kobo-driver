@@ -19,8 +19,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import getopt
-import glob
-import imp
+import importlib
 import operator
 import os
 import sys
@@ -278,13 +277,6 @@ def contains_any(str, set):
 
 def _visit_pyfiles(list, dirname, names):
     """Visit .py files for get_files_for_name()."""
-    # get extension for python source files
-    if "_py_ext" not in globals():
-        global _py_ext
-        _py_ext = [
-            triple[0] for triple in imp.get_suffixes() if triple[2] == imp.PY_SOURCE
-        ][0]
-
     # don't recurse into CVS directories
     if "CVS" in names:
         names.remove("CVS")
@@ -294,48 +286,9 @@ def _visit_pyfiles(list, dirname, names):
         [
             os.path.join(dirname, file)
             for file in names
-            if os.path.splitext(file)[1] == _py_ext
+            if os.path.splitext(file)[1] in importlib.machinery.SOURCE_SUFFIXES
         ]
     )
-
-
-def _get_modpkg_path(dotted_name, pathlist=None):
-    """Get the filesystem path for a module or a package.
-
-    Return the file system path to a file for a module, and to a directory for
-    a package. Return None if the name is not found, or is a builtin or
-    extension module.
-    """
-    # split off top-most name
-    parts = dotted_name.split(".", 1)
-
-    if len(parts) > 1:
-        # we have a dotted path, import top-level package
-        try:
-            file, pathname, description = imp.find_module(parts[0], pathlist)
-            if file:
-                file.close()
-        except ImportError:
-            return None
-
-        # check if it's indeed a package
-        if description[2] == imp.PKG_DIRECTORY:
-            # recursively handle the remaining name parts
-            pathname = _get_modpkg_path(parts[1], [pathname])
-        else:
-            pathname = None
-    else:
-        # plain name
-        try:
-            file, pathname, description = imp.find_module(dotted_name, pathlist)
-            if file:
-                file.close()
-            if description[2] not in [imp.PY_SOURCE, imp.PKG_DIRECTORY]:
-                pathname = None
-        except ImportError:
-            pathname = None
-
-    return pathname
 
 
 def get_files_for_name(name):
@@ -344,26 +297,18 @@ def get_files_for_name(name):
     Fetches a list of module files for a filename, a module or package name, or
     a directory.
     """
-    if not os.path.exists(name):
-        # check for glob chars
-        if contains_any(name, "*?[]"):
-            files = glob.glob(name)
-            list = []
-            for file in files:
-                list.extend(get_files_for_name(file))
-            return list
-
-        # try to find module or package
-        name = _get_modpkg_path(name)
-        if not name:
-            return []
-
     if os.path.isdir(name):
         # find all python files in directory
-        list = []
-        os.path.walk(name, _visit_pyfiles, list)
-        return list
-    elif os.path.exists(name):
+        file_list = []
+        for root, _, files in os.walk(name):
+            for fname in files:
+                if os.path.splitext(fname)[-1] in importlib.machinery.SOURCE_SUFFIXES:
+                    file_list.append(os.path.join(root, fname))
+        return file_list
+    elif (
+        os.path.exists(name)
+        and os.path.splitext(name)[-1] in importlib.machinery.SOURCE_SUFFIXES
+    ):
         # a single file
         return [name]
 
