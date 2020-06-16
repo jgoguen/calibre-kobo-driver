@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2017-10-30 21:47+PDT\n"
+"POT-Creation-Date: 2020-06-15 17:20+PDT\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -15,163 +15,155 @@ msgstr ""
 "Generated-By: pygettext.py 1.5\n"
 
 
-#: ./container.py:196
+#: ./container.py:199
 msgid "A valid file name must be given (got {filename})"
 msgstr ""
 
-#: ./conversion/input_config.py:37
+#: ./conversion/input_config.py:42
 msgid "Options specific to KePub input."
 msgstr ""
 
-#: ./conversion/input_config.py:71
+#: ./conversion/input_config.py:78
 msgid "Strip Kobo spans"
 msgstr ""
 
-#: ./conversion/kepub_input.py:32
+#: ./conversion/kepub_input.py:39
 msgid "Kepubs have spans wrapping each sentence. These are used by the ereader for the reading location and bookmark location. They are not used by an ePub reader but are valid code and can be safely be left in the ePub. If you plan to edit the ePub, it is recommended that you remove the spans."
 msgstr ""
 
-#: ./conversion/kepub_input.py:80
+#: ./conversion/kepub_input.py:94
 msgid "{0} is not a valid KEPUB file (could not find opf)"
 msgstr ""
 
-#: ./conversion/kepub_input.py:110
+#: ./conversion/kepub_input.py:128
 msgid "EPUB files with DTBook markup are not supported"
 msgstr ""
 
-#: ./conversion/kepub_input.py:136
+#: ./conversion/kepub_input.py:153
 msgid "No valid entries in the spine of this EPUB"
 msgstr ""
 
-#: ./conversion/kepub_output.py:45
+#: ./conversion/kepub_output.py:48
 msgid "Select this to add a CSS file which enables hyphenation."
 msgstr ""
 
-#: ./conversion/kepub_output.py:47
+#: ./conversion/kepub_output.py:51
 msgid "The language used will be the language defined for the book in calibre."
 msgstr ""
 
-#: ./conversion/kepub_output.py:50
+#: ./conversion/kepub_output.py:55
 msgid "Please see the README file for directions on updating hyphenation dictionaries."
 msgstr ""
 
-#: ./conversion/kepub_output.py:59
+#: ./conversion/kepub_output.py:67
 msgid "Select this to disable all hyphenation in a book."
 msgstr ""
 
-#: ./conversion/kepub_output.py:61
+#: ./conversion/kepub_output.py:70
 msgid "This takes precedence over the hyphenation option."
 msgstr ""
 
-#: ./conversion/kepub_output.py:68 ./device/koboextended_config.py:125
-msgid "Select this to replace the defined language in each content file inside the ePub."
-msgstr ""
-
-#: ./conversion/kepub_output.py:76 ./device/koboextended_config.py:140
+#: ./conversion/kepub_output.py:79 ./device/koboextended_config.py:157
 msgid "Select this to clean up the internal ePub markup."
 msgstr ""
 
-#: ./conversion/output_config.py:22
+#: ./conversion/output_config.py:27
 msgid "Options specific to KePub output"
 msgstr ""
 
-#: ./conversion/output_config.py:57 ./device/koboextended_config.py:113
+#: ./conversion/output_config.py:74 ./device/koboextended_config.py:139
 msgid "Hyphenate Files"
 msgstr ""
 
-#: ./conversion/output_config.py:67 ./device/koboextended_config.py:177
+#: ./conversion/output_config.py:82 ./device/koboextended_config.py:193
 msgid "Disable hyphenation"
 msgstr ""
 
-#: ./conversion/output_config.py:80
+#: ./conversion/output_config.py:92
 msgid "Clean up ePub markup"
 msgstr ""
 
-#: ./conversion/output_config.py:90 ./device/koboextended_config.py:124
-msgid "Replace Content Language Code"
-msgstr ""
-
-#: ./device/driver.py:43
+#: ./device/driver.py:54
 msgid "Failed to parse '{book}' by '{author}' with error: '{error}' (file: {filename}, line: {lineno})"
 msgstr ""
 
-#: ./device/driver.py:69
-msgid "Communicate with the Kobo Touch, Glo, Mini, Aura HD, and Aura firmwares and enable extended Kobo ePub features."
+#: ./device/driver.py:77
+msgid "Communicate with Kobo Touch and later firmwares to enable extended Kobo ePub features."
 msgstr ""
 
-#: ./device/koboextended_config.py:41
+#: ./device/koboextended_config.py:63
 msgid "Extended"
 msgstr ""
 
-#: ./device/koboextended_config.py:78
+#: ./device/koboextended_config.py:104
 msgid "Extended driver"
 msgstr ""
 
-#: ./device/koboextended_config.py:86
+#: ./device/koboextended_config.py:112
 msgid "Enable Extended Kobo Features"
 msgstr ""
 
-#: ./device/koboextended_config.py:87
+#: ./device/koboextended_config.py:113
 msgid "Choose whether to enable extra customizations"
 msgstr ""
 
-#: ./device/koboextended_config.py:92
+#: ./device/koboextended_config.py:118
 msgid "Upload DRM-encumbered ePub files"
 msgstr ""
 
-#: ./device/koboextended_config.py:93
+#: ./device/koboextended_config.py:119
 msgid "Select this to upload ePub files encumbered by DRM. If this is not selected, it is a fatal error to upload an encumbered file"
 msgstr ""
 
-#: ./device/koboextended_config.py:102
+#: ./device/koboextended_config.py:128
 msgid "Silently Ignore Failed Conversions"
 msgstr ""
 
-#: ./device/koboextended_config.py:103
+#: ./device/koboextended_config.py:129
 msgid "Select this to not upload any book that fails conversion to kepub. If this is not selected, the upload process will be stopped at the first book that fails. If this is selected, failed books will be silently removed from the upload queue."
 msgstr ""
 
-#: ./device/koboextended_config.py:114
+#: ./device/koboextended_config.py:140
 msgid "Select this to add a CSS file which enables hyphenation. The language used will be the language defined for the book in calibre. Please see the README file for directions on updating hyphenation dictionaries."
 msgstr ""
 
-#: ./device/koboextended_config.py:133
+#: ./device/koboextended_config.py:150
 msgid "Smarten Punctuation"
 msgstr ""
 
-#: ./device/koboextended_config.py:134
+#: ./device/koboextended_config.py:151
 msgid "Select this to smarten punctuation in the ePub"
 msgstr ""
 
-#: ./device/koboextended_config.py:139
+#: ./device/koboextended_config.py:156
 msgid "Clean up ePub Markup"
 msgstr ""
 
-#: ./device/koboextended_config.py:146 ./device/koboextended_config.py:154
+#: ./device/koboextended_config.py:162 ./device/koboextended_config.py:170
 msgid "Copy generated KePub files to a directory"
 msgstr ""
 
-#: ./device/koboextended_config.py:147 ./device/koboextended_config.py:158
+#: ./device/koboextended_config.py:163 ./device/koboextended_config.py:174
 msgid "Enter an absolute directory path to copy all generated KePub files into for debugging purposes."
 msgstr ""
 
-#: ./device/koboextended_config.py:167
+#: ./device/koboextended_config.py:183
 msgid "Use full book page numbers"
 msgstr ""
 
-#: ./device/koboextended_config.py:168
+#: ./device/koboextended_config.py:184
 msgid "Select this to show page numbers for the whole book, instead of each chapter. This will also affect regular ePub page number display!"
 msgstr ""
 
-#: ./device/koboextended_config.py:178
+#: ./device/koboextended_config.py:194
 msgid "Select this to disable hyphenation for books."
 msgstr ""
 
-#: ./metadata/reader.py:16
+#: ./metadata/reader.py:25
 msgid "Read metadata from %s files"
 msgstr ""
 
-#: ./metadata/writer.py:24
+#: ./metadata/writer.py:44
 msgid "Set metadata in %s files"
 msgstr ""
 
