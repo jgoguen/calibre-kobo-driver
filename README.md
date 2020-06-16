@@ -61,7 +61,7 @@ To use the conversion input format plugin after installing:
 
 ### Special Note
 
-It is recommended that you disable the built-in KoboTouch driver (authored by David Forrester) while this plugin is installed. On rare occasions, calibre may inadvertently select the built-in KoboTouch driver instead of this plugin.  But do not disable the built-in Kobo driver. 
+It is recommended that you disable the built-in KoboTouch driver (authored by David Forrester) while this plugin is installed. On rare occasions, calibre may inadvertently select the built-in KoboTouch driver instead of this plugin.  But do not disable the built-in Kobo driver.
 
 ### Adding Arbitrary CSS
 
@@ -147,6 +147,10 @@ Decided you want to contribute to the development of these plugins? Awesome! You
 
 You may also prefer to contribute in some other way. You may [donate to me via PayPal][paypaldonate], [contribute to my fundraiser][driverfundraiser], or you may also contribute by answering questions from other people who may have issues, purchasing items from my wishlists (not yet linked, I'll get on that soon-ish), continuing to use this plugin and providing feedback, and probably a few other ways I haven't thought of yet.
 
+<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+[![All Contributors](https://img.shields.io/badge/all_contributors-13-orange.svg?style=flat-square)](#contributors)
+<!-- ALL-CONTRIBUTORS-BADGE:END -->
+
 ## Asking Questions
 
 Wondering how to do something? Want to know if something is possible? Ask your question on the MobileRead Forum thread for the relevant plugin
@@ -157,7 +161,7 @@ Wondering how to do something? Want to know if something is possible? Ask your q
 - [`KePub Input`][kepubin]
 - [`KePub Metadata Reader`][mdreader]
 
-# Reporting a Bug
+## Reporting a Bug
 
 Found a bug with this plugin? Great! I want to hear from you! Go to [GitHub and submit a new bug report](https://github.com/jgoguen/calibre-kobo-driver/issues/new). Under no circumstances should I be emailed directly unless I have asked to have something sent to me. Any emails I haven't asked for **may be silently ignored** at my sole discretion. Everyone can benefit from a public bug tracker, but only one person benefits from a private email.
 
