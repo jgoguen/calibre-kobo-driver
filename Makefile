@@ -3,7 +3,6 @@ ZIPS = KoboTouchExtended.zip KePub\ Output.zip KePub\ Input.zip \
 CSS = $(wildcard css/*.css)
 TRANSLATIONS = $(wildcard translations/*.mo)
 ALL_SOURCES = $(shell find . -type f -name '*.py' -not -name 'pygettext.py')
-ALL_TESTS = $(shell find tests -type f -name '*.py')
 
 build: $(ZIPS)
 
