@@ -1,4 +1,24 @@
 {
-	"contributorsSortAlphabetically": true,
-	"files": ["CONTRIBUTORS", "README.md"]
+  "contributorsSortAlphabetically": true,
+  "files": [
+    "CONTRIBUTORS",
+    "README.md"
+  ],
+  "projectName": "calibre-kobo-driver",
+  "projectOwner": "jgoguen",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "skipCi": true,
+  "contributors": [
+    {
+      "login": "hub2git",
+      "name": "hub2git",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/7141051?v=4",
+      "profile": "https://github.com/hub2git",
+      "contributions": [
+        "doc"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7
 }
