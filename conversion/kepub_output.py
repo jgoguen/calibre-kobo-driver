@@ -18,6 +18,7 @@ from calibre.ebooks.metadata.book.base import Metadata
 from calibre.ebooks.metadata.book.base import NULL_VALUES
 
 from calibre_plugins.kepubout import common
+from calibre_plugins.kepubout.container import KEPubContainer
 
 
 # Support load_translations() without forcing calibre 1.9+
@@ -105,7 +106,7 @@ class KEPubOutput(OutputFormatPlugin):
             oeb_book, output, input_plugin, opts, common.log
         )
         common.log.debug("Done ePub conversion")
-        container = common.KEPubContainer(output, common.log)
+        container = KEPubContainer(output, common.log)
 
         if container.is_drm_encumbered:
             common.log.error("DRM-encumbered container, skipping conversion")

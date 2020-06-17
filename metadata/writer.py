@@ -8,13 +8,7 @@ __docformat__ = "markdown en"
 
 import os
 
-try:
-    # Python 3
-    from io import StringIO
-except ImportError:
-    # Python 2
-    from cStringIO import StringIO
-
+from polyglot.io import PolyglotStringIO
 
 from calibre.customize.builtins import EPUBMetadataWriter
 from calibre.ebooks.metadata.epub import get_zip_reader
@@ -97,7 +91,7 @@ class KEPUBMetadataWriter(EPUBMetadataWriter):
                             found_cover = True
 
             if found_cover:
-                newopf = StringIO(reader.opf.render().decode("UTF-8"))
+                newopf = PolyglotStringIO(reader.opf.render().decode("UTF-8"))
                 if isinstance(reader.archive, LocalZipFile):
                     reader.archive.safe_replace(reader.container[OPF.MIMETYPE], newopf)
                 else:

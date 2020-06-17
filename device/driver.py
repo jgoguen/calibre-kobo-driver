@@ -17,10 +17,11 @@ import re
 import shutil
 from datetime import datetime
 
-try:
-    # Python 3
+from polyglot.builtins import is_py3
+
+if is_py3:
     from configparser import SafeConfigParser
-except ImportError:
+else:
     from ConfigParser import SafeConfigParser
 
 from calibre.constants import config_dir
@@ -28,6 +29,7 @@ from calibre.devices.kobo.driver import KOBOTOUCH
 from calibre.ebooks.oeb.polish.errors import DRMError
 
 from calibre_plugins.kobotouch_extended import common
+from calibre_plugins.kobotouch_extended.container import KEPubContainer
 
 # Support load_translations() without forcing calibre 1.9+
 try:
@@ -212,7 +214,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
         is_encumbered_book = False
         try:
             if container is None:
-                container = common.KEPubContainer(infile, common.log)
+                container = KEPubContainer(infile, common.log)
             else:
                 is_encumbered_book = container.is_drm_encumbered
         except DRMError:
