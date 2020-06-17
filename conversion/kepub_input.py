@@ -12,6 +12,7 @@ import sys
 
 from calibre.customize.conversion import OptionRecommendation
 from calibre.ebooks.conversion.plugins.epub_input import EPUBInput
+from polyglot.builtins import is_py3
 
 from calibre_plugins.kepubin import common
 
@@ -66,7 +67,7 @@ class KEPUBInput(EPUBInput):
 
         try:
             zf = ZipFile(stream)
-            cwd = os.getcwdu() if sys.version_info.major == 2 else os.getcwd()
+            cwd = os.getcwdu() if not is_py3 else os.getcwd()
             zf.extractall(cwd)
         except Exception:
             log.exception(
@@ -100,7 +101,7 @@ class KEPUBInput(EPUBInput):
         if os.path.exists(encfile):
             raise DRMError(os.path.basename(path))
 
-        cwd = os.getcwdu() if sys.version_info.major == 2 else os.getcwd()
+        cwd = os.getcwdu() if not is_py3 else os.getcwd()
         opf = os.path.relpath(opf, cwd)
         parts = os.path.split(opf)
         opf = OPF(opf, os.path.dirname(os.path.abspath(opf)))

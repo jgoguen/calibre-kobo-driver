@@ -31,32 +31,23 @@ from calibre.ebooks.oeb.polish.container import EpubContainer
 from calibre.ebooks.oeb.polish.container import OPF_NAMESPACES
 from calibre.ptempfile import PersistentTemporaryFile
 from calibre.utils.logging import ANSIStream
+from polyglot.builtins import is_py3, unicode_type
+from polyglot.io import PolyglotStringIO
 
 from lxml.etree import _Element
 
-try:
-    # Python 3
-    from io import StringIO
+if is_py3:
     from typing import Dict
     from typing import List
     from typing import Optional
     from typing import Union
-
-    unicode_type = str
-except ImportError:
-    # Python 2
-    from cStringIO import StringIO
-
-    # Ignore flake8 F821 (undefined name): type checking is done exclusvely in Python 3
-    # which does not define 'unicode'.
-    unicode_type = unicode  # noqa: F821
 
 KOBO_JS_RE = re.compile(r".*/?kobo.*?\.js$", re.IGNORECASE)
 XML_NAMESPACE = "http://www.w3.org/XML/1998/namespace"
 CONFIGDIR = os.path.join(config_dir, "plugins")  # type: str
 REFERENCE_KEPUB = os.path.join(CONFIGDIR, "reference.kepub.epub")  # type: str
 PLUGIN_VERSION = (3, 2, 9)
-PLUGIN_MINIMUM_CALIBRE_VERSION = (2, 60, 0)
+PLUGIN_MINIMUM_CALIBRE_VERSION = (3, 42, 0)
 
 
 class Logger:
@@ -74,7 +65,7 @@ class Logger:
         self._lock = Lock()
         # According to Kovid, calibre always uses UTF-8 for the Python 3 version
         self.preferred_encoding = (
-            "UTF-8" if sys.version_info.major > 2 else preferred_encoding
+            "UTF-8" if is_py3 else preferred_encoding
         )
         self.outputs = [ANSIStream()]
 
@@ -88,7 +79,7 @@ class Logger:
 
     def _tag_args(self, level, *args):
         now = time.localtime()
-        buf = StringIO()
+        buf = PolyglotStringIO()
         tagged_args = []
         for arg in args:
             prints(time.strftime("%Y-%m-%d %H:%M:%S", now), file=buf, end=" ")

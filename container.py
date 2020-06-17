@@ -29,16 +29,13 @@ from calibre.ebooks.conversion.plugins.epub_input import IDPF_OBFUSCATION
 from calibre.ebooks.conversion.utils import HeuristicProcessor
 from calibre.ebooks.oeb.polish.container import EpubContainer
 from calibre.utils.smartypants import smartyPants
+from polyglot.builtins import is_py3
 
 from lxml import etree
 
-try:
-    # Python 3
+if is_py3:
     from typing import Dict
     from typing import Set
-except ImportError:
-    # Python 2
-    pass
 
 # Support load_translations() without forcing calibre 1.9+
 try:
