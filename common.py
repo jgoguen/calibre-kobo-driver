@@ -31,7 +31,7 @@ from calibre.ebooks.oeb.polish.container import EpubContainer
 from calibre.ebooks.oeb.polish.container import OPF_NAMESPACES
 from calibre.ptempfile import PersistentTemporaryFile
 from calibre.utils.logging import ANSIStream
-from polyglot.builtins import is_py3, unicode_type
+from polyglot.builtins import is_py3
 from polyglot.io import PolyglotStringIO
 
 from lxml.etree import _Element
@@ -64,9 +64,7 @@ class Logger:
 
         self._lock = Lock()
         # According to Kovid, calibre always uses UTF-8 for the Python 3 version
-        self.preferred_encoding = (
-            "UTF-8" if is_py3 else preferred_encoding
-        )
+        self.preferred_encoding = "UTF-8" if is_py3 else preferred_encoding
         self.outputs = [ANSIStream()]
 
         self.debug = partial(self.print_formatted_log, "DEBUG")
