@@ -56,18 +56,20 @@ test: build test_py2 test_py3
 
 test_py%:
 	@cp $(CURDIR)/test_init.py $(CURDIR)/__init__.py
-	@for test_file in $(CURDIR)/tests/test_*.py; do \
-		CALIBRE_DIR=$(shell mktemp -d); \
-		mkdir -p "$$CALIBRE_DIR/config" "$$CALIBRE_DIR/tmp"; \
-		export CALIBRE_CONFIG_DIRECTORY="$$CALIBRE_DIR/config"; \
-		export CALIBRE_TEMP_DIR="$$CALIBRE_DIR/tmp"; \
-		for plugin in $(CURDIR)/*.zip; do \
-			$(CURDIR)/calibre-py$*/calibre-customize -a "$$plugin"; \
-		done; \
+
+	@CALIBRE_DIR=$(shell mktemp -d); \
+	mkdir -p "$$CALIBRE_DIR/config" "$$CALIBRE_DIR/tmp"; \
+	export CALIBRE_CONFIG_DIRECTORY="$$CALIBRE_DIR/config"; \
+	export CALIBRE_TEMP_DIR="$$CALIBRE_DIR/tmp"; \
+	for plugin in $(CURDIR)/*.zip; do \
+		$(CURDIR)/calibre-py$*/calibre-customize -a "$$plugin"; \
+	done; \
+	for test_file in $(CURDIR)/tests/test_*.py; do \
 		PYTHONDONTWRITEBYTECODE="true" $(CURDIR)/calibre-py$*/calibre-debug "$$test_file"; \
-		rm -rf "$$CALIBRE_DIR"; \
-		unset CALIBRE_CONFIG_DIRECTORY CALIBRE_TEMP_DIR; \
-	done;
+	done; \
+	rm -rf "$$CALIBRE_DIR"; \
+	unset CALIBRE_CONFIG_DIRECTORY CALIBRE_TEMP_DIR;
+
 	@rm $(CURDIR)/__init__.py
 
 pot: translations/messages.pot
