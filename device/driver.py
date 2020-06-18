@@ -17,19 +17,17 @@ import re
 import shutil
 from datetime import datetime
 
+from calibre.constants import config_dir
+from calibre.devices.kobo.driver import KOBOTOUCH
+from calibre.ebooks.oeb.polish.errors import DRMError
+from calibre_plugins.kobotouch_extended import common
+from calibre_plugins.kobotouch_extended.container import KEPubContainer
 from polyglot.builtins import is_py3
 
 if is_py3:
     from configparser import SafeConfigParser
 else:
     from ConfigParser import SafeConfigParser
-
-from calibre.constants import config_dir
-from calibre.devices.kobo.driver import KOBOTOUCH
-from calibre.ebooks.oeb.polish.errors import DRMError
-
-from calibre_plugins.kobotouch_extended import common
-from calibre_plugins.kobotouch_extended.container import KEPubContainer
 
 # Support load_translations() without forcing calibre 1.9+
 try:
