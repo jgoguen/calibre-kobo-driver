@@ -540,7 +540,7 @@ class KEPubContainer(EpubContainer):
         # split text in sentences
         groups = TEXT_SPLIT_RE.split(text)
         # remove empty strings resulting from split()
-        groups = [g.lstrip() for g in groups if g.strip() != ""]
+        groups = [g for g in groups if g.strip() != ""]
         for idx in range(len(groups)):
             if hasattr(groups[idx], "decode"):
                 groups[idx] = groups[idx].decode("UTF-8")
