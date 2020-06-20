@@ -306,7 +306,7 @@ class TestContainer(TestAssertions):
                 self.assertDictEqual(
                     dict(span.attrib), {"id": "kobo.1.1", "class": "koboSpan"}
                 )
-                self.assertEqual(span.text, text.lstrip())
+                self.assertEqual(span.text, text.lstrip("\n\t"))
 
     def __run_multiple_node_test(self, text_nodes):  # type: (List[str]) -> None
         html = "<div>"
@@ -324,7 +324,7 @@ class TestContainer(TestAssertions):
         for node_idx in range(len(children)):
             spans = children[node_idx].getchildren()
             text_chunks = [
-                g.lstrip()
+                g
                 for g in container.TEXT_SPLIT_RE.split(text_nodes[node_idx])
                 if g.strip() != ""
             ]
