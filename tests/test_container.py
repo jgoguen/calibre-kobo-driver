@@ -348,6 +348,30 @@ class TestContainer(TestAssertions):
             ]
         )
 
+    def test_gitub_pr_106(self):
+        source_file = os.path.join(self.testfile_basedir, "page_github_106.html")
+        container_name = self.container.copy_file_to_container(source_file)
+        self.assertIn(container_name, self.container.name_path_map)
+
+        pre_span = self.container.parsed(container_name)
+        text_chunks = [
+            g.lstrip("\n\t")
+            for g in pre_span.xpath(
+                "//xhtml:p//text()", namespaces={"xhtml": container.XHTML_NAMESPACE}
+            )
+        ]
+
+        self.assertTrue(self.container.add_kobo_spans())
+
+        post_span = self.container.parsed(container_name)
+        post_text_chunks = [
+            g.lstrip("\n\t")
+            for g in post_span.xpath(
+                "//xhtml:p//text()", namespaces={"xhtml": container.XHTML_NAMESPACE}
+            )
+        ]
+        self.assertListEqual(text_chunks, post_text_chunks)
+
     def test_github_issue_90(self):
         source_file = os.path.join(self.testfile_basedir, "page_github_90.html")
         container_name = self.container.copy_file_to_container(source_file)
