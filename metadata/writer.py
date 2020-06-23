@@ -8,8 +8,6 @@ __docformat__ = "markdown en"
 
 import os
 
-from polyglot.io import PolyglotStringIO
-
 from calibre.customize.builtins import EPUBMetadataWriter
 from calibre.ebooks.metadata.epub import get_zip_reader
 from calibre.ebooks.metadata.opf2 import OPF
@@ -91,8 +89,8 @@ class KEPUBMetadataWriter(EPUBMetadataWriter):
                             found_cover = True
 
             if found_cover:
-                newopf = PolyglotStringIO(reader.opf.render().decode("UTF-8"))
+                opfbytes = reader.read_bytes(reader.opf_path)
                 if isinstance(reader.archive, LocalZipFile):
-                    reader.archive.safe_replace(reader.container[OPF.MIMETYPE], newopf)
+                    reader.archive.safe_replace(reader.container[OPF.MIMETYPE], opfbytes)
                 else:
-                    safe_replace(stream, reader.container[OPF.MIMETYPE], newopf)
+                    safe_replace(stream, reader.container[OPF.MIMETYPE], opfbytes)
