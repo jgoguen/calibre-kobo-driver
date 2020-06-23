@@ -62,7 +62,7 @@ ENCODING_RE = re.compile(r'^\<\?.+encoding="([^"]+)"', re.MULTILINE)
 SELF_CLOSING_RE = re.compile(
     r"<(meta|link) ([^>]+)>.*?</\1>", re.UNICODE | re.MULTILINE
 )
-FORCE_OPEN_TAG_RE = re.compile(r"<(script|p) (.+?) ?/>", re.UNICODE | re.MULTILINE)
+FORCE_OPEN_TAG_RE = re.compile(r"<(script|p) ([^<]+) ?/>", re.UNICODE | re.MULTILINE)
 EMPTY_HEADINGS_RE = re.compile(r"(?i)<(h\d+)[^>]*?>\s*</\1>", re.UNICODE | re.MULTILINE)
 ELLIPSIS_RE = re.compile(r"(?u)(?<=\w)\s?(\.\s+?){2}\.", re.UNICODE | re.MULTILINE)
 MS_CRUFT_RE_1 = re.compile(r"<o:p>\s*</o:p>", re.UNICODE | re.MULTILINE)
