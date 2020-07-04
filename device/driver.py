@@ -286,7 +286,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
         except Exception as e:
             common.log.exception(
                 "Failed to process {0} by {1}: {2}".format(
-                    metadata.title, " and ".join(metadata.authors), e.message,
+                    metadata.title, " and ".join(metadata.authors), str(e),
                 )
             )
 

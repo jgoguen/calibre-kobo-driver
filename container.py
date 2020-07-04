@@ -337,15 +337,15 @@ class KEPubContainer(EpubContainer):
             html = ELLIPSIS_RE.sub("&hellip;", html)
 
             # Double-dash and unicode char code to em-dash
-            html = string.replace(html, "---", " &#x2013; ")
-            html = string.replace(html, "\x97", " &#x2013; ")
-            html = string.replace(html, "\u2013", " &#x2013; ")
-            html = string.replace(html, "--", " &#x2014; ")
-            html = string.replace(html, "\u2014", " &#x2014; ")
+            html = html.replace("---", " &#x2013; ")
+            html = html.replace("\x97", " &#x2013; ")
+            html = html.replace("\u2013", " &#x2013; ")
+            html = html.replace("--", " &#x2014; ")
+            html = html.replace("\u2014", " &#x2014; ")
 
             # Fix comment nodes that got mangled
-            html = string.replace(html, "<! &#x2014; ", "<!-- ")
-            html = string.replace(html, " &#x2014; >", " -->")
+            html = html.replace("<! &#x2014; ", "<!-- ")
+            html = html.replace(" &#x2014; >", " -->")
 
             self.replace(name, self.parse_xhtml(html))
 
