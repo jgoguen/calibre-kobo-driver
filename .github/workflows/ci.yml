@@ -1,0 +1,44 @@
+# This is a basic workflow that is manually triggered
+
+name: CI
+
+# Controls when the action will run. Workflow runs when manually triggered using the UI
+# or API.
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - "macos-latest"
+          - "ubuntu-latest"
+        python-version:
+          - "2.x"
+          - "3.x"
+
+    steps:
+      - uses: actions/checkout@v2.2.0
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Fetch calibre for Python ${{ matrix.python-version }}
+        run: ./scripts/update-calibre ${{ matrix.python-version }}
+
+      - name: Set Python version
+        run: printf '::set-env name=PYTHON_VERSION::%s\n' "$(/usr/bin/env python -c 'import sys; print(sys.version_info.major)')"
+
+      - name: Run calibre Python ${{ matrix.python-version }} tests
+        run: make test_py$PYTHON_VERSION
