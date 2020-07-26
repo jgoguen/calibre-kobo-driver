@@ -2,8 +2,8 @@ ZIPS = KoboTouchExtended.zip KePub\ Output.zip KePub\ Input.zip \
        KePub\ Metadata\ Reader.zip KePub\ Metadata\ Writer.zip
 CSS = $(wildcard css/*.css)
 TRANSLATIONS = $(wildcard translations/*.mo)
-ALL_SOURCES = $(shell /usr/bin/find . -type f -name '*.py' -not -name 'pygettext.py')
-PLATFORM = $(shell /usr/bin/uname | /usr/bin/tr '[:upper:]' '[:lower:]')
+ALL_SOURCES = $(shell command -p find . -type f -name '*.py' -not -name 'pygettext.py')
+PLATFORM = $(shell command -p uname | /usr/bin/tr '[:upper:]' '[:lower:]')
 
 build: $(ZIPS)
 
@@ -64,7 +64,7 @@ endif
 
 	@/bin/cp $(CURDIR)/test_init.py $(CURDIR)/__init__.py
 
-	CALIBRE_DIR=$(shell /usr/bin/mktemp -d); \
+	CALIBRE_DIR=$(shell command -p mktemp -d); \
 	/bin/mkdir -p "$$CALIBRE_DIR/config" "$$CALIBRE_DIR/tmp"; \
 	export CALIBRE_CONFIG_DIRECTORY="$$CALIBRE_DIR/config"; \
 	export CALIBRE_TEMP_DIR="$$CALIBRE_DIR/tmp"; \
