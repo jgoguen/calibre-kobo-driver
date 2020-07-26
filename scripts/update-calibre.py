@@ -70,10 +70,20 @@ def extract_calibre_pkg(pkg_path: str, py_ver: int = 3) -> None:
             log(f"Running macOS extraction command: {cmd}")
             subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     else:
+        # Thanks Debian!
+        tar_path = None
+        paths = [
+            "/usr/bin/tar",
+            "/bin/tar",
+        ]
+        for p in paths:
+            if os.path.exists(p):
+                tar_path = p
+                break
         log("Extracting Linux calibre package")
         subprocess.run(
             [
-                "/usr/bin/tar",
+                tar_path,
                 "--extract",
                 "--xz",
                 "--file",
