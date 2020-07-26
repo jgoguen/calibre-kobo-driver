@@ -1,0 +1,2 @@
+# Python requirememnts for plugins or scripts or tests
+lxml
