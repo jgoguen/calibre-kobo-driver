@@ -191,4 +191,4 @@ if __name__ == "__main__":
     )
     opts = parser.parse_args()
 
-    asyncio.run(main())
+    asyncio.run(main(opts))
