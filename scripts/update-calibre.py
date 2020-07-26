@@ -2,7 +2,6 @@
 # vim: ft=python:syntax=python:expandtab:autoindent:ts=4:sts=4
 
 import argparse
-import asyncio
 import concurrent.futures
 import json
 import os
@@ -163,32 +162,26 @@ def get_calibre_py3() -> None:
     raise Exception("No calibre-py3 package could be found")
 
 
-async def main(opts: argparse.Namespace) -> None:
+def main(opts: argparse.Namespace) -> None:
     fetch_py2 = fetch_py3 = False
 
     if opts.version is None:
         fetch_py2 = fetch_py3 = True
-    elif opts.version == "2.7":
+    elif opts.version == "2.7" or opts.version == "2":
         fetch_py2 = True
-    elif opts.version.startswith("3."):
+    elif opts.version.startswith("3.") or opts.version == "3":
         fetch_py3 = True
     else:
         raise ValueError(f"Invalid Python version: {opts.version}")
 
-    loop = asyncio.get_running_loop()
-    futures = []
     with concurrent.futures.ProcessPoolExecutor() as pool:
         if fetch_py2:
             log("Adding executor for get_calibre_py2")
-            futures.append(loop.run_in_executor(pool, get_calibre_py2))
+            pool.submit(get_calibre_py2)
 
         if fetch_py3:
             log("Adding executor for get_calibre_py3")
-            futures.append(loop.run_in_executor(pool, get_calibre_py3))
-
-    for f in futures:
-        log(f"Awaiting future {f}")
-        await f
+            pool.submit(get_calibre_py3)
 
 
 if __name__ == "__main__":
@@ -200,5 +193,4 @@ if __name__ == "__main__":
         help="A single Python version to target (default: both 2.7 and 3.x)",
     )
     opts = parser.parse_args()
-
-    asyncio.run(main(opts))
+    main(opts)
