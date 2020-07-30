@@ -1,6 +1,8 @@
 <!-- markdownlint-enable -->
 # Kobo KePub Plugins
 
+![CI](https://github.com/jgoguen/calibre-kobo-driver/workflows/CI/badge.svg)
+
 This provides a series of [calibre][calibre] extensions enabling calibre to work
 with ePub files with Kobo's additional features (called **KePub**). The
 following plugins are provided:
