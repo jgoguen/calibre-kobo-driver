@@ -19,7 +19,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import getopt
-import importlib
+import importlib.machinery
 import operator
 import os
 import sys

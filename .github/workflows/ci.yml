@@ -32,18 +32,58 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install Python test dependencies
-        run: |
-          python -m pip install --upgrade pip
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi;
-          if [ -f scripts/requirements.txt ]; then pip install -r scripts/requirements.txt; fi;
-          if [ -f tests/requirements.txt ]; then pip install -r tests/requirements.txt; fi;
-
-      - name: Fetch calibre for Python ${{ matrix.python-version }}
-        run: ./scripts/update-calibre.py ${{ matrix.python-version }}
-
-      - name: Set Python version
+      - name: Set Python version variables
         run: printf '::set-env name=PYTHON_VERSION::%s\n' "$(/usr/bin/env python -c 'import sys; print(sys.version_info.major)')"
 
+      - name: Install dependencies
+        run: |
+          PLATFORM=$(uname)
+          if [ "${PLATFORM}" = "Linux" ]; then
+            sudo apt-get install -y zsh
+          fi
+
+      - name: Create calibre directories
+        run: |
+          CALIBRE_DIR="$(mktemp -d XXXXXXXXX)"
+          CALIBRE_CONFIG_DIRECTORY="${CALIBRE_DIR}/config"
+          CALIBRE_TEMP_DIR="${CALIBRE_DIR}/tmp"
+          mkdir -p "${CALIBRE_CONFIG_DIRECTORY}" "${CALIBRE_TEMP_DIR}"
+          printf '::set-env name=CALIBRE_DIR::%s\n' "${CALIBRE_DIR}"
+          printf '::set-env name=CALIBRE_CONFIG_DIRECTORY::%s\n' "${CALIBRE_CONFIG_DIRECTORY}"
+          printf '::set-env name=CALIBRE_TEMP_DIR::%s\n' "${CALIBRE_TEMP_DIR}"
+
+      - name: Build plugin ZIP files
+        run: ./scripts/build.sh build
+
+      - name: Install Python test dependencies
+        run: |
+          set -x
+          python2 -m pip install --upgrade pip
+          python3 -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then
+            python -m pip install -r requirements.txt
+          fi
+          if [ -f scripts/requirements.txt ]; then
+            python -m pip install -r scripts/requirements.txt
+          fi
+          if [ -f tests/requirements.txt ]; then
+            python -m pip install -r tests/requirements.txt
+          fi
+          if [ "${PYTHON_VERSION}" != "3" ]; then
+            if [ -f requirements.txt ]; then
+              python3 -m pip install -r requirements.txt
+            fi
+            if [ -f scripts/requirements.txt ]; then
+              python3 -m pip install -r scripts/requirements.txt
+            fi
+            if [ -f tests/requirements.txt ]; then
+              python3 -m pip install -r tests/requirements.txt
+            fi
+          fi
+          python3 -V
+
+      - name: Fetch calibre for Python ${{ matrix.python-version }}
+        run: python3 ./scripts/update-calibre.py $PYTHON_VERSION
+
       - name: Run calibre Python ${{ matrix.python-version }} tests
-        run: make test_py$PYTHON_VERSION
+        run: ./scripts/build.sh test $PYTHON_VERSION

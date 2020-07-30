@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2020-06-15 17:20+PDT\n"
+"POT-Creation-Date: 2020-07-28 23:31+PDT\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Generated-By: pygettext.py 1.5\n"
 
 
-#: ./container.py:199
+#: ./container.py:196
 msgid "A valid file name must be given (got {filename})"
 msgstr ""
 
@@ -27,43 +27,43 @@ msgstr ""
 msgid "Strip Kobo spans"
 msgstr ""
 
-#: ./conversion/kepub_input.py:39
+#: ./conversion/kepub_input.py:40
 msgid "Kepubs have spans wrapping each sentence. These are used by the ereader for the reading location and bookmark location. They are not used by an ePub reader but are valid code and can be safely be left in the ePub. If you plan to edit the ePub, it is recommended that you remove the spans."
 msgstr ""
 
-#: ./conversion/kepub_input.py:94
+#: ./conversion/kepub_input.py:95
 msgid "{0} is not a valid KEPUB file (could not find opf)"
 msgstr ""
 
-#: ./conversion/kepub_input.py:128
+#: ./conversion/kepub_input.py:129
 msgid "EPUB files with DTBook markup are not supported"
 msgstr ""
 
-#: ./conversion/kepub_input.py:153
+#: ./conversion/kepub_input.py:154
 msgid "No valid entries in the spine of this EPUB"
 msgstr ""
 
-#: ./conversion/kepub_output.py:48
+#: ./conversion/kepub_output.py:49
 msgid "Select this to add a CSS file which enables hyphenation."
 msgstr ""
 
-#: ./conversion/kepub_output.py:51
+#: ./conversion/kepub_output.py:52
 msgid "The language used will be the language defined for the book in calibre."
 msgstr ""
 
-#: ./conversion/kepub_output.py:55
+#: ./conversion/kepub_output.py:56
 msgid "Please see the README file for directions on updating hyphenation dictionaries."
 msgstr ""
 
-#: ./conversion/kepub_output.py:67
+#: ./conversion/kepub_output.py:68
 msgid "Select this to disable all hyphenation in a book."
 msgstr ""
 
-#: ./conversion/kepub_output.py:70
+#: ./conversion/kepub_output.py:71
 msgid "This takes precedence over the hyphenation option."
 msgstr ""
 
-#: ./conversion/kepub_output.py:79 ./device/koboextended_config.py:157
+#: ./conversion/kepub_output.py:80 ./device/koboextended_config.py:157
 msgid "Select this to clean up the internal ePub markup."
 msgstr ""
 
@@ -163,7 +163,7 @@ msgstr ""
 msgid "Read metadata from %s files"
 msgstr ""
 
-#: ./metadata/writer.py:44
+#: ./metadata/writer.py:36
 msgid "Set metadata in %s files"
 msgstr ""
 
