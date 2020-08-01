@@ -91,6 +91,8 @@ class KEPUBMetadataWriter(EPUBMetadataWriter):
             if found_cover:
                 opfbytes = reader.read_bytes(reader.opf_path)
                 if isinstance(reader.archive, LocalZipFile):
-                    reader.archive.safe_replace(reader.container[OPF.MIMETYPE], opfbytes)
+                    reader.archive.safe_replace(
+                        reader.container[OPF.MIMETYPE], opfbytes
+                    )
                 else:
                     safe_replace(stream, reader.container[OPF.MIMETYPE], opfbytes)
