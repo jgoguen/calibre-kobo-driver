@@ -172,6 +172,14 @@ build() {
 	build_kepub_md_writer
 }
 
+cleanup_dir() {
+	dname="${1}"
+
+	if [ -n "${dname}" ] && [ -d "${dname}" ]; then
+		/bin/rm -rf "${dname}"
+	fi
+}
+
 # Run tests for a specific Python version.
 # WARNING: You MUST call `build` before running tests!
 test_pyver() {
@@ -197,9 +205,15 @@ test_pyver() {
 		export CALIBRE_TEMP_DIR="${CALIBRE_DIR}/tmp"
 	fi
 
+	# Disable quote warning, I want to expand this now since it isn't assured to be defined when
+	# called elsewhere, especially at EXIT.
+	# shellcheck disable=SC2064
+	trap "cleanup_dir ${CALIBRE_DIR:-''}" EXIT INT TERM PIPE
+
 	while IFS=$'\n' read -r plugin; do
 		printf 'Installing plugin file "%s" to "%s"\n' "${plugin}" "${CALIBRE_CONFIG_DIRECTORY}"
 		"${CALIBRE_BIN_BASE}/calibre-customize" -a "${plugin}"
+		"${CALIBRE_BIN_BASE}/calibre-customize" --enable-plugin "$(basename "${plugin%.zip}")"
 	done < <(/usr/bin/find . -type f -maxdepth 1 -type f -name '*.zip')
 
 	while IFS=$'\n' read -r test_file; do
@@ -207,13 +221,6 @@ test_pyver() {
 		PYTHONDONTWRITEBYTECODE="true" "${CALIBRE_BIN_BASE}/calibre-debug" "${test_file}"
 	done < <(__all_tests)
 
-	if [ -n "${CALIBRE_DIR}" ]; then
-		/bin/rm -rf "${CALIBRE_DIR}"
-	fi
-
-	if [ -n "${CALIBRE_DIR}" ] && [ -d "${CALIBRE_DIR}" ]; then
-		/bin/rm -rf "${CALIBRE_DIR}"
-	fi
 	/bin/rm -f ./__init__.py
 }
 
