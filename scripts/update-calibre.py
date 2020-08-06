@@ -190,6 +190,7 @@ if __name__ == "__main__":
         "version",
         type=str,
         default=None,
+        nargs='?',
         help="A single Python version to target (default: both 2.7 and 3.x)",
     )
     opts = parser.parse_args()
