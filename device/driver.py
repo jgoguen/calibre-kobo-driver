@@ -15,6 +15,7 @@ import json
 import os
 import re
 import shutil
+import sys
 from datetime import datetime
 
 from calibre.constants import config_dir
@@ -284,14 +285,19 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
                 },
             )
         except Exception as e:
-            common.log.exception(
-                "Failed to process {0} by {1}: {2}".format(
-                    metadata.title, " and ".join(metadata.authors), str(e),
-                )
+            msg = "Failed to process {title} by {authors}: {msg}".format(
+                title=metadata.title,
+                authors=" and ".join(metadata.authors),
+                msg=str(e),
             )
+            common.log.exception(msg)
 
             if not skip_failed:
-                raise
+                tb = sys.exc_info()[2]
+                if is_py3:
+                    raise e.__class__(msg).with_traceback(tb)
+                else:
+                    exec("raise e.__class__(msg), None, tb")
 
             self.skip_renaming_files.add(metadata.uuid)
             return super(KOBOTOUCHEXTENDED, self)._modify_epub(

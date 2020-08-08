@@ -102,6 +102,8 @@ def get_calibre_py2() -> None:
             f"Github API request returned HTTP{api_resp.status} {api_resp.reason}"
         )
 
+    log(f"Got HTTP{api_resp.status} {api_resp.reason} from Github API")
+
     release_data = json.load(api_resp)
     log("Loaded Github release data")
 
@@ -190,7 +192,7 @@ if __name__ == "__main__":
         "version",
         type=str,
         default=None,
-        nargs='?',
+        nargs="?",
         help="A single Python version to target (default: both 2.7 and 3.x)",
     )
     opts = parser.parse_args()

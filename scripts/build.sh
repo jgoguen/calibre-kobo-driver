@@ -3,7 +3,7 @@
 # This is needed to force shellcheck to actually run, and bash and zsh are
 # typically close enough that it shouldn't cause a problem.
 
-set -eu
+set -eux
 
 if [ -x /usr/bin/uname ]; then
 	UNAME_BIN="/usr/bin/uname"
