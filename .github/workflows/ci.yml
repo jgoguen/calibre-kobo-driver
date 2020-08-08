@@ -1,16 +1,18 @@
+---
+# vim: fileencoding=UTF-8:expandtab:autoindent:ts=2:sts=2:sw=2:filetype=yaml
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow
 name: CI
 
-# Controls when the action will run. Workflow runs when manually triggered using the UI
-# or API.
-on:
+# Controls when the action will run. Workflow runs when manually triggered
+# using the UI or API.
+'on':
   push:
     branches:
       - '*'
-    tags:
-      - 'v*'
   pull_request:
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+# A workflow run is made up of one or more jobs that can run sequentially or
+# in parallel
 jobs:
   test:
     runs-on: ${{ matrix.os }}
@@ -18,11 +20,11 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - "macos-latest"
-          - "ubuntu-latest"
+          - 'macos-latest'
+          - 'ubuntu-latest'
         python-version:
-          - "2.x"
-          - "3.x"
+          - '2.x'
+          - '3.x'
 
     steps:
       - uses: actions/checkout@v2.2.0
@@ -32,8 +34,10 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      # yamllint disable rule:line-length
       - name: Set Python version variables
-        run: printf '::set-env name=PYTHON_VERSION::%s\n' "$(/usr/bin/env python -c 'import sys; print(sys.version_info.major)')"
+        run: printf '::set-env name=PYTHON_VERSION::%s\n' \ "$(/usr/bin/env python -c 'import sys; print(sys.version_info.major)')"
+      # yamllint enable rule:line-length
 
       - name: Install dependencies
         run: |
@@ -42,6 +46,7 @@ jobs:
             sudo apt-get install -y zsh
           fi
 
+      # yamllint disable rule:line-length
       - name: Create calibre directories
         run: |
           CALIBRE_DIR="$(mktemp -d XXXXXXXXX)"
@@ -51,6 +56,7 @@ jobs:
           printf '::set-env name=CALIBRE_DIR::%s\n' "${CALIBRE_DIR}"
           printf '::set-env name=CALIBRE_CONFIG_DIRECTORY::%s\n' "${CALIBRE_CONFIG_DIRECTORY}"
           printf '::set-env name=CALIBRE_TEMP_DIR::%s\n' "${CALIBRE_TEMP_DIR}"
+      # yamllint enable rule:line-length
 
       - name: Build plugin ZIP files
         run: ./scripts/build.sh build
