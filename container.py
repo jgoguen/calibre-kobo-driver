@@ -57,7 +57,24 @@ ENCRYPTION_NAMESPACES = {
     "deenc": "http://ns.adobe.com/digitaleditions/enc",
 }  # type: Dict[str, str]
 XHTML_NAMESPACE = "http://www.w3.org/1999/xhtml"  # type: str
-SPECIAL_TAGS = frozenset(["img"])  # type: Set[str]
+SPECIAL_TAGS = frozenset(
+    [
+        "button",
+        "circle",
+        "defs",
+        "figcaption",
+        "figure",
+        "g",
+        "img",
+        "input",
+        "path",
+        "polygon",
+        "rect",
+        "style",
+        "svg",
+        "use",
+    ]
+)  # type: Set[str]
 ENCODING_RE = re.compile(r'^\<\?.+encoding="([^"]+)"', re.MULTILINE)
 SELF_CLOSING_RE = re.compile(
     r"<(meta|link) ([^>]+)>.*?</\1>", re.UNICODE | re.MULTILINE
