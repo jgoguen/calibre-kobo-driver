@@ -43,7 +43,7 @@ make_pot() {
 
 # Equivalent of `make clean`
 clean() {
-	/bin/rm -f -- *.zip ./__init__.py ./conversion/__init__.py plugin-import-name-*.txt
+	/bin/rm -f -- *.zip ./__init__.py ./conversion/__init__.py ./translations/*.mo plugin-import-name-*.txt
 }
 
 # Finds all test files
@@ -65,6 +65,18 @@ __all_css() {
 __common_files() {
 	touch "plugin-import-name-${1}.txt"
 	printf './common.py ./__init__.py ./plugin-import-name-%s.txt %s' "${1}" "$(__all_translations)"
+}
+
+compile_translations() {
+	if [ "${PLATFORM}" = "darwin" ]; then
+		CALIBRE_DEBUG_BIN="/Applications/calibre.app/Contents/MacOS/calibre-debug"
+	else
+		CALIBRE_DEBUG_BIN="$(command -pv calibre-debug)"
+	fi
+
+	while IFS=$'\n' read -r po_file; do
+		"${CALIBRE_DEBUG_BIN}" -c "from calibre.translations.msgfmt import main; main()" "${po_file}"
+	done < <(/usr/bin/find translations -type f -name '*.po')
 }
 
 # This builds the KoboTouchExtended.zip plugin archive.
@@ -232,6 +244,7 @@ run_tests() {
 
 # Check run mode; default if no arguments are given is 'build'
 if [ "$#" -eq 0 ]; then
+	compile_translations
 	build
 else
 	while [ "$#" -gt 0 ]; do
@@ -239,9 +252,11 @@ else
 		shift
 		case "${OPT}" in
 			build)
+				compile_translations
 				build
 				;;
 			KoboTouchExtended.zip)
+				compile_translations
 				build_kte
 				;;
 			test)

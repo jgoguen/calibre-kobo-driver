@@ -1,0 +1,184 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: calibre-kobo-driver\n"
+"Report-Msgid-Bugs-To: FULL NAME <EMAIL@ADDRESS>\n"
+"POT-Creation-Date: 2017-10-31 05:21+0000\n"
+"PO-Revision-Date: 2017-10-31 05:23+0000\n"
+"Last-Translator: Joel Goguen <jgoguen@jgoguen.ca>\n"
+"Language-Team: English (Canada) <en_CA@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Launchpad-Export-Date: 2017-12-03 06:40+0000\n"
+"X-Generator: Launchpad (build 18511)\n"
+
+msgid "A valid file name must be given (got {filename})"
+msgstr "A valid file name must be given (got {filename})"
+
+msgid "Choose whether to enable extra customizations"
+msgstr "Choose whether to enable extra customizations"
+
+msgid "Clean up ePub Markup"
+msgstr "Clean up ePub Markup"
+
+msgid "Clean up ePub markup"
+msgstr "Clean up ePub markup"
+
+msgid ""
+"Communicate with the Kobo Touch, Glo, Mini, Aura HD, and Aura firmwares and "
+"enable extended Kobo ePub features."
+msgstr ""
+"Communicate with the Kobo Touch, Glo, Mini, Aura HD, and Aura firmwares and "
+"enable extended Kobo ePub features."
+
+msgid "Copy generated KePub files to a directory"
+msgstr "Copy generated KePub files to a directory"
+
+msgid "Disable hyphenation"
+msgstr "Disable hyphenation"
+
+msgid "EPUB files with DTBook markup are not supported"
+msgstr "EPUB files with DTBook markup are not supported"
+
+msgid "Enable Extended Kobo Features"
+msgstr "Enable Extended Kobo Features"
+
+msgid ""
+"Enter an absolute directory path to copy all generated KePub files into for "
+"debugging purposes."
+msgstr ""
+"Enter an absolute directory path to copy all generated KePub files into for "
+"debugging purposes."
+
+msgid "Extended"
+msgstr "Extended"
+
+msgid "Extended driver"
+msgstr "Extended driver"
+
+msgid ""
+"Failed to parse '{book}' by '{author}' with error: '{error}' (file: "
+"{filename}, line: {lineno})"
+msgstr ""
+"Failed to parse '{book}' by '{author}' with error: '{error}' (file: "
+"{filename}, line: {lineno})"
+
+msgid "Hyphenate Files"
+msgstr "Hyphenate Files"
+
+msgid ""
+"Kepubs have spans wrapping each sentence. These are used by the ereader for "
+"the reading location and bookmark location. They are not used by an ePub "
+"reader but are valid code and can be safely be left in the ePub. If you plan "
+"to edit the ePub, it is recommended that you remove the spans."
+msgstr ""
+"Kepubs have spans wrapping each sentence. These are used by the ereader for "
+"the reading location and bookmark location. They are not used by an ePub "
+"reader but are valid code and can be safely be left in the ePub. If you plan "
+"to edit the ePub, it is recommended that you remove the spans."
+
+msgid "No valid entries in the spine of this EPUB"
+msgstr "No valid entries in the spine of this EPUB"
+
+msgid "Options specific to KePub input."
+msgstr "Options specific to KePub input."
+
+msgid "Options specific to KePub output"
+msgstr "Options specific to KePub output"
+
+msgid ""
+"Please see the README file for directions on updating hyphenation "
+"dictionaries."
+msgstr ""
+"Please see the README file for directions on updating hyphenation "
+"dictionaries."
+
+msgid "Read metadata from %s files"
+msgstr "Read metadata from %s files"
+
+msgid "Replace Content Language Code"
+msgstr "Replace Content Language Code"
+
+msgid "Select this to add a CSS file which enables hyphenation."
+msgstr "Select this to add a CSS file which enables hyphenation."
+
+msgid ""
+"Select this to add a CSS file which enables hyphenation. The language used "
+"will be the language defined for the book in calibre. Please see the README "
+"file for directions on updating hyphenation dictionaries."
+msgstr ""
+"Select this to add a CSS file which enables hyphenation. The language used "
+"will be the language defined for the book in calibre. Please see the README "
+"file for directions on updating hyphenation dictionaries."
+
+msgid "Select this to clean up the internal ePub markup."
+msgstr "Select this to clean up the internal ePub markup."
+
+msgid "Select this to disable all hyphenation in a book."
+msgstr "Select this to disable all hyphenation in a book."
+
+msgid "Select this to disable hyphenation for books."
+msgstr "Select this to disable hyphenation for books."
+
+msgid ""
+"Select this to not upload any book that fails conversion to kepub. If this "
+"is not selected, the upload process will be stopped at the first book that "
+"fails. If this is selected, failed books will be silently removed from the "
+"upload queue."
+msgstr ""
+"Select this to not upload any book that fails conversion to kepub. If this "
+"is not selected, the upload process will be stopped at the first book that "
+"fails. If this is selected, failed books will be silently removed from the "
+"upload queue."
+
+msgid ""
+"Select this to replace the defined language in each content file inside the "
+"ePub."
+msgstr ""
+"Select this to replace the defined language in each content file inside the "
+"ePub."
+
+msgid ""
+"Select this to show page numbers for the whole book, instead of each "
+"chapter. This will also affect regular ePub page number display!"
+msgstr ""
+"Select this to show page numbers for the whole book, instead of each "
+"chapter. This will also affect regular ePub page number display!"
+
+msgid "Select this to smarten punctuation in the ePub"
+msgstr "Select this to smarten punctuation in the ePub"
+
+msgid ""
+"Select this to upload ePub files encumbered by DRM. If this is not selected, "
+"it is a fatal error to upload an encumbered file"
+msgstr ""
+"Select this to upload ePub files encumbered by DRM. If this is not selected, "
+"it is a fatal error to upload an encumbered file"
+
+msgid "Set metadata in %s files"
+msgstr "Set metadata in %s files"
+
+msgid "Silently Ignore Failed Conversions"
+msgstr "Silently Ignore Failed Conversions"
+
+msgid "Smarten Punctuation"
+msgstr "Smarten Punctuation"
+
+msgid "Strip Kobo spans"
+msgstr "Strip Kobo spans"
+
+msgid "The language used will be the language defined for the book in calibre."
+msgstr ""
+"The language used will be the language defined for the book in calibre."
+
+msgid "This takes precedence over the hyphenation option."
+msgstr "This takes precedence over the hyphenation option."
+
+msgid "Upload DRM-encumbered ePub files"
+msgstr "Upload DRM-encumbered ePub files"
+
+msgid "Use full book page numbers"
+msgstr "Use full book page numbers"
+
+msgid "{0} is not a valid KEPUB file (could not find opf)"
+msgstr "{0} is not a valid KEPUB file (could not find opf)"

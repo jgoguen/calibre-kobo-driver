@@ -1,0 +1,63 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: calibre-kobo-driver\n"
+"Report-Msgid-Bugs-To: FULL NAME <EMAIL@ADDRESS>\n"
+"POT-Creation-Date: 2017-10-31 05:21+0000\n"
+"PO-Revision-Date: 2017-03-08 19:47+0000\n"
+"Last-Translator: Patrick <Unknown>\n"
+"Language-Team: Dutch <nl@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Launchpad-Export-Date: 2017-12-03 06:40+0000\n"
+"X-Generator: Launchpad (build 18511)\n"
+
+msgid ""
+"Communicate with the Kobo Touch, Glo, Mini, Aura HD, and Aura firmwares and "
+"enable extended Kobo ePub features."
+msgstr ""
+"Communiceer met de Kobo Touch, Glo, Mini, Aura HD, and Aura firmwares en "
+"maak uitgebreidere Kobo ePub eigenschappen mogelijk."
+
+msgid ""
+"Failed to parse '{book}' by '{author}' with error: '{error}' (file: "
+"{filename}, line: {lineno})"
+msgstr ""
+"Kan '{book}' door '{author}' niet analyseren. Foutmelding: '{error}' (file: "
+"{filename}, line: {lineno})"
+
+msgid ""
+"Please see the README file for directions on updating hyphenation "
+"dictionaries."
+msgstr ""
+"Lees aub de README file om te leren hoe u de woordafbreking kan updaten."
+
+msgid "Read metadata from %s files"
+msgstr "Lees metadata van %s bestanden"
+
+msgid "Select this to add a CSS file which enables hyphenation."
+msgstr ""
+"Selecteer dit om een CSS file toe te voegen die woordafbreking mogelijk "
+"maakt."
+
+msgid "Select this to clean up the internal ePub markup."
+msgstr "Selecteer dit om de interne ePub opmaak te verwijderen."
+
+msgid "Select this to disable all hyphenation in a book."
+msgstr "Selecteer dit om alle woordafbreking in een boek uit te schakelen"
+
+msgid ""
+"Select this to replace the defined language in each content file inside the "
+"ePub."
+msgstr ""
+"Selecteer dit om de geselecteerde taal in iedere content file in de ePub te "
+"vervangen."
+
+msgid "Set metadata in %s files"
+msgstr "Zet metadata in %s bestanden"
+
+msgid "The language used will be the language defined for the book in calibre."
+msgstr "De ingestelde taal zal worden gebruikt voor het boek in Calibre."
+
+msgid "This takes precedence over the hyphenation option."
+msgstr "Dit heeft voorrang boven de woordafbreek  optie"

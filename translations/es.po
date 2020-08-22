@@ -1,0 +1,187 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: calibre-kobo-driver\n"
+"Report-Msgid-Bugs-To: FULL NAME <EMAIL@ADDRESS>\n"
+"POT-Creation-Date: 2017-10-31 05:21+0000\n"
+"PO-Revision-Date: 2017-11-02 09:41+0000\n"
+"Last-Translator: Terisa de Morgan <terisam@gmail.com>\n"
+"Language-Team: Spanish <es@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Launchpad-Export-Date: 2017-12-03 06:40+0000\n"
+"X-Generator: Launchpad (build 18511)\n"
+
+msgid "A valid file name must be given (got {filename})"
+msgstr "Se debe dar un nombre de fichero válido (se tiene filename})"
+
+msgid "Choose whether to enable extra customizations"
+msgstr "Elige si activar personalizaciones extra"
+
+msgid "Clean up ePub Markup"
+msgstr "Limpiar Marcado ePub"
+
+msgid "Clean up ePub markup"
+msgstr "Limpiar el marcado de ePub"
+
+msgid ""
+"Communicate with the Kobo Touch, Glo, Mini, Aura HD, and Aura firmwares and "
+"enable extended Kobo ePub features."
+msgstr ""
+"Se comunica con el firmware de los Kobo Touch, Glo, Mini , Aura HD y Aura y "
+"activa las características extendidas de Kobo ePub."
+
+msgid "Copy generated KePub files to a directory"
+msgstr "Copiar los ficheros KePub generados a un directorio"
+
+msgid "Disable hyphenation"
+msgstr "Desactivar división"
+
+msgid "EPUB files with DTBook markup are not supported"
+msgstr "No se soportan archivos EPUB con marcado DTBook."
+
+msgid "Enable Extended Kobo Features"
+msgstr "Activa las Características Extendidas de Kobo"
+
+msgid ""
+"Enter an absolute directory path to copy all generated KePub files into for "
+"debugging purposes."
+msgstr ""
+"Introduce una carpeta absoluta donde copiar todos los archivos KePub "
+"generados para depuración."
+
+msgid "Extended"
+msgstr "Extendido"
+
+msgid "Extended driver"
+msgstr "Driver extendido"
+
+msgid ""
+"Failed to parse '{book}' by '{author}' with error: '{error}' (file: "
+"{filename}, line: {lineno})"
+msgstr ""
+"Fallo al procesar '{book}' del autor '{author}' con el error: "
+"'{error}' (archivo: {filename}, línea: {lineno})"
+
+msgid "Hyphenate Files"
+msgstr "Dividir Ficheros"
+
+msgid ""
+"Kepubs have spans wrapping each sentence. These are used by the ereader for "
+"the reading location and bookmark location. They are not used by an ePub "
+"reader but are valid code and can be safely be left in the ePub. If you plan "
+"to edit the ePub, it is recommended that you remove the spans."
+msgstr ""
+"Kepus tienen etiquetas span rodeando cada frase. El lector las usa para la "
+"ubicación de lectura y marcadores. Un lector ePub no las usa, pero son "
+"válidas y se pueden dejar con seguridad en el ePub. Si planeas editar tu "
+"ePub, se recomienda que elimines las etiquetas span."
+
+msgid "No valid entries in the spine of this EPUB"
+msgstr "No hay entradas válidas en el bloque <spine> de este EPUB"
+
+msgid "Options specific to KePub input."
+msgstr "Opciones específicas para entrada KePub."
+
+msgid "Options specific to KePub output"
+msgstr "Opciones específicas para la salida KePub"
+
+msgid ""
+"Please see the README file for directions on updating hyphenation "
+"dictionaries."
+msgstr ""
+"Por favor, lee el fichero README para ver las instrucciones sobre cómo "
+"actualizar los diccionarios de guionado."
+
+msgid "Read metadata from %s files"
+msgstr "Lee los metadatos de los archivos %s"
+
+msgid "Replace Content Language Code"
+msgstr "Reemplazar el código de idioma del Content"
+
+msgid "Select this to add a CSS file which enables hyphenation."
+msgstr ""
+"Selecciona esta opción para añadir un fichero CSS que active el guionado."
+
+msgid ""
+"Select this to add a CSS file which enables hyphenation. The language used "
+"will be the language defined for the book in calibre. Please see the README "
+"file for directions on updating hyphenation dictionaries."
+msgstr ""
+"Selecciona esta opción para añadir un archivo CSS que activa la partición. "
+"El lenguaje utilizado será el lenguaje definido para el libro en calibre. "
+"Por favor, lee el archivo README para ver las instrucciones sobre cómo "
+"actualizar diccionarios de particionado."
+
+msgid "Select this to clean up the internal ePub markup."
+msgstr "Seleccione esta opción para limpiar las anotaciones internas de ePub."
+
+msgid "Select this to disable all hyphenation in a book."
+msgstr "Selecciona esta opción para desactivar todo el guionado en un libro"
+
+msgid "Select this to disable hyphenation for books."
+msgstr "Selecciona esto para desactivar la división de libros."
+
+msgid ""
+"Select this to not upload any book that fails conversion to kepub. If this "
+"is not selected, the upload process will be stopped at the first book that "
+"fails. If this is selected, failed books will be silently removed from the "
+"upload queue."
+msgstr ""
+"Selecciona esta opción para no enviar ningún archivo que falle en su "
+"conversión a kepub. Si no está seleccionada, el proceso de envío se parará "
+"en el primer libro que falle. Si está seleccionada, los libros fallidos se "
+"eliminarán silenciosamente de la cola de envío."
+
+msgid ""
+"Select this to replace the defined language in each content file inside the "
+"ePub."
+msgstr ""
+"Seleccione esta opción para sustituir el lenguaje definido en cada uno de "
+"los archivos con contenido dentro del ePub."
+
+msgid ""
+"Select this to show page numbers for the whole book, instead of each "
+"chapter. This will also affect regular ePub page number display!"
+msgstr ""
+"Selecciona esta opción para mostrar los números de página para el libro "
+"completo en lugar de para capítulo. ¡Esto también afectará a  la muestra del "
+"n´mero de página de los ePub normales!"
+
+msgid "Select this to smarten punctuation in the ePub"
+msgstr "Selecciona esta opción para arreglar la puntuación en el ePub"
+
+msgid ""
+"Select this to upload ePub files encumbered by DRM. If this is not selected, "
+"it is a fatal error to upload an encumbered file"
+msgstr ""
+"Selecciona esta opción para enviar archivos ePub con DRM. Si no está "
+"seleccionado, un archivo encriptado generará un error fatal."
+
+msgid "Set metadata in %s files"
+msgstr "Establece los metadatos en los archivos %s"
+
+msgid "Silently Ignore Failed Conversions"
+msgstr "Ignorar Silenciosamente Conversiones Fallidas"
+
+msgid "Smarten Punctuation"
+msgstr "Arreglar Puntuación"
+
+msgid "Strip Kobo spans"
+msgstr "Eliminar los spans de Kobo"
+
+msgid "The language used will be the language defined for the book in calibre."
+msgstr ""
+"El idioma que se utilizará será el idioma definido en calibre para el libro."
+
+msgid "This takes precedence over the hyphenation option."
+msgstr "Tiene prioridad sobre las opciones de división con guiones."
+
+msgid "Upload DRM-encumbered ePub files"
+msgstr "Enviar archivos ePub con DRM"
+
+msgid "Use full book page numbers"
+msgstr "Usar números de página del libro completo"
+
+msgid "{0} is not a valid KEPUB file (could not find opf)"
+msgstr "{0] no es un archivo KEPUB válido (no se puede localizar el opf)"
