@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"POT-Creation-Date: 2020-07-28 23:31+PDT\n"
+"POT-Creation-Date: 2020-08-21 22:08+PDT\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Generated-By: pygettext.py 1.5\n"
 
 
-#: ./container.py:196
+#: ./container.py:213
 msgid "A valid file name must be given (got {filename})"
 msgstr ""
 
@@ -83,11 +83,11 @@ msgstr ""
 msgid "Clean up ePub markup"
 msgstr ""
 
-#: ./device/driver.py:54
+#: ./device/driver.py:55
 msgid "Failed to parse '{book}' by '{author}' with error: '{error}' (file: {filename}, line: {lineno})"
 msgstr ""
 
-#: ./device/driver.py:77
+#: ./device/driver.py:78
 msgid "Communicate with Kobo Touch and later firmwares to enable extended Kobo ePub features."
 msgstr ""
 
