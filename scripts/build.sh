@@ -1,5 +1,4 @@
-#!/usr/bin/env zsh
-# shellcheck shell=bash
+#!/usr/bin/env bash
 # This is needed to force shellcheck to actually run, and bash and zsh are
 # typically close enough that it shouldn't cause a problem.
 
