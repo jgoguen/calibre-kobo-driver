@@ -40,7 +40,7 @@ class KEPubOutput(OutputFormatPlugin):
     epub_output_plugin = None
     configdir = os.path.join(config_dir, "plugins")
     reference_kepub = os.path.join(configdir, "reference.kepub.epub")
-    options = {
+    kepub_options = {
         OptionRecommendation(
             name="kepub_hyphenate",
             recommended_value=True,
@@ -80,14 +80,14 @@ class KEPubOutput(OutputFormatPlugin):
             help=_("Select this to clean up the internal ePub markup."),  # noqa: F821
         ),
     }
-    recommendations = set([])
+    kepub_recommendations = {("epub_version", "3", OptionRecommendation.LOW)}
 
     def __init__(self, *args, **kwargs):
         """Initialize the KePub output converter."""
         self.epub_output_plugin = EPUBOutput(*args, **kwargs)
-        self.options = self.options.union(self.epub_output_plugin.options)
-        self.recommendations = self.recommendations.union(
-            self.epub_output_plugin.recommendations
+        self.options = self.epub_output_plugin.options.union(self.kepub_options)
+        self.recommendations = self.epub_output_plugin.recommendations.union(
+            self.kepub_recommendations
         )
         OutputFormatPlugin.__init__(self, *args, **kwargs)
 

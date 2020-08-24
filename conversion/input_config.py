@@ -11,10 +11,8 @@ __license__ = "GPL v3"
 __copyright__ = "2015, David Forrester <davidfor@internode.on.net>"
 __docformat__ = "markdown en"
 
-import sys
-
+from calibre.ebooks.conversion.config import OPTIONS
 from calibre.gui2.convert import Widget
-from calibre.gui2.convert.epub_output import PluginWidget as EPUBPluginWidget
 from calibre.gui2.convert.epub_output_ui import Ui_Form as EPUBUIForm
 from calibre.gui2.preferences.conversion import OutputOptions as BaseOutputOptions
 
@@ -33,7 +31,7 @@ except NameError:
     pass
 
 
-class PluginWidget(EPUBPluginWidget, EPUBUIForm):
+class PluginWidget(Widget, EPUBUIForm):
     """Configuration widget for KePub input parser."""
 
     TITLE = "KePub Input"
@@ -44,20 +42,7 @@ class PluginWidget(EPUBPluginWidget, EPUBUIForm):
     def __init__(self, parent, get_option, get_help, db=None, book_id=None):
         """Initialize KePub input configuration."""
         Widget.__init__(
-            self,
-            parent,
-            [
-                "dont_split_on_page_breaks",
-                "flow_size",
-                "no_default_epub_cover",
-                "no_svg_cover",
-                "epub_inline_toc",
-                "epub_toc_at_end",
-                "toc_title",
-                "preserve_cover_aspect_ratio",
-                "epub_flatten",
-                "strip_kobo_spans",
-            ],
+            self, parent, OPTIONS["input"].get("epub", tuple()) + ("strip_kobo_spans",),
         )
 
         if book_id:

@@ -8,6 +8,7 @@ __license__ = "GPL v3"
 __copyright__ = "2013, Joel Goguen <jgoguen@jgoguen.ca>"
 __docformat__ = "markdown en"
 
+from calibre.ebooks.conversion.config import OPTIONS
 from calibre.gui2.convert import Widget
 from calibre.gui2.convert.epub_output import PluginWidget as EPUBPluginWidget
 from calibre.gui2.convert.epub_output_ui import Ui_Form as EPUBUIForm
@@ -28,28 +29,22 @@ class PluginWidget(EPUBPluginWidget, EPUBUIForm):
     COMMIT_NAME = "kepub_output"
 
     # A near copy of calibre.gui2.convert.epub_output.PluginWidget#__init__
+    # If something seems wrong, start by checking for changes there.
+    # We copy that instead of calling super().__init__() because the super __init__
+    # calls Widget.__init__() with ePub options and there's no easy way to add and link
+    # new UI elements once that's been done.
     def __init__(self, parent, get_option, get_help, db=None, book_id=None):
         """Initialize the KePub output configuration widget."""
         Widget.__init__(
             self,
             parent,
-            [
-                "dont_split_on_page_breaks",
-                "flow_size",
-                "no_default_epub_cover",
-                "no_svg_cover",
-                "epub_inline_toc",
-                "epub_toc_at_end",
-                "toc_title",
-                "preserve_cover_aspect_ratio",
-                "epub_flatten",
-                "kepub_hyphenate",
-                "kepub_clean_markup",
-                "kepub_disable_hyphenation",
-            ],
+            OPTIONS["output"].get("epub", tuple())
+            + ("kepub_hyphenate", "kepub_clean_markup", "kepub_disable_hyphenation"),
         )
         for i in range(2):
             self.opt_no_svg_cover.toggle()
+        ev = get_option("epub_version")
+        self.opt_epub_version.addItems(list(ev.option.choices))
         self.db, self.book_id = db, book_id
         self.initialize_options(get_option, get_help, db, book_id)
 

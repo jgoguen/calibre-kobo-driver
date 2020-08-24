@@ -8,7 +8,6 @@ __copyright__ = "2015, David Forrester <davidfor@internode.on.net>"
 __docformat__ = "markdown en"
 
 import os
-import sys
 
 from calibre.customize.conversion import OptionRecommendation
 from calibre.ebooks.conversion.plugins.epub_input import EPUBInput
@@ -33,7 +32,7 @@ class KEPUBInput(EPUBInput):
     version = common.PLUGIN_VERSION
     minimum_calibre_version = (0, 1, 0)
 
-    options = {
+    kepub_options = {
         OptionRecommendation(
             name="strip_kobo_spans",
             recommended_value=True,
@@ -47,7 +46,12 @@ class KEPUBInput(EPUBInput):
         )
     }
 
-    recommendations = set([])
+    kepub_recommendations = {("strip_kobo_spans", True, OptionRecommendation.LOW)}
+
+    def __init__(self, *args, **kwargs):
+        super(KEPUBInput, self).__init__(*args, **kwargs)
+        self.options = self.options.union(self.kepub_options)
+        self.recommendations = self.recommendations.union(self.kepub_recommendations)
 
     def gui_configuration_widget(
         self, parent, get_option_by_name, get_option_help, db, book_id=None
