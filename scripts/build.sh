@@ -112,8 +112,8 @@ build_kepub_output() {
 	# file names surrounded in quotes already or refer to a set of CLI flags.
 	# shellcheck disable=SC2046,SC2086
 	/usr/bin/zip ${zip_args} "./KePub Output.zip" $(__common_files "kepubout") \
-		./conversion/__init__.py ./container.py ./conversion/kepub_output.py \
-		./conversion/output_config.py
+		$(__all_css) ./conversion/__init__.py ./container.py \
+		./conversion/kepub_output.py ./conversion/output_config.py
 
 	/bin/rm -f ./__init__.py ./conversion/__init__.py plugin-import-name-*.txt
 }
