@@ -57,7 +57,7 @@ ENCRYPTION_NAMESPACES = {
     "deenc": "http://ns.adobe.com/digitaleditions/enc",
 }  # type: Dict[str, str]
 XHTML_NAMESPACE = "http://www.w3.org/1999/xhtml"  # type: str
-SPECIAL_TAGS = frozenset(
+SKIPPED_TAGS = frozenset(
     [
         "button",
         "circle",
@@ -65,7 +65,6 @@ SPECIAL_TAGS = frozenset(
         "figcaption",
         "figure",
         "g",
-        "img",
         "input",
         "path",
         "polygon",
@@ -74,7 +73,8 @@ SPECIAL_TAGS = frozenset(
         "svg",
         "use",
     ]
-)  # type: Set[str]
+)
+SPECIAL_TAGS = frozenset(["img"])  # type: Set[str]
 ENCODING_RE = re.compile(r'^\<\?.+encoding="([^"]+)"', re.MULTILINE)
 SELF_CLOSING_RE = re.compile(
     r"<(meta|link) ([^>]+)>.*?</\1>", re.UNICODE | re.MULTILINE
@@ -489,22 +489,28 @@ class KEPubContainer(EpubContainer):
                 node.tail = None
             return node
 
-        # Special case: <img> tags
+        # Special case some tags
         special_tag_match = re.search(r"^(?:\{[^\}]+\})?(\w+)$", node.tag)
-        if special_tag_match and special_tag_match.group(1) in SPECIAL_TAGS:
-            span = etree.Element(
-                "{%s}span" % (XHTML_NAMESPACE,),
-                attrib={
-                    "id": "kobo.{0}.{1}".format(
-                        self._paragraph_counter, self._segment_counter
-                    ),
-                    "class": "koboSpan",
-                },
-            )
-            span.append(node)
-            self._paragraph_counter += 1
-            self._segment_counter = 1
-            return span
+        if special_tag_match:
+            # Skipped tags are just flat out skipped
+            if special_tag_match.group(1) in SKIPPED_TAGS:
+                return node
+
+            # Special tags get wrapped in a span and their children are ignored
+            if special_tag_match.group(1) in SPECIAL_TAGS:
+                span = etree.Element(
+                    "{%s}span" % (XHTML_NAMESPACE,),
+                    attrib={
+                        "id": "kobo.{0}.{1}".format(
+                            self._paragraph_counter, self._segment_counter
+                        ),
+                        "class": "koboSpan",
+                    },
+                )
+                span.append(node)
+                self._paragraph_counter += 1
+                self._segment_counter = 1
+                return span
 
         # save node content for later
         node_text = node.text
