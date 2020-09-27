@@ -33,7 +33,7 @@ class KEPUBMetadataWriter(EPUBMetadataWriter):
 
     name = "KePub Metadata Writer"
     author = "David Forrester"
-    description = _("Set metadata in %s files") % "Kobo ePub"  # noqa: F821
+    description = _("Set metadata in Kobo KePub files")  # noqa: F821
     file_types = {"kepub"}
     version = common.PLUGIN_VERSION
     minimum_calibre_version = common.PLUGIN_MINIMUM_CALIBRE_VERSION

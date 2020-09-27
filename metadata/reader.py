@@ -22,7 +22,7 @@ class KEPUBMetadataReader(EPUBMetadataReader):
 
     name = "KePub Metadata Reader"
     author = "David Forrester"
-    description = _("Read metadata from %s files") % "Kobo ePub"  # noqa: F821
+    description = _("Read metadata from Kobo KePub files")  # noqa: F821
     file_types = {"kepub"}
     version = common.PLUGIN_VERSION
     minimum_calibre_version = common.PLUGIN_MINIMUM_CALIBRE_VERSION
