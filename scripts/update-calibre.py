@@ -12,7 +12,6 @@ import subprocess
 import sys
 import tempfile
 
-from lxml import etree
 from multiprocessing import Lock
 from urllib.request import urlopen
 
@@ -93,7 +92,7 @@ def extract_calibre_pkg(pkg_path: str, py_ver: int = 3) -> None:
         )
 
 
-def get_calibre_py2() -> None:
+def get_calibre_py3() -> None:
     api_resp = urlopen(
         "https://api.github.com/repos/kovidgoyal/calibre/releases/latest"
     )
@@ -113,7 +112,7 @@ def get_calibre_py2() -> None:
             pkg_resp = urlopen(asset["browser_download_url"])
             if pkg_resp.status != 200:
                 raise Exception(
-                    "Calibre-Py2 download returned "
+                    "Calibre-Py3 download returned "
                     f"HTTP{pkg_resp.status} {pkg_resp.reason}"
                 )
 
@@ -122,46 +121,37 @@ def get_calibre_py2() -> None:
                 with open(pkg_file, "wb") as f:
                     f.write(pkg_resp.read())
                 log(f"Downloaded calibre package {pkg_file}")
-                extract_calibre_pkg(pkg_file, 2)
-
-            return None
-
-    raise Exception("No calibre-py2 package could be found")
-
-
-def get_calibre_py3() -> None:
-    calibre_beta_base = "https://download.calibre-ebook.com/betas/"
-    links_resp = urlopen(calibre_beta_base)
-    if links_resp.status != 200:
-        raise Exception(
-            "Calibre beta directory list returned "
-            f"HTTP{links_resp.status} {links_resp.reason}"
-        )
-
-    tree = etree.HTML(links_resp.read())
-    links = tree.xpath("//a[starts-with(@href, 'calibre')]/@href")
-    log("Loaded calibre beta links list")
-
-    for link in links:
-        if link.endswith(PKG_EXT):
-            log(f"Found desired package: {link}")
-            pkg_resp = urlopen(f"{calibre_beta_base}{link}")
-            if pkg_resp.status != 200:
-                raise Exception(
-                    "Calibre-Py3 download returned "
-                    f"HTTP{pkg_resp.status} {pkg_resp.reason}"
-                )
-
-            with tempfile.TemporaryDirectory() as tmpdir:
-                pkg_file = os.path.join(tmpdir, link)
-                with open(pkg_file, "wb") as f:
-                    f.write(pkg_resp.read())
-                log(f"Downloaded calibre package {pkg_file}")
                 extract_calibre_pkg(pkg_file, 3)
 
             return None
 
     raise Exception("No calibre-py3 package could be found")
+
+
+def get_calibre_py2() -> None:
+    calibre_pkg = "https://download.calibre-ebook.com/4.23.0/calibre-4.23.0"
+    if PLATFORM == "darwin":
+        calibre_pkg += ".dmg"
+    else:
+        calibre_pkg += "-x86_64.txz"
+    pkg_resp = urlopen(calibre_pkg)
+    if pkg_resp.status != 200:
+        raise Exception(
+            "Calibre-py2 package request returned "
+            f"HTTP{pkg_resp.status} {pkg_resp.reason}"
+        )
+
+    pkg_file_name = os.path.basename(calibre_pkg)
+    with tempfile.TemporaryDirectory() as tmpdir:
+        pkg_file = os.path.join(tmpdir, pkg_file_name)
+        with open(pkg_file, "wb") as f:
+            f.write(pkg_resp.read())
+        log(f"Downloaded calibre-py2 package {pkg_file}")
+        extract_calibre_pkg(pkg_file, 2)
+
+        return None
+
+    raise Exception("No calibre-py2 package could be found")
 
 
 def main(opts: argparse.Namespace) -> None:
