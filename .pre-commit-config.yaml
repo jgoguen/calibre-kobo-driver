@@ -1,6 +1,25 @@
+---
+default_language_version:
+  python: python3
+minimum_pre_commit_version: '2.7.1'
 repos:
   - repo: https://github.com/psf/black
-    rev: 20.8b1 # Replace by any tag/version: https://github.com/psf/black/tags
+    rev: 20.8b1  # Replace by any tag/version: https://github.com/psf/black/tags
     hooks:
       - id: black
-        language_version: python3 # Should be a command that runs python3.6+
+        language_version: python3  # Should be a command that runs python3.6+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v3.2.0
+    hooks:
+      - id: check-case-conflict
+      - id: mixed-line-ending
+        args:
+          - '--fix=lf'
+  - repo: https://gitlab.com/pycqa/flake8
+    rev: '3.8.3'
+    hooks:
+      - id: flake8
+  - repo: https://github.com/jumanjihouse/pre-commit-hooks
+    rev: '2.1.4'
+    hooks:
+      - id: shellcheck
