@@ -58,6 +58,9 @@ jobs:
           printf '::set-env name=CALIBRE_TEMP_DIR::%s\n' "${CALIBRE_TEMP_DIR}"
       # yamllint enable rule:line-length
 
+      - name: Install calibre from upstream
+        run: ./scripts/update-calibre.py
+
       - name: Build plugin ZIP files
         run: ./scripts/build.sh build
 

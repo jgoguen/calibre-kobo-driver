@@ -69,9 +69,9 @@ __common_files() {
 
 compile_translations() {
 	if [ "${PLATFORM}" = "darwin" ]; then
-		CALIBRE_DEBUG_BIN="/Applications/calibre.app/Contents/MacOS/calibre-debug"
+		CALIBRE_DEBUG_BIN="${PWD}/calibre-py3/Contents/MacOS/calibre-debug"
 	else
-		CALIBRE_DEBUG_BIN="$(command -pv calibre-debug)"
+		CALIBRE_DEBUG_BIN="${PWD}/calibre-py3/calibre-debug"
 	fi
 
 	while IFS=$'\n' read -r po_file; do
