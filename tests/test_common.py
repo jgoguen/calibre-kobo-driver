@@ -123,7 +123,8 @@ class TestCommon(unittest.TestCase):
         mock.MagicMock(),
     )
     @mock.patch(
-        "calibre_plugins.kobotouch_extended.common.Logger._prints", mock.MagicMock(),
+        "calibre_plugins.kobotouch_extended.common.Logger._prints",
+        mock.MagicMock(),
     )
     @mock.patch(
         "calibre_plugins.kobotouch_extended.common.Logger._tag_args",

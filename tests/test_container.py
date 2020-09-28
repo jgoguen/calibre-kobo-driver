@@ -399,7 +399,8 @@ class TestContainer(TestAssertions):
         self.assertEqual(len(post_body.getchildren()), 2)
 
         post_p = post_span.xpath(
-            "//xhtml:body/xhtml:p", namespaces={"xhtml": container.XHTML_NAMESPACE},
+            "//xhtml:body/xhtml:p",
+            namespaces={"xhtml": container.XHTML_NAMESPACE},
         )
         post_span_count = post_span.xpath(
             "count(//xhtml:body/xhtml:span)",

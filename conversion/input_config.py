@@ -42,7 +42,9 @@ class PluginWidget(Widget, EPUBUIForm):
     def __init__(self, parent, get_option, get_help, db=None, book_id=None):
         """Initialize KePub input configuration."""
         Widget.__init__(
-            self, parent, OPTIONS["input"].get("epub", tuple()) + ("strip_kobo_spans",),
+            self,
+            parent,
+            OPTIONS["input"].get("epub", tuple()) + ("strip_kobo_spans",),
         )
 
         if book_id:
