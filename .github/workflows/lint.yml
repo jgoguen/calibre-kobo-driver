@@ -50,3 +50,5 @@ jobs:
 
       - name: Lint Markdown files
         uses: errata-ai/vale-action@v1.3.0
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
