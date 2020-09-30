@@ -41,3 +41,12 @@ jobs:
         uses: jgoguen/gh-actions/yaml-lint@main
         with:
           source: ./.github/workflows/
+
+  vale:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2.2.0
+
+      - name: Lint Markdown files
+      - uses: errata-ai/vale-action@v1.3.0
