@@ -36,9 +36,10 @@ make_pot() {
 
 	# We explicitly do not want to quote the subcommand here since it prints
 	# each file surrounded by quotes already.
-	# shellcheck disable=SC2046
-	/usr/bin/env python3 -B ./pygettext.py -p translations \
-		$(/usr/bin/find . -type f -name '*.py' -not \( -name 'pygettext.py' -or -name 'test_*.py' -or -path '*/calibre-*' \) -exec printf '%s ' '{}' \;)
+	XGETTEXT_BIN="$(command -v xgettext)"
+	"${XGETTEXT_BIN}" -o ./translations/messages.pot --no-wrap \
+		--copyright-holder="Joel Goguen" --package-name="calibre-kobo-driver" \
+		$(/usr/bin/find . -type f -name '*.py' -not \( -name 'pygettext.py' -or -name 'test_*.py' -or -path '*/calibre-*' \))
 }
 
 # Equivalent of `make clean`
