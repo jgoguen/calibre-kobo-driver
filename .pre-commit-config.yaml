@@ -23,3 +23,5 @@ repos:
     rev: '2.1.4'
     hooks:
       - id: shellcheck
+        args:
+          - '--severity=error'
