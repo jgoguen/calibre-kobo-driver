@@ -106,7 +106,7 @@ class KEPubOutput(OutputFormatPlugin):
             oeb_book, output, input_plugin, opts, common.log
         )
         common.log.debug("Done ePub conversion")
-        container = KEPubContainer(output, common.log)
+        container = KEPubContainer(output, common.log, opts.kepub_clean_markup)
 
         if container.is_drm_encumbered:
             common.log.error("DRM-encumbered container, skipping conversion")
@@ -149,7 +149,6 @@ class KEPubOutput(OutputFormatPlugin):
                 output,
                 metadata=mi,
                 opts={
-                    "clean_markup": opts.kepub_clean_markup,
                     "hyphenate": opts.kepub_hyphenate,
                     "no-hyphens": opts.kepub_disable_hyphenation,
                     "smarten_punctuation": False,

@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: calibre-kobo-driver 3.2.15\n"
+"Project-Id-Version: calibre-kobo-driver\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-09-27 16:15-0700\n"
+"POT-Creation-Date: 2020-10-08 06:08-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,17 +16,73 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
-#: container.py:214
+#: container.py:200
+msgid "A source path must be given"
+msgstr ""
+
+#: container.py:233
 #, python-brace-format
 msgid "A valid file name must be given (got {filename})"
 msgstr ""
+
+#: container.py:245
+#, python-brace-format
+msgid "Could not retrieve content file {0}"
+msgstr ""
+
+#: container.py:252
+#, python-brace-format
+msgid "Could not find a <head> element in {0}"
+msgstr ""
+
+#: container.py:259
+#, python-brace-format
+msgid "A <head> section was found but was undefined in content file {0}"
+msgstr ""
+
+#: container.py:315 container.py:351
+#, python-brace-format
+msgid "No HTML content in {0}"
+msgstr ""
+
+#: container.py:377
+#, python-brace-format
+msgid "No HTML content in file {0}"
+msgstr ""
+
+#: container.py:448 container.py:522
+#, python-brace-format
+msgid "Skipping file {fname}"
+msgstr ""
+
+#: container.py:452
+#, python-brace-format
+msgid "{div_count:d} <div> tag"
+msgid_plural "{div_count:d} <div> tags"
+msgstr[0] ""
+msgstr[1] ""
+
+#: container.py:456
+#, python-brace-format
+msgid "{p_count:d} <p> tag"
+msgid_plural "{p_count:d} <p> tags"
+msgstr[0] ""
+msgstr[1] ""
+
+#: container.py:526
+#, python-brace-format
+msgid "{span_count:d} Kobo span present"
+msgid_plural "{span_count:d} Kobo spans present"
+msgstr[0] ""
+msgstr[1] ""
 
 #: conversion/input_config.py:40
 msgid "Options specific to KePub input."
 msgstr ""
 
-#: conversion/input_config.py:63
+#: conversion/input_config.py:65
 msgid "Strip Kobo spans"
 msgstr ""
 

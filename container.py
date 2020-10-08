@@ -21,6 +21,7 @@ import os
 import re
 import shutil
 import string
+import threading
 from copy import deepcopy
 
 from calibre import guess_type
@@ -34,8 +35,13 @@ from polyglot.builtins import is_py3
 from lxml import etree
 
 if is_py3:
+    from typing import Any
+    from typing import Callable
     from typing import Dict
+    from typing import List
+    from typing import Optional
     from typing import Set
+    from typing import Tuple
 
 # Support load_translations() without forcing calibre 1.9+
 try:
@@ -66,12 +72,16 @@ SKIPPED_TAGS = frozenset(
         "figure",
         "g",
         "input",
+        "math",
         "path",
         "polygon",
+        "pre",
         "rect",
+        "script",
         "style",
         "svg",
         "use",
+        "video",
     ]
 )
 SPECIAL_TAGS = frozenset(["img"])  # type: Set[str]
@@ -111,12 +121,16 @@ class ParseError(ValueError):
 class KEPubContainer(EpubContainer):
     """Extends an EpubContainer to work for a KePub."""
 
-    _paragraph_counter = 0  # type: int
-    _segment_counter = 0  # type: int
-
-    def __init__(self, epub_path, log, *args, **kwargs):  # type: (...) -> None
+    def __init__(
+        self, epub_path, log, do_cleanup=False, *args, **kwargs
+    ):  # type: (...) -> None
         super(KEPubContainer, self).__init__(epub_path, log, *args, **kwargs)
         self.log = log
+        self.log.debug("Creating KePub Container for ePub at {0}".format(epub_path))
+
+        self.__run_async_over_content(self.forced_cleanup)
+        if do_cleanup:
+            self.__run_async_over_content(self.clean_markup)
 
     def html_names(self):
         """Get all HTML files in the OPF file.
@@ -163,10 +177,12 @@ class KEPubContainer(EpubContainer):
 
         return is_encumbered
 
-    def flush_cache(self):
+    def flush_cache(self):  # type: (...) -> None
+        self.__run_async(self.__flush_cache_impl, [(name,) for name in self.dirtied])
+
+    def __flush_cache_impl(self, name):  # type: (str) -> None
         """Flush the cache, writing all cached values to disk."""
-        for name in [n for n in self.dirtied]:
-            self.commit_item(name, keep_parsed=True)
+        self.commit_item(name, keep_parsed=True)
 
     def copy_file_to_container(self, path, name=None, mt=None):
         """Copy a file into this Container instance.
@@ -180,7 +196,11 @@ class KEPubContainer(EpubContainer):
         @return: The name of the file relative to the Container root
         """
         if path is None or not os.path.isfile(path):
-            raise ValueError("A source path must be given")
+            raise ValueError(
+                _(  # noqa: F821 - _ is defined in globals by calibre
+                    "A source path must be given"
+                )
+            )
         if name is None:
             name = os.path.basename(path)
         item = self.generate_item(name, media_type=mt)
@@ -214,50 +234,55 @@ class KEPubContainer(EpubContainer):
                     "A valid file name must be given (got {filename})"
                 ).format(filename=name)
             )
-        for infile in self.html_names():
-            self.log.debug("Adding reference to {0} to file {1}".format(name, infile))
-            root = self.parsed(infile)
-            if root is None:
-                self.log.error("Could not retrieve content file {0}".format(infile))
-                continue
-            head = root.xpath("./xhtml:head", namespaces={"xhtml": XHTML_NAMESPACE})
-            if head is None:
-                self.log.error(
-                    "Could not find a <head> element in content file {0}".format(infile)
-                )
-                continue
-            head = head[0]
-            if head is None:
-                self.log.error(
-                    "A <head> section was found but was undefined in "
-                    + "content file {0}".format(infile)
-                )
-                continue
 
+        self.__run_async_over_content(self.__add_content_file_reference_impl, (name,))
+
+    def __add_content_file_reference_impl(self, infile, name):
+        self.log.debug("Adding reference to {0} to file {1}".format(name, infile))
+        root = self.parsed(infile)
+        if root is None:
+            raise Exception(
+                _(  # noqa: F821 - _ is defined in globals by calibre
+                    "Could not retrieve content file {0}"
+                ).format(infile)
+            )
+        head = root.xpath("./xhtml:head", namespaces={"xhtml": XHTML_NAMESPACE})
+        if head is None:
+            raise Exception(
+                _(  # noqa: F821 - _ is defined in globals by calibre
+                    "Could not find a <head> element in {0}"
+                ).format(infile)
+            )
+        head = head[0]
+        if head is None:
+            raise Exception(
+                _(  # noqa: F821 - _ is defined in globals by calibre
+                    "A <head> section was found but was undefined in content file {0}"
+                ).format(infile)
+            )
+
+        if self.mime_map[name] == CSS_MIMETYPE:
+            elem = head.makeelement(
+                "{%s}link" % XHTML_NAMESPACE,
+                rel="stylesheet",
+                href=os.path.relpath(name, os.path.dirname(infile)).replace(
+                    os.sep, "/"
+                ),
+            )
+        elif self.mime_map[name] == JS_MIMETYPE:
+            elem = head.makeelement(
+                "{%s}script" % XHTML_NAMESPACE,
+                type="text/javascript",
+                src=os.path.relpath(name, os.path.dirname(infile)).replace(os.sep, "/"),
+            )
+        else:
+            elem = None
+
+        if elem is not None:
+            head.append(elem)
             if self.mime_map[name] == CSS_MIMETYPE:
-                elem = head.makeelement(
-                    "{%s}link" % XHTML_NAMESPACE,
-                    rel="stylesheet",
-                    href=os.path.relpath(name, os.path.dirname(infile)).replace(
-                        os.sep, "/"
-                    ),
-                )
-            elif self.mime_map[name] == JS_MIMETYPE:
-                elem = head.makeelement(
-                    "{%s}script" % XHTML_NAMESPACE,
-                    type="text/javascript",
-                    src=os.path.relpath(name, os.path.dirname(infile)).replace(
-                        os.sep, "/"
-                    ),
-                )
-            else:
-                elem = None
-
-            if elem is not None:
-                head.append(elem)
-                if self.mime_map[name] == CSS_MIMETYPE:
-                    self.fix_tail(elem)
-                self.dirty(infile)
+                self.fix_tail(elem)
+            self.dirty(infile)
 
     def fix_tail(self, item):
         """Fix self-closing elements.
@@ -281,132 +306,171 @@ class KEPubContainer(EpubContainer):
             if idx == len(parent) - 1:
                 parent[idx - 1].tail = parent.text
 
-    def forced_cleanup(self):
+    def forced_cleanup(self, name):  # type: (str) -> None
         """Perform cleanup considered essential for standards compliance."""
-        for name in self.html_names():
-            self.log.debug("Forcing cleanup for file {0}".format(name))
-            html = self.raw_data(name, decode=True, normalize_to_nfc=True)
-            if html is None:
-                continue
+        self.log.debug("Forcing cleanup for file {0}".format(name))
+        html = self.raw_data(name, decode=True, normalize_to_nfc=True)
+        if html is None:
+            raise Exception(
+                _(  # noqa: F821 - _ is defined in globals by calibre
+                    "No HTML content in {0}"
+                ).format(name)
+            )
 
-            encoding_match = ENCODING_RE.search(str(html[:75]))
-            encoding = "UTF-8"
-            if encoding_match and encoding_match.group(1):
-                encoding = encoding_match.group(1).upper()
-            if hasattr(html, "decode"):
-                html = html.decode(encoding)
-            if encoding_match and encoding_match.group(1).upper() != "UTF-8":
-                html = re.sub(encoding_match.group(1), "UTF-8", html, 1, re.MULTILINE)
+        encoding_match = ENCODING_RE.search(str(html[:75]))
+        encoding = "UTF-8"
+        if encoding_match and encoding_match.group(1):
+            encoding = encoding_match.group(1).upper()
+        if hasattr(html, "decode"):
+            html = html.decode(encoding)
+        if encoding_match and encoding_match.group(1).upper() != "UTF-8":
+            html = re.sub(encoding_match.group(1), "UTF-8", html, 1, re.MULTILINE)
 
-            # Force meta and link tags to be self-closing
-            html = SELF_CLOSING_RE.sub(r"<\1 \2 />", html)
+        # Force meta and link tags to be self-closing
+        html = SELF_CLOSING_RE.sub(r"<\1 \2 />", html)
 
-            # Force open script tags
-            html = FORCE_OPEN_TAG_RE.sub(r"<\1 \2></\1>", html)
+        # Force open script tags
+        html = FORCE_OPEN_TAG_RE.sub(r"<\1 \2></\1>", html)
 
-            # Remove Unicode replacement characters
-            html = html.replace("\uFFFD", "")
+        # Remove Unicode replacement characters
+        html = html.replace("\uFFFD", "")
 
-            self.replace(name, self.parse_xhtml(html))
-
+        self.replace(name, self.parse_xhtml(html))
         self.flush_cache()
 
-    def clean_markup(self):
+    def clean_markup(self, name):  # type: (str) -> None
         """Clean HTML markup.
 
         This cleans the HTML markup for things which are not strictly
         non-compliant but can cause problems.
         """
-        for name in self.html_names():
-            self.log.debug("Cleaning markup for file {0}".format(name))
-            html = self.raw_data(name, decode=True, normalize_to_nfc=True)
-            if html is None:
-                continue
+        self.log.debug("Cleaning markup for file {0}".format(name))
+        html = self.raw_data(name, decode=True, normalize_to_nfc=True)
+        if html is None:
+            raise Exception(
+                _(  # noqa: F821 - _ is defined in globals by calibre
+                    "No HTML content in {0}"
+                ).format(name)
+            )
 
-            # Get rid of Microsoft cruft
-            html = MS_CRUFT_RE_1.sub(" ", html)
-            html = MS_CRUFT_RE_2.sub("", html)
+        # Get rid of Microsoft cruft
+        html = MS_CRUFT_RE_1.sub(" ", html)
+        html = MS_CRUFT_RE_2.sub("", html)
 
-            # Remove empty headings
-            html = EMPTY_HEADINGS_RE.sub("", html)
+        # Remove empty headings
+        html = EMPTY_HEADINGS_RE.sub("", html)
 
-            self.replace(name, self.parse_xhtml(html))
-
+        self.replace(name, self.parse_xhtml(html))
         self.flush_cache()
 
-    def smarten_punctuation(self):
+    def smarten_punctuation(self):  # type: (...) -> None
+        self.__run_async_over_content(self.__smarten_punctuation_impl)
+
+    def __smarten_punctuation_impl(self, name):  # type: (str) -> None
         """Convert standard punctuation to "smart" punctuation."""
         preprocessor = HeuristicProcessor(log=self.log)
 
-        for name in self.html_names():
-            self.log.debug("Smartening punctuation for file {0}".format(name))
-            html = self.raw_data(name, decode=True, normalize_to_nfc=True)
-            if html is None:
-                continue
+        self.log.debug("Smartening punctuation for file {0}".format(name))
+        html = self.raw_data(name, decode=True, normalize_to_nfc=True)
+        if html is None:
+            raise Exception(
+                _(  # noqa: F821 - _ is defined in globals by calibre
+                    "No HTML content in file {0}"
+                ).format(name)
+            )
 
-            # Fix non-breaking space indents
-            html = preprocessor.fix_nbsp_indents(html)
+        # Fix non-breaking space indents
+        html = preprocessor.fix_nbsp_indents(html)
 
-            # Smarten punctuation
-            html = smartyPants(html)
+        # Smarten punctuation
+        html = smartyPants(html)
 
-            # Ellipsis to HTML entity
-            html = ELLIPSIS_RE.sub("&hellip;", html)
+        # Ellipsis to HTML entity
+        html = ELLIPSIS_RE.sub("&hellip;", html)
 
-            # Double-dash and unicode char code to em-dash
-            html = html.replace("---", " &#x2013; ")
-            html = html.replace("\x97", " &#x2013; ")
-            html = html.replace("\u2013", " &#x2013; ")
-            html = html.replace("--", " &#x2014; ")
-            html = html.replace("\u2014", " &#x2014; ")
+        # Double-dash and unicode char code to em-dash
+        html = html.replace("---", " &#x2013; ")
+        html = html.replace("\x97", " &#x2013; ")
+        html = html.replace("\u2013", " &#x2013; ")
+        html = html.replace("--", " &#x2014; ")
+        html = html.replace("\u2014", " &#x2014; ")
 
-            # Fix comment nodes that got mangled
-            html = html.replace("<! &#x2014; ", "<!-- ")
-            html = html.replace(" &#x2014; >", " -->")
+        # Fix comment nodes that got mangled
+        html = html.replace("<! &#x2014; ", "<!-- ")
+        html = html.replace(" &#x2014; >", " -->")
 
-            self.replace(name, self.parse_xhtml(html))
-
+        self.replace(name, self.parse_xhtml(html))
         self.flush_cache()
 
-    def add_kobo_divs(self):  # type: (...) -> bool
-        """Add KePub divs to each HTML file in the book."""
-        for name in self.html_names():
-            self.log.debug("Adding Kobo divs to {0}".format(name))
-            root = self.parsed(name)
-            kobo_div_count = root.xpath(
-                'count(//xhtml:div[@id="book-inner"])',
-                namespaces={"xhtml": XHTML_NAMESPACE},
-            )
-            if kobo_div_count > 0:
-                self.log.debug("Skipping file, Kobo divs present")
-                continue
-            # NOTE: Hackish heuristic: Forgo this if we have more div's than
-            # p's, which would potentially indicate a book using div's instead
-            # of p's...
-            # Apparently, doing this on those books appears to blow up in a
-            # spectacular way, so, err, don't ;).
-            # FIXME: Try to figure out what's really happening instead of
-            # sidestepping the issue?
-            div_count = int(
-                root.xpath("count(//xhtml:div)", namespaces={"xhtml": XHTML_NAMESPACE})
-            )
-            p_count = int(
-                root.xpath("count(//xhtml:p)", namespaces={"xhtml": XHTML_NAMESPACE})
-            )
-            if div_count > p_count:
-                self.log.debug(
-                    "Skipping file ({0:d} div tags, {1:d} p tags)".format(
-                        div_count, p_count
-                    )
+    def __run_async(self, func, args):  # type: (Callable, List[Tuple[Any]]) -> None
+        threads = [threading.Thread(target=func, args=arg) for arg in args]
+        [th.start() for th in threads]
+        [th.join() for th in threads]
+
+    def __run_async_over_content(
+        self, func, args=None
+    ):  # type: (Callable, Optional[List[Any]]) -> None
+        args = args or ()
+        names = [(name,) + args for name in self.html_names()]
+        self.__run_async(func, names)
+
+    def convert(self):  # type: (...) -> bool
+        """The entry point for converting to KePub"""
+        self.__run_async_over_content(self.add_kobo_spans)
+        self.__run_async_over_content(self.add_kobo_divs)
+
+    def add_kobo_divs(self, name):  # type: (str) -> bool
+        """Add KePub divs to the HTML file."""
+        self.log.debug("Adding Kobo divs to {0}".format(name))
+        root = self.parsed(name)
+        kobo_div_count = root.xpath(
+            'count(//xhtml:div[@id="book-inner"])',
+            namespaces={"xhtml": XHTML_NAMESPACE},
+        )
+        if kobo_div_count > 0:
+            raise Exception(
+                _(  # noqa: F821 - _ is defined in globals by calibre
+                    "Skipping file {fname}"
+                ).format(fname=name)
+                + ", "
+                + ngettext(  # noqa: F821 - ngettext is defined in globals by calibre
+                    "Kobo <div> tag present", "Kobo <div> tags present", kobo_div_count
                 )
-                continue
-            self.__add_kobo_divs_to_body(root)
+            )
 
-            self.replace(name, root)
+        # NOTE: Hackish heuristic: Forgo this if we have more div's than
+        # p's, which would potentially indicate a book using div's instead
+        # of p's...
+        # Apparently, doing this on those books appears to blow up in a
+        # spectacular way, so, err, don't ;).
+        # FIXME: Try to figure out what's really happening instead of
+        # sidestepping the issue?
+        div_count = int(
+            root.xpath("count(//xhtml:div)", namespaces={"xhtml": XHTML_NAMESPACE})
+        )
+        p_count = int(
+            root.xpath("count(//xhtml:p)", namespaces={"xhtml": XHTML_NAMESPACE})
+        )
+        if div_count > p_count:
+            raise Exception(
+                _(  # noqa: F821 - _ is defined in globals by calibre
+                    "Skipping file {fname}"
+                ).format(fname=name)
+                + " ("
+                + ngettext(  # noqa: F821 - ngettext is defined in globals by calibre
+                    "{div_count:d} <div> tag", "{div_count:d} <div> tags", div_count
+                ).format(div_count=int(div_count))
+                + ", "
+                + ngettext(  # noqa: F821 - ngettext is defined in globals by calibre
+                    "{p_count:d} <p> tag", "{p_count:d} <p> tags", p_count
+                ).format(p_count=int(p_count))
+                + ")"
+            )
 
+        self.__add_kobo_divs_to_body(root)
+
+        self.replace(name, root)
         self.flush_cache()
-
-        return True
 
     def __add_kobo_divs_to_body(self, root):
         body = root.xpath("./xhtml:body", namespaces={"xhtml": XHTML_NAMESPACE})[0]
@@ -453,32 +517,34 @@ class KEPubContainer(EpubContainer):
         # And re-chuck the full div pyramid in the now empty body
         body.append(outer_div)
 
-    def add_kobo_spans(self):
-        """Add KePub spans (used for in-book location) to each HTML file."""
-        for name in self.html_names():
-            self.log.debug("Adding Kobo spans to {0}".format(name))
-            root = self.parsed(name)
-            kobo_span_count = root.xpath(
-                'count(.//xhtml:span[@class="koboSpan" '
-                + 'or starts-with(@id, "kobo.")])',
-                namespaces={"xhtml": XHTML_NAMESPACE},
+    def add_kobo_spans(self, name):  # type: (str) -> None
+        """Add KePub spans (used for in-book location) the HTML file."""
+        self.log.debug("Adding Kobo spans to {0}".format(name))
+        root = self.parsed(name)
+        kobo_span_count = root.xpath(
+            'count(.//xhtml:span[@class="koboSpan" ' + 'or starts-with(@id, "kobo.")])',
+            namespaces={"xhtml": XHTML_NAMESPACE},
+        )
+        if kobo_span_count > 0:
+            raise Exception(
+                _(  # noqa: F821 - _ is defined in globals by calibre
+                    "Skipping file {fname}"
+                ).format(fname=name)
+                + ", "
+                + ngettext(  # noqa: F821 - ngettext is defined by calibre
+                    "Kobo <span> tag present",
+                    "Kobo <span> tags present",
+                    kobo_span_count,
+                )
             )
-            if kobo_span_count > 0:
-                self.log.debug("Skipping file, Kobo spans present")
-                continue
 
-            self._paragraph_counter = 1
-            self._segment_counter = 1
-            body = root.xpath("./xhtml:body", namespaces={"xhtml": XHTML_NAMESPACE})[0]
-            self._add_kobo_spans_to_node(body)
+        body = root.xpath("./xhtml:body", namespaces={"xhtml": XHTML_NAMESPACE})[0]
+        self._add_kobo_spans_to_node(body)
 
-            self.replace(name, root)
-
+        self.replace(name, root)
         self.flush_cache()
 
-        return True
-
-    def _add_kobo_spans_to_node(self, node):
+    def _add_kobo_spans_to_node(self, node, paragraph_counter=1):
         # process node only if it is not a comment or a processing instruction
         if (
             node is None
@@ -501,15 +567,11 @@ class KEPubContainer(EpubContainer):
                 span = etree.Element(
                     "{%s}span" % (XHTML_NAMESPACE,),
                     attrib={
-                        "id": "kobo.{0}.{1}".format(
-                            self._paragraph_counter, self._segment_counter
-                        ),
+                        "id": "kobo.{0}.1".format(paragraph_counter),
                         "class": "koboSpan",
                     },
                 )
                 span.append(node)
-                self._paragraph_counter += 1
-                self._segment_counter = 1
                 return span
 
         # save node content for later
@@ -528,31 +590,33 @@ class KEPubContainer(EpubContainer):
 
         # the node text is converted to spans
         if node_text is not None:
-            if not self._append_kobo_spans_from_text(node, node_text):
+            if not self._append_kobo_spans_from_text(
+                node, node_text, paragraph_counter
+            ):
                 # didn't add spans, restore text
                 node.text = node_text
+            else:
+                paragraph_counter += 1
 
         # re-add the node children
         for child in node_children:
             # save child tail for later
             child_tail = child.tail
             child.tail = None
-            node.append(self._add_kobo_spans_to_node(child))
+            node.append(self._add_kobo_spans_to_node(child, paragraph_counter))
             # the child tail is converted to spans
             if child_tail is not None:
-                self._paragraph_counter += 1
-                self._segment_counter = 1
-                if not self._append_kobo_spans_from_text(node, child_tail):
+                if not self._append_kobo_spans_from_text(
+                    node, child_tail, paragraph_counter
+                ):
                     # didn't add spans, restore tail on last child
-                    self._paragraph_counter -= 1
                     node[-1].tail = child_tail
-
-            self._paragraph_counter += 1
-            self._segment_counter = 1
+                else:
+                    paragraph_counter += 1
 
         return node
 
-    def _append_kobo_spans_from_text(self, node, text):
+    def _append_kobo_spans_from_text(self, node, text, paragraph_counter=1):
         if not text:
             return False
 
@@ -572,18 +636,17 @@ class KEPubContainer(EpubContainer):
         # be prepended to the next group. Probably equivalent to make
         # sure the space stays in the span at the end.
         # add each sentence in its own span
+        segment_counter = 1
         for g in groups:
             span = etree.Element(
                 "{%s}span" % (XHTML_NAMESPACE,),
                 attrib={
-                    "id": "kobo.{0}.{1}".format(
-                        self._paragraph_counter, self._segment_counter
-                    ),
+                    "id": "kobo.{0}.{1}".format(paragraph_counter, segment_counter),
                     "class": "koboSpan",
                 },
             )
             span.text = g
             node.append(span)
-            self._segment_counter += 1
+            segment_counter += 1
 
         return True

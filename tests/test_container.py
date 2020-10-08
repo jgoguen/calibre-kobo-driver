@@ -122,7 +122,10 @@ class TestContainer(TestAssertions):
         self.assertGreaterEqual(len(html_names), 1)
         self.assertIn(container_name, html_names)
 
-        self.assertTrue(added_func())
+        if expect_changed:
+            added_func(container_name)
+        else:
+            self.assertRaises(Exception, added_func, container_name)
 
         with open(os.path.join(self.tmpdir, container_name), "r") as f:
             if expect_changed:
@@ -184,7 +187,7 @@ class TestContainer(TestAssertions):
         self.assertIsNotNone(container.MS_CRUFT_RE_1.search(html))
         self.assertIsNotNone(container.EMPTY_HEADINGS_RE.search(html))
 
-        self.container.clean_markup()
+        self.container.clean_markup(container_name)
 
         html = self.container.raw_data(
             container_name, decode=True, normalize_to_nfc=True
@@ -361,7 +364,7 @@ class TestContainer(TestAssertions):
             )
         ]
 
-        self.assertTrue(self.container.add_kobo_spans())
+        self.container.add_kobo_spans(container_name)
 
         post_span = self.container.parsed(container_name)
         post_text_chunks = [
@@ -389,7 +392,7 @@ class TestContainer(TestAssertions):
         self.assertEqual(pre_p_count, 2)
         self.assertEqual(pre_span_count, 0)
 
-        self.assertTrue(self.container.add_kobo_spans())
+        self.container.add_kobo_spans(container_name)
 
         post_span = self.container.parsed(container_name)
 

@@ -20,7 +20,6 @@ import sys
 import time
 import traceback
 from functools import partial
-from multiprocessing import Lock
 
 from calibre import prints
 from calibre.constants import config_dir
@@ -46,7 +45,7 @@ KOBO_JS_RE = re.compile(r".*/?kobo.*?\.js$", re.IGNORECASE)
 XML_NAMESPACE = "http://www.w3.org/XML/1998/namespace"
 CONFIGDIR = os.path.join(config_dir, "plugins")  # type: str
 REFERENCE_KEPUB = os.path.join(CONFIGDIR, "reference.kepub.epub")  # type: str
-PLUGIN_VERSION = (3, 2, 15)
+PLUGIN_VERSION = (3, 3, 0)
 PLUGIN_MINIMUM_CALIBRE_VERSION = (3, 42, 0)
 
 
@@ -62,7 +61,6 @@ class Logger:
         ):
             self.log_level = "DEBUG"
 
-        self._lock = Lock()
         # According to Kovid, calibre always uses UTF-8 for the Python 3 version
         self.preferred_encoding = "UTF-8" if is_py3 else preferred_encoding
         self.outputs = [ANSIStream()]
@@ -98,16 +96,14 @@ class Logger:
                 o.flush()
 
     def print_formatted_log(self, level, *args, **kwargs):
-        with self._lock:
-            tagged_args = self._tag_args(level, *args)
-            self._prints(level, *tagged_args, **kwargs)
+        tagged_args = self._tag_args(level, *args)
+        self._prints(level, *tagged_args, **kwargs)
 
     def exception(self, *args, **kwargs):
         limit = kwargs.pop("limit", None)
-        with self._lock:
-            tagged_args = self._tag_args("ERROR", *args)
-            self._prints("ERROR", *tagged_args, **kwargs)
-            self._prints("ERROR", traceback.format_exc(limit))
+        tagged_args = self._tag_args("ERROR", *args)
+        self._prints("ERROR", *tagged_args, **kwargs)
+        self._prints("ERROR", traceback.format_exc(limit))
 
 
 log = Logger()
@@ -138,7 +134,7 @@ def modify_epub(
         cover_meta_node = cover_meta_node_list[0]  # type: _Element
         cover_id = cover_meta_node.attrib.get("content", None)
 
-        log.debug("Found meta node with name=cover: {0}".format(cover_meta_node))
+        log.debug("Found meta node with name=cover")
 
         if cover_id:
             log.info("Found cover image ID '{0}'".format(cover_id))
@@ -150,7 +146,7 @@ def modify_epub(
             if len(cover_node_list) > 0:
                 cover_node = cover_node_list[0]  # type: _Element
 
-                log.debug("Found an item node with cover ID: {0}".format(cover_node))
+                log.debug("Found an item node with cover ID")
 
                 if cover_node.attrib.get("properties", "") != "cover-image":
                     log.info("Setting cover-image property")
@@ -187,12 +183,6 @@ def modify_epub(
             else:
                 log.warning("Item node is already set as cover-image")
             found_cover = True
-
-    # Because of the changes made to the markup here, cleanup needs to be done
-    # before any other content file processing
-    container.forced_cleanup()
-    if opts.get("clean_markup", False):
-        container.clean_markup()
 
     # Hyphenate files?
     if opts.get("no-hyphens", False):
@@ -241,11 +231,8 @@ def modify_epub(
                 )
             )
 
-        # Add the Kobo span tags
-        container.add_kobo_spans()
-
-        # Add the Kobo style hacks div tags
-        container.add_kobo_divs()
+        # Add the Kobo span and div tags
+        container.convert()
 
         # Check to see if there's already a kobo*.js in the ePub
         skip_js = False  # type: str

@@ -213,7 +213,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
         is_encumbered_book = False
         try:
             if container is None:
-                container = KEPubContainer(infile, common.log)
+                container = KEPubContainer(infile, common.log, self.clean_markup)
             else:
                 is_encumbered_book = container.is_drm_encumbered
         except DRMError:
@@ -277,7 +277,6 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
                 infile,
                 metadata=metadata,
                 opts={
-                    "clean_markup": self.clean_markup,
                     "hyphenate": self.hyphenate and not self.disable_hyphenation,
                     "no-hyphens": self.disable_hyphenation,
                     "smarten_punctuation": self.smarten_punctuation,
