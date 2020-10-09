@@ -248,6 +248,8 @@ Decided you want to contribute to the development of these plugins?
 1. **Test pre-released code** from Github. Between releases, new code is
    committed to the Github repository. Submit any bug reports, feedback, feature
    requests you think of during your testing.
+1. **Translate text**. Translations use the [Transifex translation
+   project](https://www.transifex.com/joel-goguen/calibre-kobo-driver/).
 
 You may also prefer to contribute in some other way. You may contribute by
 answering questions from other people who may have issues, continuing to use
