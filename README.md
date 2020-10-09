@@ -30,6 +30,29 @@ plugins are available:
 ANY CIRCUMSTANCES, DELETE THE FILES FOR THE SOURCE FORMAT. ALWAYS HAVE A
 NON-KEPUB FORMAT FOR YOUR BOOKS.**
 
+When viewing a KePub book on a Kobo reader, a different viewer displays
+the contents than an ePub file. The main benefits of using the KePub viewer are:
+
+- Page numbers show the number of page turns remaining in the current chapter
+  instead of the estimated number of pages for the entire book.
+  - The `KoboTouchExtended` driver has an option to use full-book page numbers
+    instead if you prefer that.
+- Reading statistics (time left in this chapter, time for the next chapter,
+  time to complete the book)
+- The book title is at the top of each page.
+- The chapter title, if any, is at the bottom of each page with the page
+  numbers.
+
+Depending on your preferences, there are some areas where the ePub renderer is
+a better choice than the KePub renderer:
+
+- Better hyphenation. The KePub renderer sometimes hyphenates words in the wrong
+  place if they have trailing punctuation.
+- Full justification works. The KePub renderer sometimes doesn't
+  correctly justify lines with symbols represented by HTML entities (such as
+  em-dashes or ellipses).
+- Embedded fonts are better supported.
+
 ## Installation
 
 To install the current release version of this plugin directly within calibre:
@@ -362,4 +385,4 @@ The solution is to re-read the Known Issues section.
 [mdwriter]: https://www.mobileread.com/forums/showthread.php?t=261010
 [paypaldonate]: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=UXNT7PRVZ5HGA
 [winshowext]: http://support.microsoft.com/kb/865219
-wintargz]: http://gettingeek.com/how-to-create-tarball-compress-to-gzip-under-windows-tar-gz-379.html
+[wintargz]: http://gettingeek.com/how-to-create-tarball-compress-to-gzip-under-windows-tar-gz-379.html
