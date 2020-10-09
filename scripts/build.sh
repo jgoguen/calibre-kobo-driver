@@ -242,6 +242,28 @@ run_tests() {
 	test_pyver "3"
 }
 
+# Update Vale styles
+vale_styles() {
+	MKTEMP_BIN="$(command -v mktemp)"
+	CURL_BIN="$(command -v curl)"
+	UNZIP_BIN="$(command -v unzip)"
+	STYLE_DIR="$("${MKTEMP_BIN}" -d)"
+
+	for n in Microsoft proselint write-good Joblint; do
+		if [ ! -d .github/vale-styles ]; then
+			mkdir -p .github/vale-styles
+		fi
+		if [ -d ".github/vale-styles/${n}" ]; then
+			/bin/rm -r ".github/vale-styles/${n}"
+		fi
+
+		"${CURL_BIN}" -fsSL "https://github.com/errata-ai/${n}/releases/latest/download/${n}.zip" >"${STYLE_DIR}/${n}.zip"
+		"${UNZIP_BIN}" "${STYLE_DIR}/${n}.zip" -d .github/vale-styles
+	done
+
+	/bin/rm -r "${STYLE_DIR}"
+}
+
 
 # Check run mode; default if no arguments are given is 'build'
 if [ "$#" -eq 0 ]; then
@@ -275,6 +297,9 @@ else
 				;;
 			pot|translations)
 				make_pot
+				;;
+			vale|styles)
+				vale_styles
 				;;
 			clean)
 				clean
