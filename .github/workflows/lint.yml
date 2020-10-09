@@ -48,7 +48,18 @@ jobs:
     steps:
       - uses: actions/checkout@v2.2.0
 
+      - name: File Changes
+        id: file_changes
+        uses: trilom/file-changes-action@v1.2.4
+
       - name: Lint Markdown files
         uses: errata-ai/vale-action@v1.3.0
+        with:
+          files: '${{ steps.file_changes.outputs.files_modified }}'
+          styles: |
+            https://github.com/errata-ai/Microsoft/releases/latest/download/Microsoft.zip
+            https://github.com/errata-ai/proselint/releases/latest/download/proselint.zip
+            https://github.com/errata-ai/Joblint/releases/latest/download/Joblint.zip
+            https://github.com/errata-ai/write-good/releases/latest/download/write-good.zip
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
