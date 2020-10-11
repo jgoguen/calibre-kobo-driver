@@ -45,7 +45,7 @@ KOBO_JS_RE = re.compile(r".*/?kobo.*?\.js$", re.IGNORECASE)
 XML_NAMESPACE = "http://www.w3.org/XML/1998/namespace"
 CONFIGDIR = os.path.join(config_dir, "plugins")  # type: str
 REFERENCE_KEPUB = os.path.join(CONFIGDIR, "reference.kepub.epub")  # type: str
-PLUGIN_VERSION = (3, 3, 0)
+PLUGIN_VERSION = (3, 4, 0)
 PLUGIN_MINIMUM_CALIBRE_VERSION = (3, 42, 0)
 
 
@@ -199,7 +199,7 @@ def modify_epub(
         )  # type: str
         container.add_content_file_reference("kte-css/{0}".format(css_path))
         os.unlink(nohyphen_css.name)
-    elif opts.get("hyphenate", False):
+    elif opts.get("hyphenate", False) and opts.get("hyphen_min_chars", 6) > 0:
         if metadata and metadata.language == NULL_VALUES["language"]:
             log.warning(
                 "Hyphenation is enabled but not overriding content file "
@@ -208,7 +208,18 @@ def modify_epub(
         hyphen_css = PersistentTemporaryFile(
             suffix="_hyphenate", prefix="kepub_"
         )  # type: PersistentTemporaryFile
-        hyphen_css.write(get_resources("css/hyphenation.css"))  # noqa: F821
+        css_template = get_resources("css/hyphenation.css.tmpl").decode()  # noqa: F821
+        hyphen_limit_lines = opts.get("hyphen_limit_lines", 2)
+        if hyphen_limit_lines == 0:
+            hyphen_limit_lines = "no-limit"
+        hyphen_css.write(
+            css_template.format(
+                hyphen_min_chars=opts.get("hyphen_min_chars"),
+                hyphen_min_chars_before=opts.get("hyphen_min_chars_before", 3),
+                hyphen_min_chars_after=opts.get("hyphen_min_chars_after", 3),
+                hyphen_limit_lines=hyphen_limit_lines,
+            ).encode()
+        )
         hyphen_css.close()
 
         css_path = os.path.basename(
@@ -268,3 +279,13 @@ def modify_epub(
 
     _modify_time = time.time() - _modify_start
     log.info("modify_epub took {0:f} seconds".format(_modify_time))
+
+
+def intValueChanged(widget, singular, plural, *args, **kwargs):
+    try:
+        from PyQt5 import Qt as QtGui
+    except ImportError:
+        from PyQt4 import QtGui
+
+    if isinstance(widget, (QtGui.QSpinBox, QtGui.QDoubleSpinBox)):
+        widget.setSuffix(" " + ngettext(singular, plural, widget.value()))  # noqa: F821

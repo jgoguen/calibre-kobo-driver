@@ -8,11 +8,15 @@ __license__ = "GPL v3"
 __copyright__ = "2013, Joel Goguen <jgoguen@jgoguen.ca>"
 __docformat__ = "markdown en"
 
+import functools
+
 from calibre.ebooks.conversion.config import OPTIONS
 from calibre.gui2.convert import Widget
 from calibre.gui2.convert.epub_output import PluginWidget as EPUBPluginWidget
 from calibre.gui2.convert.epub_output_ui import Ui_Form as EPUBUIForm
 from calibre.gui2.preferences.conversion import OutputOptions as BaseOutputOptions
+
+from calibre_plugins.kepubout import common
 
 # Support load_translations() without forcing calibre 1.9+
 try:
@@ -39,7 +43,15 @@ class PluginWidget(EPUBPluginWidget, EPUBUIForm):
             self,
             parent,
             OPTIONS["output"].get("epub", tuple())
-            + ("kepub_hyphenate", "kepub_clean_markup", "kepub_disable_hyphenation"),
+            + (
+                "kepub_hyphenate",
+                "kepub_clean_markup",
+                "kepub_disable_hyphenation",
+                "kepub_hyphenate_chars",
+                "kepub_hyphenate_chars_before",
+                "kepub_hyphenate_chars_after",
+                "kepub_hyphenate_limit_lines",
+            ),
         )
         for i in range(2):
             self.opt_no_svg_cover.toggle()
@@ -78,7 +90,111 @@ class PluginWidget(EPUBPluginWidget, EPUBUIForm):
         )
         self.gridLayout.addWidget(self.opt_kepub_disable_hyphenation, rows, 1, 1, 1)
 
-        rows = rows + 1
+        rows += 1
+
+        self.opt_kepub_hyphenate_chars_label = QtGui.QLabel(
+            _("Minimum word length to hyphenate") + ":"  # noqa: F821
+        )
+        self.gridLayout.addWidget(self.opt_kepub_hyphenate_chars_label, rows, 0, 1, 1)
+
+        self.opt_kepub_hyphenate_chars = QtGui.QSpinBox(Form)
+        self.opt_kepub_hyphenate_chars_label.setBuddy(self.opt_kepub_hyphenate_chars)
+        self.opt_kepub_hyphenate_chars.setObjectName("opt_kepub_hyphenate_chars")
+        self.opt_kepub_hyphenate_chars.setSpecialValueText(_("Disabled"))  # noqa: F821
+        self.opt_kepub_hyphenate_chars.valueChanged.connect(
+            functools.partial(
+                common.intValueChanged,
+                self.opt_kepub_hyphenate_chars,
+                _("character"),  # noqa: F821
+                _("characters"),  # noqa: F821
+            )
+        )
+        self.gridLayout.addWidget(self.opt_kepub_hyphenate_chars, rows, 1, 1, 1)
+
+        rows += 1
+
+        self.opt_kepub_hyphenate_chars_before_label = QtGui.QLabel(
+            _("Minimum characters before hyphens") + ":"  # noqa: F821
+        )
+        self.gridLayout.addWidget(
+            self.opt_kepub_hyphenate_chars_before_label, rows, 0, 1, 1
+        )
+
+        self.opt_kepub_hyphenate_chars_before = QtGui.QSpinBox(Form)
+        self.opt_kepub_hyphenate_chars_before_label.setBuddy(
+            self.opt_kepub_hyphenate_chars_before
+        )
+        self.opt_kepub_hyphenate_chars_before.setObjectName(
+            "opt_kepub_hyphenate_chars_before"
+        )
+        self.opt_kepub_hyphenate_chars_before.valueChanged.connect(
+            functools.partial(
+                common.intValueChanged,
+                self.opt_kepub_hyphenate_chars_before,
+                _("character"),  # noqa: F821
+                _("characters"),  # noqa: F821
+            )
+        )
+        self.opt_kepub_hyphenate_chars_before.setMinimum(2)
+        self.gridLayout.addWidget(self.opt_kepub_hyphenate_chars_before, rows, 1, 1, 1)
+
+        rows += 1
+
+        self.opt_kepub_hyphenate_chars_after_label = QtGui.QLabel(
+            _("Minimum characters after hyphens") + ":"  # noqa: F821
+        )
+        self.gridLayout.addWidget(
+            self.opt_kepub_hyphenate_chars_after_label, rows, 0, 1, 1
+        )
+
+        self.opt_kepub_hyphenate_chars_after = QtGui.QSpinBox(Form)
+        self.opt_kepub_hyphenate_chars_after_label.setBuddy(
+            self.opt_kepub_hyphenate_chars_after
+        )
+        self.opt_kepub_hyphenate_chars_after.setObjectName(
+            "opt_kepub_hyphenate_chars_after"
+        )
+        self.opt_kepub_hyphenate_chars_after.valueChanged.connect(
+            functools.partial(
+                common.intValueChanged,
+                self.opt_kepub_hyphenate_chars_after,
+                _("character"),  # noqa: F821
+                _("characters"),  # noqa: F821
+            )
+        )
+        self.opt_kepub_hyphenate_chars_after.setMinimum(2)
+        self.gridLayout.addWidget(self.opt_kepub_hyphenate_chars_after, rows, 1, 1, 1)
+
+        rows += 1
+
+        self.opt_kepub_hyphenate_limit_lines_label = QtGui.QLabel(
+            _("Maximum consecutive hyphenated lines") + ":"  # noqa: F821
+        )
+        self.gridLayout.addWidget(
+            self.opt_kepub_hyphenate_limit_lines_label, rows, 0, 1, 1
+        )
+
+        self.opt_kepub_hyphenate_limit_lines = QtGui.QSpinBox(Form)
+        self.opt_kepub_hyphenate_limit_lines_label.setBuddy(
+            self.opt_kepub_hyphenate_limit_lines
+        )
+        self.opt_kepub_hyphenate_limit_lines.setObjectName(
+            "opt_kepub_hyphenate_limit_lines"
+        )
+        self.opt_kepub_hyphenate_limit_lines.setSpecialValueText(
+            _("Disabled")  # noqa: F821
+        )
+        self.opt_kepub_hyphenate_limit_lines.valueChanged.connect(
+            functools.partial(
+                common.intValueChanged,
+                self.opt_kepub_hyphenate_limit_lines,
+                _("line"),  # noqa: F821
+                _("lines"),  # noqa: F821
+            )
+        )
+        self.gridLayout.addWidget(self.opt_kepub_hyphenate_limit_lines, rows, 1, 1, 1)
+
+        rows += 1
 
         self.opt_kepub_clean_markup = QtGui.QCheckBox(Form)
         self.opt_kepub_clean_markup.setObjectName(
@@ -87,9 +203,9 @@ class PluginWidget(EPUBPluginWidget, EPUBUIForm):
         self.opt_kepub_clean_markup.setText(_("Clean up ePub markup"))  # noqa: F821
         self.gridLayout.addWidget(self.opt_kepub_clean_markup, rows, 0, 1, 1)
 
-        rows = rows + 1
-
         # Next options here
+
+        rows += 1
 
         self.gridLayout.addItem(spacer, rows, 0, 1, 1)
 

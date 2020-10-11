@@ -12,9 +12,12 @@ __license__ = "GPL v3"
 __copyright__ = "2016, David Forrester, Joel Goguen <contact@jgoguen.ca>"
 __docformat__ = "markdown en"
 
+import functools
+
 from PyQt5.Qt import QGridLayout
 from PyQt5.Qt import QLabel
 from PyQt5.Qt import QLineEdit
+from PyQt5.Qt import QSpinBox
 from PyQt5.Qt import QVBoxLayout
 
 from calibre.devices.kobo.kobotouch_config import KOBOTOUCHConfig
@@ -22,7 +25,7 @@ from calibre.gui2.device_drivers.tabbed_device_config import DeviceConfigTab
 from calibre.gui2.device_drivers.tabbed_device_config import DeviceOptionsGroupBox
 from calibre.gui2.device_drivers.tabbed_device_config import create_checkbox
 
-from calibre_plugins.kobotouch_extended.common import log
+from calibre_plugins.kobotouch_extended import common
 
 # Support load_translations() without forcing calibre 1.9+
 try:
@@ -64,7 +67,7 @@ class KOBOTOUCHEXTENDEDConfig(KOBOTOUCHConfig):
 
     def commit(self):
         """Process driver options for saving."""
-        log.debug("KOBOTOUCHEXTENDEDConfig::commit: start")
+        common.log.debug("KOBOTOUCHEXTENDEDConfig::commit: start")
         p = super(KOBOTOUCHEXTENDEDConfig, self).commit()
 
         p["extra_features"] = self.extra_features
@@ -76,6 +79,10 @@ class KOBOTOUCHEXTENDEDConfig(KOBOTOUCHConfig):
         p["full_page_numbers"] = self.full_page_numbers
         p["disable_hyphenation"] = self.disable_hyphenation
         p["file_copy_dir"] = self.file_copy_dir
+        p["hyphenate_chars"] = self.hyphenate_chars
+        p["hyphenate_chars_before"] = self.hyphenate_chars_before
+        p["hyphenate_chars_after"] = self.hyphenate_chars_after
+        p["hyphenate_limit_lines"] = self.hyphenate_limit_lines
 
         return p
 
@@ -195,6 +202,98 @@ class ExtendedGroupBox(DeviceOptionsGroupBox):
             device.get_pref("disable_hyphenation"),
         )
 
+        self.opt_kepub_hyphenate_chars_label = QLabel(
+            _("Minimum word length to hyphenate") + ":"  # noqa: F821
+        )
+
+        self.opt_kepub_hyphenate_chars = QSpinBox(self)
+        self.opt_kepub_hyphenate_chars_label.setBuddy(self.opt_kepub_hyphenate_chars)
+        self.opt_kepub_hyphenate_chars.setObjectName("opt_kepub_hyphenate_chars")
+        self.opt_kepub_hyphenate_chars.setSpecialValueText(_("Disabled"))  # noqa: F821
+        self.opt_kepub_hyphenate_chars.valueChanged.connect(
+            functools.partial(
+                common.intValueChanged,
+                self.opt_kepub_hyphenate_chars,
+                _("character"),  # noqa: F821
+                _("characters"),  # noqa: F821
+            )
+        )
+        self.opt_kepub_hyphenate_chars.setValue(device.get_pref("hyphenate_chars"))
+
+        self.opt_kepub_hyphenate_chars_before_label = QLabel(
+            _("Minimum characters before hyphens") + ":"  # noqa: F821
+        )
+
+        self.opt_kepub_hyphenate_chars_before = QSpinBox(self)
+        self.opt_kepub_hyphenate_chars_before_label.setBuddy(
+            self.opt_kepub_hyphenate_chars_before
+        )
+        self.opt_kepub_hyphenate_chars_before.setObjectName(
+            "opt_kepub_hyphenate_chars_before"
+        )
+        self.opt_kepub_hyphenate_chars_before.valueChanged.connect(
+            functools.partial(
+                common.intValueChanged,
+                self.opt_kepub_hyphenate_chars_before,
+                _("character"),  # noqa: F821
+                _("characters"),  # noqa: F821
+            )
+        )
+        self.opt_kepub_hyphenate_chars_before.setMinimum(2)
+        self.opt_kepub_hyphenate_chars_before.setValue(
+            device.get_pref("hyphenate_chars_before")
+        )
+
+        self.opt_kepub_hyphenate_chars_after_label = QLabel(
+            _("Minimum characters after hyphens") + ":"  # noqa: F821
+        )
+
+        self.opt_kepub_hyphenate_chars_after = QSpinBox(self)
+        self.opt_kepub_hyphenate_chars_after_label.setBuddy(
+            self.opt_kepub_hyphenate_chars_after
+        )
+        self.opt_kepub_hyphenate_chars_after.setObjectName(
+            "opt_kepub_hyphenate_chars_after"
+        )
+        self.opt_kepub_hyphenate_chars_after.valueChanged.connect(
+            functools.partial(
+                common.intValueChanged,
+                self.opt_kepub_hyphenate_chars_after,
+                _("character"),  # noqa: F821
+                _("characters"),  # noqa: F821
+            )
+        )
+        self.opt_kepub_hyphenate_chars_after.setMinimum(2)
+        self.opt_kepub_hyphenate_chars_after.setValue(
+            device.get_pref("hyphenate_chars_after")
+        )
+
+        self.opt_kepub_hyphenate_limit_lines_label = QLabel(
+            _("Maximum consecutive hyphenated lines") + ":"  # noqa: F821
+        )
+
+        self.opt_kepub_hyphenate_limit_lines = QSpinBox(self)
+        self.opt_kepub_hyphenate_limit_lines_label.setBuddy(
+            self.opt_kepub_hyphenate_limit_lines
+        )
+        self.opt_kepub_hyphenate_limit_lines.setObjectName(
+            "opt_kepub_hyphenate_limit_lines"
+        )
+        self.opt_kepub_hyphenate_limit_lines.setSpecialValueText(
+            _("Disabled")  # noqa: F821
+        )
+        self.opt_kepub_hyphenate_limit_lines.valueChanged.connect(
+            functools.partial(
+                common.intValueChanged,
+                self.opt_kepub_hyphenate_limit_lines,
+                _("line"),  # noqa: F821
+                _("lines"),  # noqa: F821
+            )
+        )
+        self.opt_kepub_hyphenate_limit_lines.setValue(
+            device.get_pref("hyphenate_limit_lines")
+        )
+
         self.options_layout.addWidget(self.extra_features_checkbox, 0, 0, 1, 1)
         self.options_layout.addWidget(self.upload_encumbered_checkbox, 0, 1, 1, 1)
         self.options_layout.addWidget(self.skip_failed_checkbox, 1, 0, 1, 1)
@@ -205,7 +304,21 @@ class ExtendedGroupBox(DeviceOptionsGroupBox):
         self.options_layout.addWidget(self.file_copy_dir_edit, 4, 1, 1, 1)
         self.options_layout.addWidget(self.full_page_numbers_checkbox, 5, 0, 1, 1)
         self.options_layout.addWidget(self.disable_hyphenation_checkbox, 5, 1, 1, 1)
-        self.options_layout.setRowStretch(6, 2)
+        self.options_layout.addWidget(self.opt_kepub_hyphenate_chars_label, 6, 0, 1, 1)
+        self.options_layout.addWidget(self.opt_kepub_hyphenate_chars, 6, 1, 1, 1)
+        self.options_layout.addWidget(
+            self.opt_kepub_hyphenate_chars_before_label, 7, 0, 1, 1
+        )
+        self.options_layout.addWidget(self.opt_kepub_hyphenate_chars_before, 7, 1, 1, 1)
+        self.options_layout.addWidget(
+            self.opt_kepub_hyphenate_chars_after_label, 8, 0, 1, 1
+        )
+        self.options_layout.addWidget(self.opt_kepub_hyphenate_chars_after, 8, 1, 1, 1)
+        self.options_layout.addWidget(
+            self.opt_kepub_hyphenate_limit_lines_label, 9, 0, 1, 1
+        )
+        self.options_layout.addWidget(self.opt_kepub_hyphenate_limit_lines, 9, 1, 1, 1)
+        self.options_layout.setRowStretch(10, 2)
 
     @property
     def extra_features(self):
@@ -251,3 +364,19 @@ class ExtendedGroupBox(DeviceOptionsGroupBox):
     def file_copy_dir(self):
         """Determine where to copy converted KePub books to."""
         return self.file_copy_dir_edit.text().strip()
+
+    @property
+    def hyphenate_chars(self):
+        return self.opt_kepub_hyphenate_chars.value()
+
+    @property
+    def hyphenate_chars_before(self):
+        return self.opt_kepub_hyphenate_chars_before.value()
+
+    @property
+    def hyphenate_chars_after(self):
+        return self.opt_kepub_hyphenate_chars_after.value()
+
+    @property
+    def hyphenate_limit_lines(self):
+        return self.opt_kepub_hyphenate_limit_lines.value()

@@ -79,6 +79,42 @@ class KEPubOutput(OutputFormatPlugin):
             recommended_value=True,
             help=_("Select this to clean up the internal ePub markup."),  # noqa: F821
         ),
+        OptionRecommendation(
+            name="kepub_hyphenate_chars",
+            recommended_value=6,
+            help=_(  # noqa: F821
+                "Sets the minimum word length, in characters, for hyphenation "
+                + "to be allowed."
+            ),
+        ),
+        OptionRecommendation(
+            name="kepub_hyphenate_chars_before",
+            recommended_value=3,
+            help=_(  # noqa: F821
+                "Sets the minimum number of characters which must appear before "
+                + "a hyphen"
+            ),
+        ),
+        OptionRecommendation(
+            name="kepub_hyphenate_chars_after",
+            recommended_value=3,
+            help=_(  # noqa: F821
+                "Sets the minimum number of characters which must appear after a hyphen"
+            ),
+        ),
+        OptionRecommendation(
+            name="kepub_hyphenate_limit_lines",
+            recommended_value=2,
+            help=" ".join(
+                [
+                    _(  # noqa: F821
+                        "Sets the maximum number of consecutive lines that may be "
+                        + "hyphenated."
+                    ),
+                    _("Set this to 0 to disable limiting."),  # noqa: F821
+                ]
+            ),
+        ),
     }
     kepub_recommendations = {("epub_version", "3", OptionRecommendation.LOW)}
 
@@ -150,6 +186,10 @@ class KEPubOutput(OutputFormatPlugin):
                 metadata=mi,
                 opts={
                     "hyphenate": opts.kepub_hyphenate,
+                    "hyphen_min_chars": opts.kepub_hyphenate_chars,
+                    "hyphen_min_chars_before": opts.kepub_hyphenate_chars_before,
+                    "hyphen_min_chars_after": opts.kepub_hyphenate_chars_after,
+                    "hyphen_limit_lines": opts.kepub_hyphenate_limit_lines,
                     "no-hyphens": opts.kepub_disable_hyphenation,
                     "smarten_punctuation": False,
                     "extended_kepub_features": True,

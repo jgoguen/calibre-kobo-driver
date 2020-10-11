@@ -106,6 +106,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
             or self.skip_failed
             or self.smarten_punctuation
             or self.disable_hyphenation
+            or self.hyphenate_chars > 0
         )
 
     @classmethod
@@ -278,6 +279,10 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
                 metadata=metadata,
                 opts={
                     "hyphenate": self.hyphenate and not self.disable_hyphenation,
+                    "hyphen_min_chars": self.hyphenate_chars,
+                    "hyphen_min_chars_before": self.hyphenate_chars_before,
+                    "hyphen_min_chars_after": self.hyphenate_chars_after,
+                    "hyphen_limit_lines": self.hyphenate_limit_lines,
                     "no-hyphens": self.disable_hyphenation,
                     "smarten_punctuation": self.smarten_punctuation,
                     "extended_kepub_features": self.extra_features,
@@ -500,6 +505,10 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
         c.add_opt("full_page_numbers", default=False)
         c.add_opt("disable_hyphenation", default=False)
         c.add_opt("file_copy_dir", default="")
+        c.add_opt("hyphenate_chars", default=6)
+        c.add_opt("hyphenate_chars_before", default=3)
+        c.add_opt("hyphenate_chars_after", default=3)
+        c.add_opt("hyphenate_limit_lines", default=2)
 
         # remove_opt verifies the preference is present first
         c.remove_opt("replace_lang")
@@ -534,6 +543,14 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
         opt_file_copy_dir = count_options
         count_options += 1
         opt_disable_hyphenation = count_options
+        count_options += 1
+        opt_hyphenate_chars = count_options
+        count_options += 1
+        opt_hyphenate_chars_before = count_options
+        count_options += 1
+        opt_hyphenate_chars_after = count_options
+        count_options += 1
+        opt_hyphenate_limit_lines = count_options
 
         if len(settings.extra_customization) >= count_options:
             common.log.warning(
@@ -585,6 +602,30 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
             try:
                 settings.disable_hyphenation = settings.extra_customization[
                     opt_disable_hyphenation
+                ]
+            except IndexError:
+                pass
+            try:
+                settings.hyphenate_chars = settings.extra_customization[
+                    opt_hyphenate_chars
+                ]
+            except IndexError:
+                pass
+            try:
+                settings.hyphenate_chars_before = settings.extra_customization[
+                    opt_hyphenate_chars_before
+                ]
+            except IndexError:
+                pass
+            try:
+                settings.hyphenate_chars_after = settings.extra_customization[
+                    opt_hyphenate_chars_after
+                ]
+            except IndexError:
+                pass
+            try:
+                settings.hyphenate_limit_lines = settings.extra_customization[
+                    opt_hyphenate_limit_lines
                 ]
             except IndexError:
                 pass
@@ -643,3 +684,24 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
     def file_copy_dir(self):
         """Determine where to copy converted books to."""
         return self.get_pref("file_copy_dir")
+
+    @property
+    def hyphenate_chars(self):
+        return self.get_pref("hyphenate_chars")
+
+    @property
+    def hyphenate_chars_before(self):
+        return self.get_pref("hyphenate_chars_before")
+
+    @property
+    def hyphenate_chars_after(self):
+        return self.get_pref("hyphenate_chars_after")
+
+    @property
+    def hyphenate_limit_lines(self):
+        lines = self.get_pref("hyphenate_limit_lines")
+
+        if lines == 0:
+            return "no-limit"
+
+        return lines

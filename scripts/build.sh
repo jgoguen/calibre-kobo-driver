@@ -59,7 +59,7 @@ __all_translations() {
 
 # Finds all CSS files
 __all_css() {
-	/usr/bin/find ./css -type f -name '*.css' -exec printf '%s ' '{}' \;
+	/usr/bin/find ./css -type f -exec printf '%s ' '{}' \;
 }
 
 # Prints the names of files common to all plugins
