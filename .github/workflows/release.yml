@@ -20,6 +20,9 @@ jobs:
         with:
           python-version: '3.x'
 
+      - name: Fetch calibre
+        run: ./scripts/update-calibre.py 3
+
       - name: Build ZIP files
         run: ./scripts/build.sh build
 
