@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: calibre-kobo-driver\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-10-10 23:49-0700\n"
+"POT-Creation-Date: 2020-10-11 10:54-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,66 +18,66 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
-#: container.py:201
+#: container.py:204
 msgid "A source path must be given"
 msgstr ""
 
-#: container.py:234
+#: container.py:237
 #, python-brace-format
 msgid "A valid file name must be given (got {filename})"
 msgstr ""
 
-#: container.py:246
+#: container.py:249
 #, python-brace-format
 msgid "Could not retrieve content file {0}"
 msgstr ""
 
-#: container.py:253
+#: container.py:256
 #, python-brace-format
 msgid "Could not find a <head> element in {0}"
 msgstr ""
 
-#: container.py:260
+#: container.py:263
 #, python-brace-format
 msgid "A <head> section was found but was undefined in content file {0}"
 msgstr ""
 
-#: container.py:316 container.py:352
+#: container.py:319 container.py:355
 #, python-brace-format
 msgid "No HTML content in {0}"
 msgstr ""
 
-#: container.py:378
+#: container.py:381
 #, python-brace-format
 msgid "No HTML content in file {0}"
 msgstr ""
 
-#: container.py:433 container.py:457 container.py:531
+#: container.py:436 container.py:460 container.py:534
 #, python-brace-format
 msgid "Skipping file {fname}"
 msgstr ""
 
-#: container.py:437
+#: container.py:440
 msgid "Kobo <div> tag present"
 msgid_plural "Kobo <div> tags present"
 msgstr[0] ""
 msgstr[1] ""
 
-#: container.py:461
+#: container.py:464
 #, python-brace-format
 msgid "{div_count:d} <div> tag"
 msgid_plural "{div_count:d} <div> tags"
 msgstr[0] ""
 msgstr[1] ""
 
-#: container.py:465
+#: container.py:468
 #, python-brace-format
 msgid "{p_count:d} <p> tag"
 msgid_plural "{p_count:d} <p> tags"
 msgstr[0] ""
 msgstr[1] ""
 
-#: container.py:535
+#: container.py:538
 msgid "Kobo <span> tag present"
 msgid_plural "Kobo <span> tags present"
 msgstr[0] ""

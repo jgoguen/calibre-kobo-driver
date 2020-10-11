@@ -298,7 +298,7 @@ class TestContainer(TestAssertions):
                     )
                 else:
                     node.text = text
-                    node = self.container._add_kobo_spans_to_node(node)
+                    node = self.container._add_kobo_spans_to_node(node, "test")
 
                 self.assertEqual(len(node.getchildren()), 1)
 
@@ -320,7 +320,7 @@ class TestContainer(TestAssertions):
         self.container._paragraph_counter = 1
         self.container._segment_counter = 1
 
-        node = self.container._add_kobo_spans_to_node(node)
+        node = self.container._add_kobo_spans_to_node(node, "test")
         children = node.getchildren()
         self.assertEqual(len(children), len(text_nodes))
 

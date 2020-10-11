@@ -22,6 +22,7 @@ import re
 import shutil
 import string
 import threading
+from collections import defaultdict
 from copy import deepcopy
 
 from calibre import guess_type
@@ -120,6 +121,8 @@ class ParseError(ValueError):
 
 class KEPubContainer(EpubContainer):
     """Extends an EpubContainer to work for a KePub."""
+
+    __paragraph_counter = defaultdict(lambda: 1)  # type: Dict[str, int]
 
     def __init__(
         self, epub_path, log, do_cleanup=False, *args, **kwargs
@@ -539,12 +542,12 @@ class KEPubContainer(EpubContainer):
             )
 
         body = root.xpath("./xhtml:body", namespaces={"xhtml": XHTML_NAMESPACE})[0]
-        self._add_kobo_spans_to_node(body)
+        self._add_kobo_spans_to_node(body, name)
 
         self.replace(name, root)
         self.flush_cache()
 
-    def _add_kobo_spans_to_node(self, node, paragraph_counter=1):
+    def _add_kobo_spans_to_node(self, node, name):
         # process node only if it is not a comment or a processing instruction
         if (
             node is None
@@ -553,6 +556,9 @@ class KEPubContainer(EpubContainer):
         ):
             if node is not None:
                 node.tail = None
+            self.log.debug(
+                "[{0}] Skipping comment/ProcessingInstruction node".format(name)
+            )
             return node
 
         # Special case some tags
@@ -560,14 +566,22 @@ class KEPubContainer(EpubContainer):
         if special_tag_match:
             # Skipped tags are just flat out skipped
             if special_tag_match.group(1) in SKIPPED_TAGS:
+                self.log.debug(
+                    "[{1}] Skipping '{0}' tag".format(special_tag_match.group(1), name)
+                )
                 return node
 
             # Special tags get wrapped in a span and their children are ignored
             if special_tag_match.group(1) in SPECIAL_TAGS:
+                self.log.debug(
+                    "[{1}] Wrapping '{0}' tag and ignoring children".format(
+                        special_tag_match.group(1), name
+                    )
+                )
                 span = etree.Element(
                     "{%s}span" % (XHTML_NAMESPACE,),
                     attrib={
-                        "id": "kobo.{0}.1".format(paragraph_counter),
+                        "id": "kobo.{0}.1".format(self.__paragraph_counter[name]),
                         "class": "koboSpan",
                     },
                 )
@@ -590,38 +604,38 @@ class KEPubContainer(EpubContainer):
 
         # the node text is converted to spans
         if node_text is not None:
-            if not self._append_kobo_spans_from_text(
-                node, node_text, paragraph_counter
-            ):
+            if not self._append_kobo_spans_from_text(node, node_text, name):
                 # didn't add spans, restore text
                 node.text = node_text
             else:
-                paragraph_counter += 1
+                self.__paragraph_counter[name] += 1
 
         # re-add the node children
         for child in node_children:
             # save child tail for later
             child_tail = child.tail
             child.tail = None
-            node.append(self._add_kobo_spans_to_node(child, paragraph_counter))
+            node.append(self._add_kobo_spans_to_node(child, name))
             # the child tail is converted to spans
             if child_tail is not None:
-                if not self._append_kobo_spans_from_text(
-                    node, child_tail, paragraph_counter
-                ):
+                if not self._append_kobo_spans_from_text(node, child_tail, name):
                     # didn't add spans, restore tail on last child
                     node[-1].tail = child_tail
                 else:
-                    paragraph_counter += 1
+                    self.__paragraph_counter[name] += 1
 
         return node
 
-    def _append_kobo_spans_from_text(self, node, text, paragraph_counter=1):
+    def _append_kobo_spans_from_text(self, node, text, name):
         if not text:
+            self.log.error("[{0}] No text passed, can't add spans".format(name))
             return False
 
         # if text is only whitespace, don't add spans
         if text.strip() == "":
+            self.log.warning(
+                "[{0}] Found only whitespace, not adding spans".format(name)
+            )
             return False
 
         # split text in sentences
@@ -641,8 +655,10 @@ class KEPubContainer(EpubContainer):
             span = etree.Element(
                 "{%s}span" % (XHTML_NAMESPACE,),
                 attrib={
-                    "id": "kobo.{0}.{1}".format(paragraph_counter, segment_counter),
                     "class": "koboSpan",
+                    "id": "kobo.{0}.{1}".format(
+                        self.__paragraph_counter[name], segment_counter
+                    ),
                 },
             )
             span.text = g
