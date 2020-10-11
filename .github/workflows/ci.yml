@@ -22,22 +22,14 @@ jobs:
         os:
           - 'macos-latest'
           - 'ubuntu-latest'
-        python-version:
-          - '2.x'
-          - '3.x'
 
     steps:
       - uses: actions/checkout@v2.2.0
 
-      - name: Set up Python ${{ matrix.python-version }}
+      - name: Set up Python 3.x
         uses: actions/setup-python@v2
         with:
-          python-version: ${{ matrix.python-version }}
-
-      # yamllint disable rule:line-length
-      - name: Set Python version variables
-        run: printf '::set-env name=PYTHON_VERSION::%s\n' \ "$(/usr/bin/env python -c 'import sys; print(sys.version_info.major)')"
-      # yamllint enable rule:line-length
+          python-version: 3.x
 
       - name: Install dependencies
         run: |
@@ -62,37 +54,21 @@ jobs:
         run: ./scripts/update-calibre.py
 
       - name: Build plugin ZIP files
-        run: ./scripts/build.sh build
+        run: ./scripts/build.sh
 
       - name: Install Python test dependencies
         run: |
           set -x
-          python2 -m pip install --upgrade pip
           python3 -m pip install --upgrade pip
           if [ -f requirements.txt ]; then
-            python -m pip install -r requirements.txt
+            python3 -m pip install -r requirements.txt
           fi
           if [ -f scripts/requirements.txt ]; then
-            python -m pip install -r scripts/requirements.txt
+            python3 -m pip install -r scripts/requirements.txt
           fi
           if [ -f tests/requirements.txt ]; then
-            python -m pip install -r tests/requirements.txt
+            python3 -m pip install -r tests/requirements.txt
           fi
-          if [ "${PYTHON_VERSION}" != "3" ]; then
-            if [ -f requirements.txt ]; then
-              python3 -m pip install -r requirements.txt
-            fi
-            if [ -f scripts/requirements.txt ]; then
-              python3 -m pip install -r scripts/requirements.txt
-            fi
-            if [ -f tests/requirements.txt ]; then
-              python3 -m pip install -r tests/requirements.txt
-            fi
-          fi
-          python3 -V
-
-      - name: Fetch calibre for Python ${{ matrix.python-version }}
-        run: python3 ./scripts/update-calibre.py $PYTHON_VERSION
 
       - name: Run calibre Python ${{ matrix.python-version }} tests
-        run: ./scripts/build.sh test $PYTHON_VERSION
+        run: ./scripts/build.sh test
