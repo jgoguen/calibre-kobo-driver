@@ -192,19 +192,12 @@ cleanup_dir() {
 	fi
 }
 
-# Run tests for a specific Python version.
+# Run tests
 # WARNING: You MUST call `build` before running tests!
-test_pyver() {
-	pyver="${1}"
-	if [ "${pyver}" -ne 2 ] && [ "${pyver}" -ne 3 ]; then
-		printf 'Only Python 2 or 3 is supported\n' >&2
-		return 1
-	fi
-
-	if [ "${PLATFORM}" = "linux" ]; then
-		CALIBRE_BIN_BASE="${PWD}/calibre-py${1}"
-	else
-		CALIBRE_BIN_BASE="${PWD}/calibre-py${1}/Contents/MacOS"
+run_tests() {
+	CALIBRE_BIN_BASE="${PWD}/calibre"
+	if [ "${PLATFORM}" = "darwin" ]; then
+		CALIBRE_BIN_BASE="${CALIBRE_BIN_BASE}/Contents/MacOS"
 	fi
 
 	touch ./__init__.py
@@ -234,12 +227,6 @@ test_pyver() {
 	done < <(__all_tests)
 
 	/bin/rm -f ./__init__.py
-}
-
-# Run tests for both Python 2 and 3
-run_tests() {
-	test_pyver "2"
-	test_pyver "3"
 }
 
 # Update Vale styles
@@ -284,16 +271,7 @@ else
 				;;
 			test)
 				build
-				if [ -n "${1:-""}" ]; then
-					if [ "${1}" -eq 2 ] || [ "${1}" -eq 3 ]; then
-						test_pyver "${1}"
-						shift
-					else
-						run_tests
-					fi
-				else
-					run_tests
-				fi
+				run_tests
 				;;
 			pot|translations)
 				make_pot

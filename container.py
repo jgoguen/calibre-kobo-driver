@@ -122,7 +122,7 @@ class ParseError(ValueError):
 class KEPubContainer(EpubContainer):
     """Extends an EpubContainer to work for a KePub."""
 
-    __paragraph_counter = defaultdict(lambda: 1)  # type: Dict[str, int]
+    paragraph_counter = defaultdict(lambda: 1)  # type: Dict[str, int]
 
     def __init__(
         self, epub_path, log, do_cleanup=False, *args, **kwargs
@@ -581,7 +581,7 @@ class KEPubContainer(EpubContainer):
                 span = etree.Element(
                     "{%s}span" % (XHTML_NAMESPACE,),
                     attrib={
-                        "id": "kobo.{0}.1".format(self.__paragraph_counter[name]),
+                        "id": "kobo.{0}.1".format(self.paragraph_counter[name]),
                         "class": "koboSpan",
                     },
                 )
@@ -608,7 +608,7 @@ class KEPubContainer(EpubContainer):
                 # didn't add spans, restore text
                 node.text = node_text
             else:
-                self.__paragraph_counter[name] += 1
+                self.paragraph_counter[name] += 1
 
         # re-add the node children
         for child in node_children:
@@ -622,7 +622,7 @@ class KEPubContainer(EpubContainer):
                     # didn't add spans, restore tail on last child
                     node[-1].tail = child_tail
                 else:
-                    self.__paragraph_counter[name] += 1
+                    self.paragraph_counter[name] += 1
 
         return node
 
@@ -657,7 +657,7 @@ class KEPubContainer(EpubContainer):
                 attrib={
                     "class": "koboSpan",
                     "id": "kobo.{0}.{1}".format(
-                        self.__paragraph_counter[name], segment_counter
+                        self.paragraph_counter[name], segment_counter
                     ),
                 },
             )

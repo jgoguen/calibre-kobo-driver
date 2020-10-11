@@ -16,6 +16,7 @@ import tempfile
 import unittest
 import warnings
 
+from collections import defaultdict
 from lxml import etree
 
 test_dir = os.path.dirname(os.path.abspath(__file__))
@@ -288,13 +289,12 @@ class TestContainer(TestAssertions):
 
         for text in text_samples:
             for text_only in {True, False}:
+                self.container.paragraph_counter = defaultdict(lambda: 1)
                 node = etree.Element("{{{0}}}p".format(container.XHTML_NAMESPACE))
-                self.container._paragraph_counter = 1
-                self.container._segment_counter = 1
 
                 if text_only:
                     self.assertTrue(
-                        self.container._append_kobo_spans_from_text(node, text)
+                        self.container._append_kobo_spans_from_text(node, text, "test")
                     )
                 else:
                     node.text = text
