@@ -122,11 +122,10 @@ class ParseError(ValueError):
 class KEPubContainer(EpubContainer):
     """Extends an EpubContainer to work for a KePub."""
 
-    paragraph_counter = defaultdict(lambda: 1)  # type: Dict[str, int]
-
     def __init__(
         self, epub_path, log, do_cleanup=False, *args, **kwargs
     ):  # type: (...) -> None
+        self.paragraph_counter = defaultdict(lambda: 1)  # type: Dict[str, int]
         super(KEPubContainer, self).__init__(epub_path, log, *args, **kwargs)
         self.log = log
         self.log.debug("Creating KePub Container for ePub at {0}".format(epub_path))
