@@ -39,16 +39,17 @@ jobs:
           fi
 
       # yamllint disable rule:line-length
+      - name: Set environment variables
+        run: |
+          CALIBRE_DIR="$(mktemp -d XXXXXXXX)"
+          printf 'CALIBRE_DIR="%s"\n' "${CALIBRE_DIR}" >>"${GITHUB_ENV}"
+          printf 'CALIBRE_CONFIG_DIRECTORY="%s"\n' "${CALIBRE_DIR}/config" >>"${GITHUB_ENV}"
+          printf 'CALIBRE_TEMP_DIR="%s"\n' "${CALIBRE_DIR}/tmp" >>"${GITHUB_ENV}"
+      # yamllint enable rule:line-length
+
       - name: Create calibre directories
         run: |
-          CALIBRE_DIR="$(mktemp -d XXXXXXXXX)"
-          CALIBRE_CONFIG_DIRECTORY="${CALIBRE_DIR}/config"
-          CALIBRE_TEMP_DIR="${CALIBRE_DIR}/tmp"
           mkdir -p "${CALIBRE_CONFIG_DIRECTORY}" "${CALIBRE_TEMP_DIR}"
-          printf '::set-env name=CALIBRE_DIR::%s\n' "${CALIBRE_DIR}"
-          printf '::set-env name=CALIBRE_CONFIG_DIRECTORY::%s\n' "${CALIBRE_CONFIG_DIRECTORY}"
-          printf '::set-env name=CALIBRE_TEMP_DIR::%s\n' "${CALIBRE_TEMP_DIR}"
-      # yamllint enable rule:line-length
 
       - name: Install calibre from upstream
         run: ./scripts/update-calibre.py
