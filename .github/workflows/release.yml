@@ -13,7 +13,11 @@ jobs:
     runs-on: 'ubuntu-latest'
 
     steps:
-      - uses: actions/checkout@v2.2.0
+      - name: Install repo dependencies
+        run: sudo apt install -y gettext
+
+      - name: Check out release tag
+        uses: actions/checkout@v2.2.0
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
