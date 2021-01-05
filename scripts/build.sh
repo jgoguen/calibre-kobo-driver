@@ -69,14 +69,10 @@ __common_files() {
 }
 
 compile_translations() {
-	CALIBRE_DEBUG_BIN="${PWD}/calibre"
-	if [ "${PLATFORM}" = "darwin" ]; then
-		CALIBRE_DEBUG_BIN="${CALIBRE_DEBUG_BIN}/Contents/MacOS"
-	fi
-	CALIBRE_DEBUG_BIN="${CALIBRE_DEBUG_BIN}/calibre-debug"
+	MSGFMT_BIN="$(command -v msgfmt)"
 
 	while IFS=$'\n' read -r po_file; do
-		"${CALIBRE_DEBUG_BIN}" -c "from calibre.translations.msgfmt import main; main()" "${po_file}"
+		"${MSGFMT_BIN}" -o "${po_file%%po}mo" "${po_file}"
 	done < <(/usr/bin/find translations -type f -name '*.po')
 }
 
