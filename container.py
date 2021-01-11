@@ -96,7 +96,7 @@ ELLIPSIS_RE = re.compile(r"(?u)(?<=\w)\s?(\.\s+?){2}\.", re.UNICODE | re.MULTILI
 MS_CRUFT_RE_1 = re.compile(r"<o:p>\s*</o:p>", re.UNICODE | re.MULTILINE)
 MS_CRUFT_RE_2 = re.compile(r"(?i)</?st1:\w+>", re.UNICODE | re.MULTILINE)
 TEXT_SPLIT_RE = re.compile(
-    r'(.*?[\.\!\?\:][\'"\u201c\u201d\u2018\u2019\u2026]?\s*)', re.UNICODE | re.MULTILINE
+    r'(\s*.*?[\.\!\?\:][\'"\u201c\u201d\u2018\u2019\u2026]?\s*)', re.UNICODE | re.MULTILINE
 )
 
 
@@ -640,7 +640,7 @@ class KEPubContainer(EpubContainer):
         # split text in sentences
         groups = TEXT_SPLIT_RE.split(text)
         # remove empty strings resulting from split()
-        groups = [g for g in groups if g.strip() != ""]
+        groups = [g for g in groups if g != ""]
         for idx in range(len(groups)):
             if hasattr(groups[idx], "decode"):
                 groups[idx] = groups[idx].decode("UTF-8")
