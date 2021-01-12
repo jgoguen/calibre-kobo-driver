@@ -309,7 +309,7 @@ class TestContainer(TestAssertions):
                 self.assertDictEqual(
                     dict(span.attrib), {"id": "kobo.1.1", "class": "koboSpan"}
                 )
-                self.assertEqual(span.text, text.lstrip("\n\t"))
+                self.assertEqual(span.text, text)
 
     def __run_multiple_node_test(self, text_nodes):  # type: (List[str]) -> None
         html = "<div>"
