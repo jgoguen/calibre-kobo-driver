@@ -35,7 +35,7 @@ jobs:
         run: |
           PLATFORM=$(uname)
           if [ "${PLATFORM}" = "Linux" ]; then
-            sudo apt-get install -y zsh
+            sudo apt-get install -y zsh gettext
           fi
 
       # yamllint disable rule:line-length
