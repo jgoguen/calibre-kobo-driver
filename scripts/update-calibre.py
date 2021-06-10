@@ -33,7 +33,7 @@ else:
 
 
 def extract_calibre_pkg(pkg_path: str) -> None:
-    calibre_dir = os.path.join(REPO_DIR, "calibre")
+    calibre_dir = os.path.join(REPO_DIR, "calibre-py3")
     if os.path.isdir(calibre_dir):
         shutil.rmtree(calibre_dir)
     os.makedirs(calibre_dir)

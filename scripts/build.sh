@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # This is needed to force shellcheck to actually run, and bash and zsh are
 # typically close enough that it shouldn't cause a problem.
+# vim: set noexpandtab sw=2 ts=2 sts=2 nospell:
 
 set -eux
 
@@ -37,6 +38,7 @@ make_pot() {
 	# We explicitly do not want to quote the subcommand here since it prints
 	# each file surrounded by quotes already.
 	XGETTEXT_BIN="$(command -v xgettext)"
+	# shellcheck disable=SC2046
 	"${XGETTEXT_BIN}" -o ./translations/messages.pot --no-wrap \
 		--copyright-holder="Joel Goguen" --package-name="calibre-kobo-driver" \
 		$(/usr/bin/find . -type f -name '*.py' -not \( -name 'pygettext.py' -or -name 'test_*.py' -or -path '*/calibre-*' \))
@@ -191,7 +193,7 @@ cleanup_dir() {
 # Run tests
 # WARNING: You MUST call `build` before running tests!
 run_tests() {
-	CALIBRE_BIN_BASE="${PWD}/calibre"
+	CALIBRE_BIN_BASE="${PWD}/calibre-py3"
 	if [ "${PLATFORM}" = "darwin" ]; then
 		CALIBRE_BIN_BASE="${CALIBRE_BIN_BASE}/Contents/MacOS"
 	fi
