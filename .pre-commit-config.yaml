@@ -4,7 +4,7 @@ default_language_version:
 minimum_pre_commit_version: '2.7.1'
 repos:
   - repo: https://github.com/psf/black
-    rev: 21.5b2  # Replace by any tag/version: https://github.com/psf/black/tags
+    rev: 21.6b0  # Replace by any tag/version: https://github.com/psf/black/tags
     hooks:
       - id: black
         language_version: python3  # Should be a command that runs python3.6+
@@ -19,6 +19,9 @@ repos:
     rev: '3.9.2'
     hooks:
       - id: flake8
+        args:
+          - '--builtins="_,ngettext,load_translations,get_resources"'
+          - '--max-line-length=88'
   - repo: https://github.com/jumanjihouse/pre-commit-hooks
     rev: '2.1.5'
     hooks:
