@@ -43,16 +43,16 @@ if is_py3:
 
 KOBO_JS_RE = re.compile(r".*/?kobo.*?\.js$", re.IGNORECASE)
 XML_NAMESPACE = "http://www.w3.org/XML/1998/namespace"
-CONFIGDIR = os.path.join(config_dir, "plugins")  # type: str
-REFERENCE_KEPUB = os.path.join(CONFIGDIR, "reference.kepub.epub")  # type: str
-PLUGIN_VERSION = (3, 4, 4)
-PLUGIN_MINIMUM_CALIBRE_VERSION = (3, 42, 0)
+CONFIGDIR = os.path.join(config_dir, "plugins")
+REFERENCE_KEPUB = os.path.join(CONFIGDIR, "reference.kepub.epub")
+PLUGIN_VERSION = (3, 5, 0)
+PLUGIN_MINIMUM_CALIBRE_VERSION = (5, 0, 0)
 
 
 class Logger:
     LEVELS = {"DEBUG": 0, "INFO": 1, "WARN": 2, "ERROR": 3}
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.log_level = "INFO"
         if (
             "CALIBRE_DEVELOP_FROM" in os.environ
@@ -70,10 +70,10 @@ class Logger:
         self.warn = self.warning = partial(self.print_formatted_log, "WARN")
         self.error = partial(self.print_formatted_log, "ERROR")
 
-    def __call__(self, logmsg):
+    def __call__(self, logmsg) -> None:
         self.info(logmsg)
 
-    def _tag_args(self, level, *args):
+    def _tag_args(self, level, *args) -> List[str]:
         now = time.localtime()
         buf = PolyglotStringIO()
         tagged_args = []
@@ -89,17 +89,17 @@ class Logger:
 
         return tagged_args
 
-    def _prints(self, level, *args, **kwargs):
+    def _prints(self, level: str, *args, **kwargs) -> None:
         for o in self.outputs:
             o.prints(self.LEVELS[level], *args, **kwargs)
             if hasattr(o, "flush"):
                 o.flush()
 
-    def print_formatted_log(self, level, *args, **kwargs):
+    def print_formatted_log(self, level: str, *args, **kwargs) -> None:
         tagged_args = self._tag_args(level, *args)
         self._prints(level, *tagged_args, **kwargs)
 
-    def exception(self, *args, **kwargs):
+    def exception(self, *args, **kwargs) -> None:
         limit = kwargs.pop("limit", None)
         tagged_args = self._tag_args("ERROR", *args)
         self._prints("ERROR", *tagged_args, **kwargs)
@@ -113,25 +113,25 @@ log = Logger()
 # metadata/writer.py. Updates to the logic here probably need an accompanying
 # update over there.
 def modify_epub(
-    container,  # type: EpubContainer
-    filename,  # type: str
-    metadata=None,  # type: Optional[Metadata]
-    opts={},  # type: Dict[str, Union[str, bool]]
-):  # type: (...) -> None
+    container: EpubContainer,
+    filename: str,
+    metadata: Optional[Metadata] = None,
+    opts: Dict[str, Union[str, bool]] = {},
+) -> None:
     """Modify the ePub file to make it KePub-compliant."""
     _modify_start = time.time()
 
     # Search for the ePub cover
     # TODO: Refactor out cover detection logic so it can be directly used in
     # metadata/writer.py
-    found_cover = False  # type: bool
-    opf = container.opf  # type: _Element
-    cover_meta_node_list = opf.xpath(
+    found_cover = False
+    opf: _Element = container.opf
+    cover_meta_node_list: List[_Element] = opf.xpath(
         './opf:metadata/opf:meta[@name="cover"]', namespaces=OPF_NAMESPACES
-    )  # List[_Element]
+    )
 
     if len(cover_meta_node_list) > 0:
-        cover_meta_node = cover_meta_node_list[0]  # type: _Element
+        cover_meta_node: _Element = cover_meta_node_list[0]
         cover_id = cover_meta_node.attrib.get("content", None)
 
         log.debug("Found meta node with name=cover")
@@ -139,12 +139,12 @@ def modify_epub(
         if cover_id:
             log.info("Found cover image ID '{0}'".format(cover_id))
 
-            cover_node_list = opf.xpath(
+            cover_node_list: _Element = opf.xpath(
                 './opf:manifest/opf:item[@id="{0}"]'.format(cover_id),
                 namespaces=OPF_NAMESPACES,
-            )  # type: List[_Element]
+            )
             if len(cover_node_list) > 0:
-                cover_node = cover_node_list[0]  # type: _Element
+                cover_node: _Element = cover_node_list[0]
 
                 log.debug("Found an item node with cover ID")
 
@@ -161,21 +161,20 @@ def modify_epub(
     if not found_cover:
         log.debug("Looking for cover image in OPF manifest")
 
-        node_list = opf.xpath(
+        node_list: List[_Element] = opf.xpath(
             "./opf:manifest/opf:item[(translate(@id, "
             + "'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz')"
             + '="cover" or starts-with(translate(@id, '
             + "'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz')"
             + ', "cover")) and starts-with(@media-type, "image")]',
             namespaces=OPF_NAMESPACES,
-        )  # type: List[_Element]
+        )
         if len(node_list) > 0:
             log.info(
-                "Found {0:d} nodes, assuming the first is the "
-                "right node".format(len(node_list))
+                f"Found {len(node_list)} nodes, assuming the first is the right node"
             )
 
-            node = node_list[0]  # type: _Element
+            node: _Element = node_list[0]
             if node.attrib.get("properties", "") != "cover-image":
                 log.info("Setting cover-image property")
                 node.set("properties", "cover-image")
@@ -186,29 +185,25 @@ def modify_epub(
 
     # Hyphenate files?
     if opts.get("no-hyphens", False):
-        nohyphen_css = PersistentTemporaryFile(
-            suffix="_nohyphen", prefix="kepub_"
-        )  # type: PersistentTemporaryFile
-        nohyphen_css.write(get_resources("css/no-hyphens.css"))  # noqa: F821
+        nohyphen_css = PersistentTemporaryFile(suffix="_nohyphen", prefix="kepub_")
+        nohyphen_css.write(get_resources("css/no-hyphens.css"))
         nohyphen_css.close()
 
         css_path = os.path.basename(
             container.copy_file_to_container(
                 nohyphen_css.name, name="kte-css/no-hyphens.css"
             )
-        )  # type: str
+        )
         container.add_content_file_reference("kte-css/{0}".format(css_path))
         os.unlink(nohyphen_css.name)
-    elif opts.get("hyphenate", False) and opts.get("hyphen_min_chars", 6) > 0:
+    elif opts.get("hyphenate", False) and int(opts.get("hyphen_min_chars", 6)) > 0:
         if metadata and metadata.language == NULL_VALUES["language"]:
             log.warning(
                 "Hyphenation is enabled but not overriding content file "
-                "language. Hyphenation may use the wrong dictionary."
+                + "language. Hyphenation may use the wrong dictionary."
             )
-        hyphen_css = PersistentTemporaryFile(
-            suffix="_hyphenate", prefix="kepub_"
-        )  # type: PersistentTemporaryFile
-        css_template = get_resources("css/hyphenation.css.tmpl").decode()  # noqa: F821
+        hyphen_css = PersistentTemporaryFile(suffix="_hyphenate", prefix="kepub_")
+        css_template = get_resources("css/hyphenation.css.tmpl").decode()
         hyphen_limit_lines = opts.get("hyphen_limit_lines", 2)
         if hyphen_limit_lines == 0:
             hyphen_limit_lines = "no-limit"
@@ -226,7 +221,7 @@ def modify_epub(
             container.copy_file_to_container(
                 hyphen_css.name, name="kte-css/hyphenation.css"
             )
-        )  # type: str
+        )
         container.add_content_file_reference("kte-css/{0}".format(css_path))
         os.unlink(hyphen_css.name)
 
@@ -246,7 +241,7 @@ def modify_epub(
         container.convert()
 
         # Check to see if there's already a kobo*.js in the ePub
-        skip_js = False  # type: str
+        skip_js = False
         for name in container.name_path_map:
             if KOBO_JS_RE.match(name):
                 skip_js = True
@@ -265,7 +260,7 @@ def modify_epub(
 
         # Add the Kobo style hacks
         stylehacks_css = PersistentTemporaryFile(suffix="_stylehacks", prefix="kepub_")
-        stylehacks_css.write(get_resources("css/style-hacks.css"))  # noqa: F821
+        stylehacks_css.write(get_resources("css/style-hacks.css"))
         stylehacks_css.close()
 
         css_path = os.path.basename(
@@ -288,4 +283,4 @@ def intValueChanged(widget, singular, plural, *args, **kwargs):
         from PyQt4 import QtGui
 
     if isinstance(widget, (QtGui.QSpinBox, QtGui.QDoubleSpinBox)):
-        widget.setSuffix(" " + ngettext(singular, plural, widget.value()))  # noqa: F821
+        widget.setSuffix(" " + ngettext(singular, plural, widget.value()))
