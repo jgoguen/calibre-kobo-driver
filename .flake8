@@ -1,4 +1,5 @@
 [flake8]
+builtins="_,ngettext,load_translations,get_resources"
 max-line-length = 88
 exclude =
     # The default
