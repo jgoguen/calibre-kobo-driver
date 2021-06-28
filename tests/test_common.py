@@ -1,8 +1,4 @@
 # vim: fileencoding=UTF-8:expandtab:autoindent:ts=4:sw=4:sts=4
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
 
 # To import from calibre, some things need to be added to `sys` first. Do not import
 # anything from calibre or the plugins yet.
@@ -13,16 +9,10 @@ import unittest
 
 test_dir = os.path.dirname(os.path.abspath(__file__))
 src_dir = os.path.dirname(test_dir)
-test_libdir = os.path.join(
-    src_dir, "pylib", "python{major}".format(major=sys.version_info.major)
-)
+test_libdir = os.path.join(src_dir, "pylib", f"python{sys.version_info.major}")
 sys.path += glob.glob(os.path.join(test_libdir, "*.zip"))
 
-try:
-    from unittest import mock
-except ImportError:
-    # Python 2
-    import mock
+from unittest import mock
 
 from calibre_plugins.kobotouch_extended import common
 from polyglot.builtins import unicode_type
@@ -62,7 +52,7 @@ def gen_lang_code():
 
 
 class TestCommon(unittest.TestCase):
-    orig_lang = ""  # type: str
+    orig_lang = ""
 
     def setUp(self):  # type: () -> None
         self.orig_lang = os.environ.get("LANG", None)
@@ -92,7 +82,7 @@ class TestCommon(unittest.TestCase):
         self.assertEqual(logger.log_level, "DEBUG")
         del os.environ["CALIBRE_DEBUG"]
 
-    def _run_logger_unicode_test(self, as_bytes):  # type: (bool) -> None
+    def test_logger_ensure_unicode_from_bytes(self) -> None:
         for o in TEST_STRINGS:
             for enc in o["encodings"]:
                 with mock.patch(
@@ -113,10 +103,6 @@ class TestCommon(unittest.TestCase):
                                 ),
                             ],
                         )
-
-    def test_logger_ensure_unicode_from_bytes(self):  # type: () -> None
-        self._run_logger_unicode_test(True)
-        self._run_logger_unicode_test(False)
 
     @mock.patch(
         "calibre_plugins.kobotouch_extended.common.Logger.print_formatted_log",

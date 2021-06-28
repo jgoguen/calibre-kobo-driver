@@ -2,8 +2,6 @@
 
 """Configuration for exporting KePub files."""
 
-from __future__ import unicode_literals
-
 __license__ = "GPL v3"
 __copyright__ = "2013, Joel Goguen <jgoguen@jgoguen.ca>"
 __docformat__ = "markdown en"
@@ -53,8 +51,8 @@ class PluginWidget(EPUBPluginWidget, EPUBUIForm):
                 "kepub_hyphenate_limit_lines",
             ),
         )
-        for i in range(2):
-            self.opt_no_svg_cover.toggle()
+        self.opt_no_svg_cover.toggle()
+        self.opt_no_svg_cover.toggle()
         ev = get_option("epub_version")
         self.opt_epub_version.addItems(list(ev.option.choices))
         self.db, self.book_id = db, book_id

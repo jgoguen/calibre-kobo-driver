@@ -2,11 +2,6 @@
 
 """The main driver for the KoboTouchExtended driver. Everything starts here."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 __license__ = "GPL v3"
 __copyright__ = "2013, Joel Goguen <jgoguen@jgoguen.ca>"
 __docformat__ = "markdown en"
@@ -54,7 +49,7 @@ class InvalidEPub(ValueError):
             self,
             _(  # noqa: F821
                 "Failed to parse '{book}' by '{author}' with error: '{error}' "
-                "(file: {filename}, line: {lineno})"
+                + "(file: {filename}, line: {lineno})"
             ).format(
                 book=name, author=author, error=message, filename=fname, lineno=lineno
             ),
@@ -77,7 +72,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
     author = "Joel Goguen"
     description = _(  # noqa: F821
         "Communicate with Kobo Touch and later firmwares to enable extended Kobo "
-        "ePub features."
+        + "ePub features."
     )
     configdir = os.path.join(config_dir, "plugins")
     reference_kepub = os.path.join(configdir, "reference.kepub.epub")
@@ -186,9 +181,8 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
                 self.skip_renaming_files.add(metadata.uuid)
             else:
                 common.log.info(
-                    "KoboTouchExtended:_modify_epub:Skipping all "
-                    "processing for calibre-converted KePub file "
-                    "{0}".format(infile)
+                    "KoboTouchExtended:_modify_epub:Skipping all processing for "
+                    + f"calibre-converted KePub file {infile}"
                 )
             return super(KOBOTOUCHEXTENDED, self)._modify_epub(
                 infile, metadata, container
@@ -196,7 +190,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 
         common.log.info(
             "KoboTouchExtended:_modify_epub:Adding basic Kobo features to "
-            "{0} by {1}".format(metadata.title, " and ".join(metadata.authors))
+            + f"{metadata.title} by {' and '.join(metadata.authors)}"
         )
 
         opts = self.settings()
@@ -208,7 +202,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
         else:
             common.log.info(
                 "KoboTouchExtended:_modify_epub:Failed conversions will raise "
-                "exceptions"
+                + "exceptions"
             )
 
         is_encumbered_book = False
@@ -219,8 +213,8 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
                 is_encumbered_book = container.is_drm_encumbered
         except DRMError:
             common.log.warning(
-                "KoboTouchExtended:_modify_epub:ERROR: ePub is "
-                "DRM-encumbered, not modifying"
+                "KoboTouchExtended:_modify_epub:ERROR: ePub is DRM-encumbered, "
+                + "not modifying"
             )
             is_encumbered_book = True
 
@@ -240,7 +234,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
             )
             common.log.debug(
                 "KoboTouchExtended:_modify_epub:Calibre details file :: "
-                "{0}".format(calibre_details_file)
+                + calibre_details_file
             )
             o = {}
             if os.path.isfile(calibre_details_file):
@@ -256,7 +250,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
             else:
                 common.log.warning(
                     "KoboTouchExtended:_modify_file:Calibre details file does "
-                    "not exist!"
+                    + "not exist!"
                 )
             o["kobotouchextended_version"] = ".".join([str(n) for n in self.version])
             o["kobotouchextended_options"] = str(opts.extra_customization)
@@ -317,7 +311,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
             dpath = self.create_upload_path(dpath, metadata, metadata.kte_calibre_name)
             common.log.info(
                 "KoboTouchExtended:_modify_epub:Generated KePub file copy "
-                "path: {0}".format(dpath)
+                + "path: {0}".format(dpath)
             )
             shutil.copy(infile, dpath)
 
@@ -333,7 +327,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
         if self.modifying_css():
             common.log.info(
                 "KoboTouchExtended:upload_books:Searching for device-specific "
-                "CSS file"
+                + "CSS file"
             )
             device_css_file_name = self.KOBO_EXTRA_CSSFILE
             try:
@@ -360,14 +354,14 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
             except AttributeError:
                 common.log.warning(
                     "KoboTouchExtended:upload_books:Calibre version too old "
-                    "to handle some specific devices, falling back to "
-                    "generic file {0}".format(device_css_file_name)
+                    + "to handle some specific devices, falling back to "
+                    + f"generic file {device_css_file_name}"
                 )
             device_css_file_name = os.path.join(self.configdir, device_css_file_name)
             if os.path.isfile(device_css_file_name):
                 common.log.info(
                     "KoboTouchExtended:upload_books:Found device-specific "
-                    "file {0}".format(device_css_file_name)
+                    + f"file {device_css_file_name}"
                 )
                 shutil.copy(
                     device_css_file_name,
@@ -376,7 +370,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
             else:
                 common.log.info(
                     "KoboTouchExtended:upload_books:No device-specific CSS "
-                    "file found (expecting {0})".format(device_css_file_name)
+                    + f"file found (expecting {device_css_file_name})"
                 )
 
         kobo_config_file = os.path.join(
@@ -391,7 +385,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
                 cfg.add_section("FeatureSettings")
             common.log.info(
                 "KoboTouchExtended:upload_books:Setting FeatureSettings."
-                "FullBookPageNumbers to {0}".format(
+                + "FullBookPageNumbers to {0}".format(
                     "true" if self.full_page_numbers else "false"
                 )
             )
@@ -455,7 +449,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
                 d = {}
                 common.log.debug(
                     "KoboTouchExtended:sync_booklists:About to call query: "
-                    "{0}".format(select_query)
+                    + select_query
                 )
                 c.execute(select_query, (self.content_types["main"],))
                 for row in c:
@@ -464,8 +458,8 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 
             all_nulls = __rows_needing_imageid()
             common.log.debug(
-                "KoboTouchExtended:sync_booklists:Got {0:d} rows to "
-                "update".format(len(list(all_nulls.keys())))
+                f"KoboTouchExtended:sync_booklists:Got {len(list(all_nulls.keys()))} "
+                + "rows to update"
             )
             nulls = []
             for booklist in booklists:
@@ -479,8 +473,8 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
             cursor = db.cursor()
             while nulls[:100]:
                 common.log.debug(
-                    "KoboTouchExtended:sync_booklists:Updating {0:d} "
-                    "ImageIDs...".format(len(nulls[:100]))
+                    f"KoboTouchExtended:sync_booklists:Updating {len(nulls[:100])} "
+                    + "ImageIDs..."
                 )
                 cursor.executemany(update_query, nulls[:100])
                 del nulls[:100]
@@ -555,7 +549,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
         if len(settings.extra_customization) >= count_options:
             common.log.warning(
                 "KoboTouchExtended::migrate_old_settings - settings need to "
-                "be migrated"
+                + "be migrated"
             )
             try:
                 settings.extra_features = settings.extra_customization[

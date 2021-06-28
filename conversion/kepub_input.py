@@ -1,17 +1,15 @@
 """Input processing of KePub files."""
 
-from __future__ import unicode_literals
-from __future__ import with_statement
-
 __license__ = "GPL v3"
 __copyright__ = "2015, David Forrester <davidfor@internode.on.net>"
 __docformat__ = "markdown en"
 
 import os
+from typing import Set
+from typing import Tuple
 
 from calibre.customize.conversion import OptionRecommendation
 from calibre.ebooks.conversion.plugins.epub_input import EPUBInput
-from polyglot.builtins import is_py3
 
 from calibre_plugins.kepubin import common
 
@@ -36,22 +34,26 @@ class KEPUBInput(EPUBInput):
         OptionRecommendation(
             name="strip_kobo_spans",
             recommended_value=True,
-            help=_(  # noqa: F821
+            help=_(
                 "Kepubs have spans wrapping each sentence. These are used by "
-                "the ereader for the reading location and bookmark location. "
-                "They are not used by an ePub reader but are valid code and "
-                "can be safely be left in the ePub. If you plan to edit the "
-                "ePub, it is recommended that you remove the spans."
+                + "the ereader for the reading location and bookmark location. "
+                + "They are not used by an ePub reader but are valid code and "
+                + "can be safely be left in the ePub. If you plan to edit the "
+                + "ePub, it is recommended that you remove the spans."
             ),
         )
     }
 
-    kepub_recommendations = {("strip_kobo_spans", True, OptionRecommendation.LOW)}
+    kepub_recommendations: Set[Tuple[str, bool, int]] = {
+        ("strip_kobo_spans", True, OptionRecommendation.LOW)
+    }
 
     def __init__(self, *args, **kwargs):
         super(KEPUBInput, self).__init__(*args, **kwargs)
         self.options = self.options.union(self.kepub_options)
-        self.recommendations = self.recommendations.union(self.kepub_recommendations)
+        self.recommendations: Set[Tuple[str, bool, int]] = self.recommendations.union(
+            self.kepub_recommendations
+        )
 
     def gui_configuration_widget(
         self, parent, get_option_by_name, get_option_help, db, book_id=None
@@ -71,12 +73,12 @@ class KEPUBInput(EPUBInput):
 
         try:
             zf = ZipFile(stream)
-            cwd = os.getcwdu() if not is_py3 else os.getcwd()
+            cwd = os.getcwd()
             zf.extractall(cwd)
         except Exception:
             log.exception(
                 "KEPUB appears to be invalid ZIP file, trying a "
-                "more forgiving ZIP parser"
+                + "more forgiving ZIP parser"
             )
             from calibre.utils.localunzip import extractall
 
@@ -105,7 +107,7 @@ class KEPUBInput(EPUBInput):
         if os.path.exists(encfile):
             raise DRMError(os.path.basename(path))
 
-        cwd = os.getcwdu() if not is_py3 else os.getcwd()
+        cwd = os.getcwd()
         opf = os.path.relpath(opf, cwd)
         parts = os.path.split(opf)
         opf = OPF(opf, os.path.dirname(os.path.abspath(opf)))

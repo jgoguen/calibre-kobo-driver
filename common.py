@@ -2,11 +2,6 @@
 
 """Common functions and variables needed by more than one plugin."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 __license__ = "GPL v3"
 __copyright__ = "2013, Joel Goguen <jgoguen@jgoguen.ca>"
 __docformat__ = "markdown en"

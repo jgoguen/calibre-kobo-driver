@@ -1,8 +1,4 @@
 # vim: fileencoding=UTF-8:expandtab:autoindent:ts=4:sw=4:sts=4
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
 
 import sys
 import unittest

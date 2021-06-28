@@ -2,11 +2,6 @@
 
 """Extend calibre's EPUBContainer to work for a KePub."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 __license__ = "GPL v3"
 __copyright__ = (
     "2010, Kovid Goyal <kovid@kovidgoyal.net>; "

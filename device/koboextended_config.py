@@ -3,11 +3,6 @@
 
 """Driver configuration for KoboTouchExtended."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 __license__ = "GPL v3"
 __copyright__ = "2016, David Forrester, Joel Goguen <contact@jgoguen.ca>"
 __docformat__ = "markdown en"
@@ -125,8 +120,8 @@ class ExtendedGroupBox(DeviceOptionsGroupBox):
             _("Upload DRM-encumbered ePub files"),  # noqa: F821
             _(  # noqa: F821
                 "Select this to upload ePub files encumbered by DRM. If this "
-                "is not selected, it is a fatal error to upload an encumbered "
-                "file"
+                + "is not selected, it is a fatal error to upload an encumbered "
+                + "file"
             ),
             device.get_pref("upload_encumbered"),
         )
@@ -135,9 +130,9 @@ class ExtendedGroupBox(DeviceOptionsGroupBox):
             _("Silently Ignore Failed Conversions"),  # noqa: F821
             _(  # noqa: F821
                 "Select this to not upload any book that fails conversion to "
-                "kepub. If this is not selected, the upload process will be "
-                "stopped at the first book that fails. If this is selected, "
-                "failed books will be silently removed from the upload queue."
+                + "kepub. If this is not selected, the upload process will be "
+                + "stopped at the first book that fails. If this is selected, "
+                + "failed books will be silently removed from the upload queue."
             ),
             device.get_pref("skip_failed"),
         )
@@ -146,9 +141,9 @@ class ExtendedGroupBox(DeviceOptionsGroupBox):
             _("Hyphenate Files"),  # noqa: F821
             _(  # noqa: F821
                 "Select this to add a CSS file which enables hyphenation. The "
-                "language used will be the language defined for the book in "
-                "calibre. Please see the README file for directions on "
-                "updating hyphenation dictionaries."
+                + "language used will be the language defined for the book in "
+                + "calibre. Please see the README file for directions on "
+                + "updating hyphenation dictionaries."
             ),
             device.get_pref("hyphenate"),
         )
@@ -169,7 +164,7 @@ class ExtendedGroupBox(DeviceOptionsGroupBox):
             _("Copy generated KePub files to a directory"),  # noqa: F821
             _(  # noqa: F821
                 "Enter an absolute directory path to copy all generated KePub "
-                "files into for debugging purposes."
+                + "files into for debugging purposes."
             ),
             device.get_pref("file_copy_dir"),
         )
@@ -180,7 +175,7 @@ class ExtendedGroupBox(DeviceOptionsGroupBox):
         self.file_copy_dir_edit.setToolTip(
             _(  # noqa: F821
                 "Enter an absolute directory path to copy all generated KePub "
-                "files into for debugging purposes."
+                + "files into for debugging purposes."
             )
         )
         self.file_copy_dir_edit.setText(device.get_pref("file_copy_dir"))
@@ -190,8 +185,8 @@ class ExtendedGroupBox(DeviceOptionsGroupBox):
             _("Use full book page numbers"),  # noqa: F821
             _(  # noqa: F821
                 "Select this to show page numbers for the whole book, instead "
-                "of each chapter. This will also affect regular ePub page "
-                "number display!"
+                + "of each chapter. This will also affect regular ePub page "
+                + "number display!"
             ),
             device.get_pref("full_page_numbers"),
         )

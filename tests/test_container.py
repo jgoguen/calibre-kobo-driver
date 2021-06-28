@@ -1,8 +1,4 @@
 # vim: fileencoding=UTF-8:expandtab:autoindent:ts=4:sw=4:sts=4
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
 
 # To import from calibre, some things need to be added to `sys` first. Do not import
 # anything from calibre or the plugins yet.
@@ -107,16 +103,12 @@ class TestContainer(TestAssertions):
         else:
             source_file = self.files["test_with_spans"]
         with open(source_file, "r") as f:
-            data = f.read()
-            if hasattr(data, "encode"):
-                data = data.encode("UTF-8")
+            data = f.read().encode("UTF-8")
             orig_hash = hashlib.sha256(data).hexdigest()
 
         container_name = self.container.copy_file_to_container(source_file)
         with open(os.path.join(self.tmpdir, container_name), "r") as f:
-            data = f.read()
-            if hasattr(data, "encode"):
-                data = data.encode("UTF-8")
+            data = f.read().encode("UTF-8")
             self.assertEqual(orig_hash, hashlib.sha256(data).hexdigest())
 
         html_names = list(self.container.html_names())
@@ -133,9 +125,7 @@ class TestContainer(TestAssertions):
                 assert_func = self.assertNotEqual
             else:
                 assert_func = self.assertEqual
-            data = f.read()
-            if hasattr(data, "encode"):
-                data = data.encode("UTF-8")
+            data = f.read().encode("UTF-8")
             assert_func(orig_hash, hashlib.sha256(data).hexdigest())
 
     def test_divs_added(self):

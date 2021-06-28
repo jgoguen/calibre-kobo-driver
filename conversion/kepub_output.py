@@ -9,6 +9,9 @@ __docformat__ = "markdown en"
 import json
 import os
 from datetime import datetime
+from typing import Any
+from typing import Set
+from typing import Tuple
 
 from calibre.constants import config_dir
 from calibre.customize.conversion import OptionRecommendation
@@ -40,7 +43,7 @@ class KEPubOutput(OutputFormatPlugin):
     epub_output_plugin = None
     configdir = os.path.join(config_dir, "plugins")
     reference_kepub = os.path.join(configdir, "reference.kepub.epub")
-    kepub_options = {
+    kepub_options: Set[OptionRecommendation] = {
         OptionRecommendation(
             name="kepub_hyphenate",
             recommended_value=True,
@@ -51,11 +54,11 @@ class KEPubOutput(OutputFormatPlugin):
                     ),
                     _(  # noqa: F821
                         "The language used will be the language defined for the "
-                        "book in calibre."
+                        + "book in calibre."
                     ),
                     _(  # noqa: F821
                         "Please see the README file for directions on updating "
-                        "hyphenation dictionaries."
+                        + "hyphenation dictionaries."
                     ),
                 ]
             ),
@@ -116,15 +119,17 @@ class KEPubOutput(OutputFormatPlugin):
             ),
         ),
     }
-    kepub_recommendations = {("epub_version", "3", OptionRecommendation.LOW)}
+    kepub_recommendations: Set[Tuple[str, Any, int]] = {
+        ("epub_version", "3", OptionRecommendation.LOW)
+    }
 
     def __init__(self, *args, **kwargs):
         """Initialize the KePub output converter."""
         self.epub_output_plugin = EPUBOutput(*args, **kwargs)
         self.options = self.epub_output_plugin.options.union(self.kepub_options)
-        self.recommendations = self.epub_output_plugin.recommendations.union(
-            self.kepub_recommendations
-        )
+        self.recommendations: Set[
+            Tuple[str, Any, int]
+        ] = self.epub_output_plugin.recommendations.union(self.kepub_recommendations)
         OutputFormatPlugin.__init__(self, *args, **kwargs)
 
     def gui_configuration_widget(

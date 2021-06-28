@@ -15,9 +15,6 @@
 
 """Generates gettext templates."""
 
-from __future__ import print_function
-from __future__ import unicode_literals
-
 import getopt
 import importlib.machinery
 import operator
@@ -27,6 +24,7 @@ import time
 import token
 import tokenize
 from functools import reduce
+from typing import List
 
 # for selftesting
 try:
@@ -275,22 +273,6 @@ def contains_any(str, set):
     return 1 in [c in str for c in set]
 
 
-def _visit_pyfiles(list, dirname, names):
-    """Visit .py files for get_files_for_name()."""
-    # don't recurse into CVS directories
-    if "CVS" in names:
-        names.remove("CVS")
-
-    # add all *.py files to list
-    list.extend(
-        [
-            os.path.join(dirname, file)
-            for file in names
-            if os.path.splitext(file)[1] in importlib.machinery.SOURCE_SUFFIXES
-        ]
-    )
-
-
 def get_files_for_name(name):
     """Get a list of module files.
 
@@ -330,7 +312,7 @@ class TokenEater:
 
     def __call__(self, ttype, tstring, stup, etup, line):
         """Allow this class to be called like a function."""
-        self.__state(ttype, tstring, stup[0])
+        self.__state(ttype, tstring, line)
 
     def __waiting(self, ttype, tstring, lineno):
         """Get the waiting state."""
@@ -506,7 +488,7 @@ def main():
         # defaults
         extractall = 0  # FIXME: currently this option has no effect at all.
         escape = 0
-        keywords = []
+        keywords: List[str] = []
         outpath = ""
         outfile = "messages.pot"
         writelocations = 1
@@ -514,6 +496,7 @@ def main():
         verbose = 0
         width = 78
         excludefilename = ""
+        toexclude: List[str] = []
         docstrings = 0
         nodocstrings = {}
 
@@ -541,9 +524,7 @@ def main():
         elif opt in ("--no-location",):
             options.writelocations = 0
         elif opt in ("-S", "--style"):
-            options.locationstyle = locations.get(arg.lower())
-            if options.locationstyle is None:
-                usage(1, _("Invalid value for --style: %s") % arg)
+            options.locationstyle = locations.get(arg.lower(), 1)
         elif opt in ("-o", "--output"):
             options.outfile = arg
         elif opt in ("-p", "--output-dir"):
@@ -620,12 +601,7 @@ def main():
                 for tok in tokenize.generate_tokens(fp.readline):
                     eater(*tok)
             except tokenize.TokenError as e:
-                print(
-                    "{0}: {1}, line {2}, column {3}".format(
-                        e[0], filename, e[1][0], e[1][1]
-                    ),
-                    file=sys.stderr,
-                )
+                print(f"{e}", file=sys.stderr)
         finally:
             if closep:
                 fp.close()

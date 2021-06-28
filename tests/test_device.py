@@ -1,8 +1,4 @@
 # vim: fileencoding=UTF-8:expandtab:autoindent:ts=4:sw=4:sts=4
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
 
 # To import from calibre, some things need to be added to `sys` first. Do not import
 # anything from calibre or the plugins yet.
@@ -17,16 +13,10 @@ import warnings
 
 test_dir = os.path.dirname(os.path.abspath(__file__))
 src_dir = os.path.dirname(test_dir)
-test_libdir = os.path.join(
-    src_dir, "pylib", "python{major}".format(major=sys.version_info.major)
-)
+test_libdir = os.path.join(src_dir, "pylib", f"python{sys.version_info.major}")
 sys.path = [src_dir] + glob.glob(os.path.join(test_libdir, "*.zip")) + sys.path
 
-try:
-    from unittest import mock
-except ImportError:
-    # Python 2
-    import mock
+from unittest import mock
 
 from calibre_plugins.kobotouch_extended import container
 from calibre_plugins.kobotouch_extended.device import driver

@@ -76,15 +76,13 @@ class KEPUBMetadataWriter(EPUBMetadataWriter):
             if not found_cover:
                 common.log.debug(
                     "KEPUBMetadataWriter::set_metadata - looking for cover "
-                    "using href"
+                    + "using href"
                 )
                 for item in reader.opf.itermanifest():
                     if item.get("href", None) == cover_id:
                         mt = item.get("media-type", "")
                         if mt and mt.startswith("image/"):
-                            common.log(
-                                "KEPUBMetadataWriter::set_metadata -found " "cover"
-                            )
+                            common.log("KEPUBMetadataWriter::set_metadata -found cover")
                             item.set("properties", "cover-image")
                             found_cover = True
 
