@@ -21,8 +21,9 @@ import os
 import re
 import shutil
 import string
-import threading
 from collections import defaultdict
+from concurrent.futures import Future
+from concurrent.futures import ThreadPoolExecutor
 from copy import deepcopy
 from typing import Callable
 from typing import Dict
@@ -170,7 +171,8 @@ class KEPubContainer(EpubContainer):
         return is_encumbered
 
     def flush_cache(self) -> None:
-        self.__run_async(self.__flush_cache_impl, [(name,) for name in self.dirtied])
+        args = [(name,) for name in self.dirtied]
+        self.__run_async(self.__flush_cache_impl, args)
 
     def __flush_cache_impl(self, name: str) -> None:
         """Flush the cache, writing all cached values to disk."""
@@ -366,9 +368,11 @@ class KEPubContainer(EpubContainer):
         self.flush_cache()
 
     def __run_async(self, func: Callable, args: List[Tuple[str, ...]]) -> None:
-        threads = [threading.Thread(target=func, args=arg) for arg in args]
-        [th.start() for th in threads]
-        [th.join() for th in threads]
+        futures: List[Future] = []
+        with ThreadPoolExecutor() as pool:
+            futures = [pool.submit(func, *arg) for arg in args]
+        for future in futures:
+            future.result(timeout=10)
 
     def __run_async_over_content(
         self, func: Callable, args: Optional[Tuple[str, ...]] = None
@@ -386,9 +390,11 @@ class KEPubContainer(EpubContainer):
         """Add KePub divs to the HTML file."""
         self.log.debug(f"Adding Kobo divs to {name}")
         root = self.parsed(name)
-        kobo_div_count = root.xpath(
-            'count(//xhtml:div[@id="book-inner"])',
-            namespaces={"xhtml": XHTML_NAMESPACE},
+        kobo_div_count = int(
+            root.xpath(
+                'count(//xhtml:div[@id="book-inner"])',
+                namespaces={"xhtml": XHTML_NAMESPACE},
+            )
         )
         if kobo_div_count > 0:
             raise Exception(
@@ -413,7 +419,7 @@ class KEPubContainer(EpubContainer):
             root.xpath("count(//xhtml:p)", namespaces={"xhtml": XHTML_NAMESPACE})
         )
         if div_count > p_count:
-            raise Exception(
+            self.log.warning(
                 _(f"Skipping file {name}")
                 + " ("
                 + ngettext(
@@ -423,6 +429,7 @@ class KEPubContainer(EpubContainer):
                 + ngettext(f"{p_count} <p> tag", f"{p_count} <p> tags", p_count)
                 + ")"
             )
+            return
 
         self.__add_kobo_divs_to_body(root)
 
@@ -478,9 +485,12 @@ class KEPubContainer(EpubContainer):
         """Add KePub spans (used for in-book location) the HTML file."""
         self.log.debug(f"Adding Kobo spans to {name}")
         root = self.parsed(name)
-        kobo_span_count = root.xpath(
-            'count(.//xhtml:span[@class="koboSpan" ' + 'or starts-with(@id, "kobo.")])',
-            namespaces={"xhtml": XHTML_NAMESPACE},
+        kobo_span_count = int(
+            root.xpath(
+                'count(.//xhtml:span[@class="koboSpan" '
+                + 'or starts-with(@id, "kobo.")])',
+                namespaces={"xhtml": XHTML_NAMESPACE},
+            )
         )
         if kobo_span_count > 0:
             raise Exception(
