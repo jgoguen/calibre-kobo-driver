@@ -21,7 +21,7 @@ jobs:
         with:
           python-version: 3.x
 
-      - uses: psf/black@master
+      - uses: psf/black@main
 
   shellcheck:
     runs-on: ubuntu-latest
