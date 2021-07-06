@@ -228,8 +228,10 @@ class KEPubContainer(EpubContainer):
             raise Exception(_(f"Could not retrieve content file {infile}"))
         head = root.xpath("./xhtml:head", namespaces={"xhtml": XHTML_NAMESPACE})
         if head is None:
-            raise Exception(_(f"Could not find a <head> element in {infile}"))
-        head = head[0]
+            head = root.makeelement(f"{{{XHTML_NAMESPACE}}}head")
+            root.insert(0, head)
+        else:
+            head = head[0]
         if head is None:
             raise Exception(
                 _(
@@ -288,7 +290,8 @@ class KEPubContainer(EpubContainer):
         self.log.debug(f"Forcing cleanup for file {name}")
         html = self.raw_data(name, decode=True, normalize_to_nfc=True)
         if html is None:
-            raise Exception(_(f"No HTML content in {name}"))
+            self.log.warning(f"No HTML content in {name}")
+            return
 
         encoding_match = ENCODING_RE.search(str(html[:75]))
         if encoding_match and encoding_match.group(1).upper() != "UTF-8":
@@ -315,7 +318,7 @@ class KEPubContainer(EpubContainer):
         self.log.debug(f"Cleaning markup for file {name}")
         html = self.raw_data(name, decode=True, normalize_to_nfc=True)
         if html is None:
-            raise Exception(_(f"No HTML content in {name}"))
+            self.log.warning(f"No HTML content in {name}")
 
         # Get rid of Microsoft cruft
         html = MS_CRUFT_RE_1.sub(" ", html)
@@ -337,7 +340,7 @@ class KEPubContainer(EpubContainer):
         self.log.debug(f"Smartening punctuation for file {name}")
         html = self.raw_data(name, decode=True, normalize_to_nfc=True)
         if html is None:
-            raise Exception(_(f"No HTML content in file {name}"))
+            self.log.warning(f"No HTML content in file {name}")
 
         # Fix non-breaking space indents
         html = preprocessor.fix_nbsp_indents(html)
@@ -392,13 +395,14 @@ class KEPubContainer(EpubContainer):
             )
         )
         if kobo_div_count > 0:
-            raise Exception(
+            self.log.warning(
                 _(f"Skipping file {name}")
                 + ", "
                 + ngettext(
                     "Kobo <div> tag present", "Kobo <div> tags present", kobo_div_count
                 )
             )
+            return
 
         # NOTE: Hackish heuristic: Forgo this if we have more div's than
         # p's, which would potentially indicate a book using div's instead
@@ -488,7 +492,7 @@ class KEPubContainer(EpubContainer):
             )
         )
         if kobo_span_count > 0:
-            raise Exception(
+            self.log.warning(
                 _(f"Skipping file {name}")
                 + ", "
                 + ngettext(
@@ -497,6 +501,7 @@ class KEPubContainer(EpubContainer):
                     kobo_span_count,
                 )
             )
+            return
 
         body = root.xpath("./xhtml:body", namespaces={"xhtml": XHTML_NAMESPACE})[0]
         self._add_kobo_spans_to_node(body, name)
