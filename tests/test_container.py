@@ -115,10 +115,7 @@ class TestContainer(TestAssertions):
         self.assertGreaterEqual(len(html_names), 1)
         self.assertIn(container_name, html_names)
 
-        if expect_changed:
-            added_func(container_name)
-        else:
-            self.assertRaises(Exception, added_func, container_name)
+        added_func(container_name)
 
         with open(os.path.join(self.tmpdir, container_name), "r") as f:
             if expect_changed:
