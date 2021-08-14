@@ -1,6 +1,9 @@
 {
-	"python.autoComplete.extraPaths": [
-		"${workspaceFolder:calibre}/src"
-	],
-	"python.pythonPath": "/usr/bin/python2"
+  "python.autoComplete.extraPaths": [
+    "${workspaceFolder:calibre}/src"
+  ],
+  "python.pythonPath": "/usr/bin/python3",
+  "python.analysis.extraPaths": [
+    "${workspaceFolder:calibre}/src"
+  ]
 }
