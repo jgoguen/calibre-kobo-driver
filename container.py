@@ -346,21 +346,16 @@ class KEPubContainer(EpubContainer):
         html = preprocessor.fix_nbsp_indents(html)
 
         # Smarten punctuation
-        html = smartyPants(html)
+        # q : quotes
+        # B : backtick quotes (``double'' and `single')
+        # d : dashes
+        # e : ellipses
+        html = smartyPants(html, attr="qBde")
 
-        # Ellipsis to HTML entity
-        html = ELLIPSIS_RE.sub("&hellip;", html)
-
-        # Double-dash and unicode char code to em-dash
-        html = html.replace("---", " &#x2013; ")
+        # Unicode char code for em-dash and en-dash not converted by smartyPants()
         html = html.replace("\x97", " &#x2013; ")
         html = html.replace("\u2013", " &#x2013; ")
-        html = html.replace("--", " &#x2014; ")
         html = html.replace("\u2014", " &#x2014; ")
-
-        # Fix comment nodes that got mangled
-        html = html.replace("<! &#x2014; ", "<!-- ")
-        html = html.replace(" &#x2014; >", " -->")
 
         self.replace(name, self.parse_xhtml(html))
         self.flush_cache()

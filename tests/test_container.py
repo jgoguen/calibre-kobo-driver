@@ -362,6 +362,20 @@ class TestContainer(TestAssertions):
         ]
         self.assertListEqual(text_chunks, post_text_chunks)
 
+    def test_github_issue_136(self):
+        source_file = os.path.join(self.testfile_basedir, "page_github_136.html")
+        container_name = self.container.copy_file_to_container(source_file)
+        self.assertIn(container_name, self.container.name_path_map)
+
+        self.container.smarten_punctuation()
+
+        html = self.container.parsed(container_name)
+        capitolo_p_count = html.xpath(
+            'count(//xhtml:body//xhtml:p[@class="corpo---titolo-capitolo"])',
+            namespaces={"xhtml": container.XHTML_NAMESPACE},
+        )
+        self.assertEqual(capitolo_p_count, 1)
+
     def test_github_issue_90(self):
         source_file = os.path.join(self.testfile_basedir, "page_github_90.html")
         container_name = self.container.copy_file_to_container(source_file)
