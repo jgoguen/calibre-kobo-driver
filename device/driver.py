@@ -333,24 +333,40 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
             try:
                 if self.isAuraH2O():
                     device_css_file_name = "kobo_extra_AURAH2O.css"
+                elif self.isAuraH2OEdition2():
+                    device_css_file_name = "kobo_extra_AURAH2O_2.css"
                 elif self.isAuraHD():
                     device_css_file_name = "kobo_extra_AURAHD.css"
                 elif self.isAura():
                     device_css_file_name = "kobo_extra_AURA.css"
+                elif self.isAuraEdition2():
+                    device_css_file_name = "kobo_extra_AURA_2.css"
+                elif self.isAuraOne():
+                    device_css_file_name = "kobo_extra_AURAONE.css"
                 elif self.isClaraHD():
                     device_css_file_name = "kobo_extra_CLARA.css"
                 elif self.isForma():
                     device_css_file_name = "kobo_extra_FORMA.css"
+                elif self.isElipsa():
+                    device_css_file_name = "kobo_extra_ELIPSA.css"
                 elif self.isGlo():
                     device_css_file_name = "kobo_extra_GLO.css"
                 elif self.isGloHD():
                     device_css_file_name = "kobo_extra_GLOHD.css"
                 elif self.isLibraH2O():
                     device_css_file_name = "kobo_extra_LIBRA.css"
+                elif self.isLibra2():
+                    device_css_file_name = "kobo_extra_LIBRA_2.css"
+                elif self.isNia():
+                    device_css_file_name = "kobo_extra_NIA.css"
+                elif self.isSage():
+                    device_css_file_name = "kobo_extra_SAGE.css"
                 elif self.isMini():
                     device_css_file_name = "kobo_extra_MINI.css"
                 elif self.isTouch():
                     device_css_file_name = "kobo_extra_TOUCH.css"
+                elif self.isTouch2():
+                    device_css_file_name = "kobo_extra_TOUCH_2.css"
             except AttributeError:
                 common.log.warning(
                     "KoboTouchExtended:upload_books:Calibre version too old "
