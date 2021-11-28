@@ -41,52 +41,7 @@ jobs:
           draft: false
           prerelease: false
 
-      - name: Upload KoboTouchExtended
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload release assets
+        uses: softprops/action-gh-release
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./KoboTouchExtended.zip
-          asset_name: KoboTouchExtended.zip
-          asset_content_type: application/zip
-
-      - name: Upload KePub Input
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./KePub Input.zip
-          asset_name: KePub Input.zip
-          asset_content_type: application/zip
-
-      - name: Upload KePub Output
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./KePub Output.zip
-          asset_name: KePub Output.zip
-          asset_content_type: application/zip
-
-      - name: Upload KePub Metadata Reader
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./KePub Metadata Reader.zip
-          asset_name: KePub Metadata Reader.zip
-          asset_content_type: application/zip
-
-      - name: Upload KePub Metadata Writer
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./KePub Metadata Writer.zip
-          asset_name: KePub Metadata Writer.zip
-          asset_content_type: application/zip
+          files: '*.zip'
