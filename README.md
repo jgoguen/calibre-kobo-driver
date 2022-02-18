@@ -5,7 +5,7 @@
 <a href='https://ko-fi.com/O5O85Q218' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://cdn.ko-fi.com/cdn/kofi2.png?v=2' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
 <a href="https://liberapay.com/jgoguen/donate"><img alt="Donate using Liberapay" src="https://liberapay.com/assets/widgets/donate.svg"></a>
 
-PayPal: https://paypal.me/jtgoguen
+PayPal: <https://paypal.me/jtgoguen>
 
 -----
 
@@ -149,15 +149,23 @@ plugins support the following replacements for `<DEVICE>` (capitalization is
 important):
 
 - Kobo Aura H2O&mdash;AURAH2O (`kobo_extra_AURAH2O.css`)
+- Kobo Aura H2O Edition 2&mdash;AURAH2O_2 (`kobo_extra_AURAH2O_2.css`)
 - Kobo Aura HD&mdash;AURAHD (`kobo_extra_AURAHD.css`)
 - Kobo Aura&mdash;AURA (`kobo_extra_AURA.css`)
+- Kobo Aura Edition 2&mdash;AURA_2 (`kobo_extra_AURA_2.css`)
+- Kobo Aura One&mdash;AURAONE (`kobo_extra_AURAONE.css`)
 - Kobo Clara&mdash;CLARA (`kobo_extra_CLARA.css`)
 - Kobo Forma&mdash;FORMA (`kobo_extra_FORMA.css`)
+- Kobo Elipsa&mdash;ELIPSA (`kobo_extra_ELIPSA.css`)
 - Kobo Glo&mdash;GLO (`kobo_extra_GLO.css`)
 - Kobo Glo HD&mdash;GLOHD (`kobo_extra_GLOHD.css`)
 - Kobo Libra&mdash;LIBRA (`kobo_extra_LIBRA.css`)
+- Kobo Libra 2&mdash;LIBRA_2 (`kobo_extra_LIBRA_2.css`)
+- Kobo Nia&mdash;NIA (`kobo_extra_NIA.css`)
+- Kobo Sage&mdash;SAGE (`kobo_extra_SAGE.css`)
 - Kobo Mini&mdash;MINI (`kobo_extra_MINI.css`)
 - Kobo Touch&mdash;TOUCH (`kobo_extra_TOUCH.css`)
+- Kobo Touch 2&mdash;TOUCH (`kobo_extra_TOUCH_2.css`)
 
 Please note, this overwrites any `kobo_extra.css` you may have already sent to
 your Kobo device. If you have created the `kobo_extra.css` file on your Kobo
