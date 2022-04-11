@@ -125,13 +125,6 @@ To use the conversion input format plugin after installing:
    of the conversion window)
 1. Click **OK**
 
-### Special Note
-
-You should turn off the built-in KoboTouch driver (authored by David Forrester)
-while using this plugin. On rare occasions, calibre may inadvertently select the
-built-in KoboTouch driver instead of this plugin. But do not turn off the
-built-in Kobo driver.
-
 ### Adding Arbitrary Styles
 
 The device driver plugin, through the base KoboTouch driver provided with
