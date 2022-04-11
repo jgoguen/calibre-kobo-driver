@@ -42,6 +42,6 @@ jobs:
           prerelease: false
 
       - name: Upload release assets
-        uses: softprops/action-gh-release
+        uses: softprops/action-gh-release@v1
         with:
           files: '*.zip'
