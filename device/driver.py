@@ -176,10 +176,8 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
         super(KOBOTOUCHEXTENDED, cls).save_settings(config_widget)
 
     def _modify_epub(self, infile, metadata, container=None):
-        if not infile.endswith(EPUB_EXT):
-            if not infile.endswith(KEPUB_EXT):
-                self.skip_renaming_files.add(metadata.uuid)
-            else:
+        if not infile.endswith(EPUB_EXT) or not self.kepubify_book(metadata):
+            if infile.endswith(KEPUB_EXT):
                 common.log.info(
                     "KoboTouchExtended:_modify_epub:Skipping all processing for "
                     + f"calibre-converted KePub file {infile}"
@@ -302,9 +300,6 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
                 infile, metadata, container
             )
 
-        if not self.extra_features:
-            self.skip_renaming_files.add(metadata.uuid)
-
         dpath = self.file_copy_dir or ""
         if dpath != "":
             dpath = os.path.expanduser(dpath).strip()
@@ -392,26 +387,37 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
         kobo_config_file = os.path.join(
             self._main_prefix, ".kobo", "Kobo", "Kobo eReader.conf"
         )
-        if os.path.isfile(kobo_config_file):
-            cfg = SafeConfigParser(allow_no_value=True)
-            cfg.optionxform = str
-            cfg.read(kobo_config_file)
+        if self.fwversion < (3, 11, 0): # The way the book progress was handled changed in 3.11.0 making this option useless.
+            if os.path.isfile(kobo_config_file):
+                cfg = SafeConfigParser(allow_no_value=True)
+                cfg.optionxform = str
+                cfg.read(kobo_config_file)
 
-            if not cfg.has_section("FeatureSettings"):
-                cfg.add_section("FeatureSettings")
-            common.log.info(
-                "KoboTouchExtended:upload_books:Setting FeatureSettings."
-                + "FullBookPageNumbers to {0}".format(
-                    "true" if self.full_page_numbers else "false"
-                )
-            )
-            cfg.set(
-                "FeatureSettings",
-                "FullBookPageNumbers",
-                "true" if self.full_page_numbers else "false",
-            )
-            with open(kobo_config_file, "w") as cfgfile:
-                cfg.write(cfgfile)
+                try:
+                    uses_FullBookPageNumbers = kobo_config.has_section("FeatureSettings") and kobo_config.getboolean("FeatureSettings", "FullBookPageNumbers")
+                except ValueError:
+                    uses_FullBookPageNumbers = False
+                except NoOptionError:
+                    uses_FullBookPageNumbers = False
+
+                if uses_FullBookPageNumbers == self.full_page_numbers:
+                    pass
+                else:
+                    if not cfg.has_section("FeatureSettings"):
+                        cfg.add_section("FeatureSettings")
+                    common.log.info(
+                        "KoboTouchExtended:upload_books:Setting FeatureSettings."
+                        + "FullBookPageNumbers to {0}".format(
+                            "true" if self.full_page_numbers else "false"
+                        )
+                    )
+                    cfg.set(
+                        "FeatureSettings",
+                        "FullBookPageNumbers",
+                        "true" if self.full_page_numbers else "false",
+                    )
+                    with open(kobo_config_file, "w") as cfgfile:
+                        cfg.write(cfgfile)
 
         return super(KOBOTOUCHEXTENDED, self).upload_books(
             files, names, on_card, end_session, metadata
@@ -419,18 +425,18 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 
     def filename_callback(self, path, mi):
         """Ensure the filename on the device is correct."""
-        if self.extra_features:
+        if self.kepubify_book(mi) and path.endswith(EPUB_EXT) and mi.uuid not in self.skip_renaming_files:
             common.log.debug(
                 "KoboTouchExtended:filename_callback:Path - {0}".format(path)
             )
-            if path.endswith(KEPUB_EXT):
-                path += EPUB_EXT
-            elif path.endswith(EPUB_EXT) and mi.uuid not in self.skip_renaming_files:
-                path = path[: -len(EPUB_EXT)] + KEPUB_EXT + EPUB_EXT
+            path = path[: -len(EPUB_EXT)] + KEPUB_EXT + EPUB_EXT
 
             common.log.debug(
                 "KoboTouchExtended:filename_callback:New path - {0}".format(path)
             )
+        else:
+            path = super(KOBOTOUCHEXTENDED, self).filename_callback(path, mi)
+
         return path
 
     def sanitize_path_components(self, components):
@@ -507,6 +513,8 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
         c = super(KOBOTOUCHEXTENDED, cls)._config()
 
         c.add_opt("extra_features", default=True)
+        c.add_opt("use_template", default=False)
+        c.add_opt("kepubify_template", default="")
         c.add_opt("upload_encumbered", default=False)
         c.add_opt("skip_failed", default=False)
         c.add_opt("hyphenate", default=False)
@@ -650,10 +658,39 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 
         return settings
 
+    def kepubify_book(self, metadata):
+        """Return if the book is to be kepubified."""
+        kepubify_book = self.extra_features
+        common.log.warning("kepubify_book - self.kepubify_template='%s'" % self.kepubify_template)
+        if kepubify_book and self.use_template:
+            from calibre.ebooks.metadata.book.formatter import SafeFormat
+            common.log.warning("kepubify_book - metadata='%s'" % metadata)
+            common.log.warning("kepubify_book - self.kepubify_template='%s'" % self.kepubify_template)
+            kepubify = SafeFormat().safe_format(self.kepubify_template, metadata, 'Open With template error', metadata)
+            common.log.warning("kepubify_book - after SafeFormat kepubify='%s'" % kepubify)
+            if kepubify is not None and kepubify.startswith("PLUGBOARD TEMPLATE ERROR"):
+                common.log.warning("kepubify_book - self.kepubify_template='%s'" % self.kepubify_template)
+                common.log.warning("kepubify_book - kepubify='%s'" %kepubify)
+                kepubify_book = True
+            else:
+                kepubify_book = not kepubify == ''
+        common.log.warning("kepubify_book - returning kepubify_book='%s'" % kepubify_book)
+        return kepubify_book
+
     @property
     def extra_features(self):
         """Determine if extra Kobo features are being applied."""
         return self.get_pref("extra_features")
+
+    @property
+    def use_template(self):
+        """Determine if the option to use the template for kepubification ."""
+        return self.get_pref("use_template")
+
+    @property
+    def kepubify_template(self):
+        """Determine the kepubify template."""
+        return self.get_pref("kepubify_template")
 
     @property
     def upload_encumbered(self):
