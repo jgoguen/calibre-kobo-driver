@@ -21,9 +21,9 @@ from calibre_plugins.kobotouch_extended.container import KEPubContainer
 from polyglot.builtins import is_py3
 
 if is_py3:
-    from configparser import SafeConfigParser
+    from configparser import NoOptionError, SafeConfigParser
 else:
-    from ConfigParser import SafeConfigParser
+    from ConfigParser import NoOptionError, SafeConfigParser
 
 # Support load_translations() without forcing calibre 1.9+
 try:
@@ -387,14 +387,18 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
         kobo_config_file = os.path.join(
             self._main_prefix, ".kobo", "Kobo", "Kobo eReader.conf"
         )
-        if self.fwversion < (3, 11, 0): # The way the book progress was handled changed in 3.11.0 making this option useless.
+        if self.fwversion < (3, 11, 0):
+            # The way the book progress was handled changed in 3.11.0 making this
+            # option useless.
             if os.path.isfile(kobo_config_file):
                 cfg = SafeConfigParser(allow_no_value=True)
                 cfg.optionxform = str
                 cfg.read(kobo_config_file)
 
                 try:
-                    uses_FullBookPageNumbers = kobo_config.has_section("FeatureSettings") and kobo_config.getboolean("FeatureSettings", "FullBookPageNumbers")
+                    uses_FullBookPageNumbers = cfg.has_section(
+                        "FeatureSettings"
+                    ) and cfg.getboolean("FeatureSettings", "FullBookPageNumbers")
                 except ValueError:
                     uses_FullBookPageNumbers = False
                 except NoOptionError:
@@ -425,7 +429,11 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 
     def filename_callback(self, path, mi):
         """Ensure the filename on the device is correct."""
-        if self.kepubify_book(mi) and path.endswith(EPUB_EXT) and mi.uuid not in self.skip_renaming_files:
+        if (
+            self.kepubify_book(mi)
+            and path.endswith(EPUB_EXT)
+            and mi.uuid not in self.skip_renaming_files
+        ):
             common.log.debug(
                 "KoboTouchExtended:filename_callback:Path - {0}".format(path)
             )
@@ -661,20 +669,34 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
     def kepubify_book(self, metadata):
         """Return if the book is to be kepubified."""
         kepubify_book = self.extra_features
-        common.log.warning("kepubify_book - self.kepubify_template='%s'" % self.kepubify_template)
+        common.log.warning(
+            "kepubify_book - self.kepubify_template='%s'" % self.kepubify_template
+        )
         if kepubify_book and self.use_template:
             from calibre.ebooks.metadata.book.formatter import SafeFormat
+
             common.log.warning("kepubify_book - metadata='%s'" % metadata)
-            common.log.warning("kepubify_book - self.kepubify_template='%s'" % self.kepubify_template)
-            kepubify = SafeFormat().safe_format(self.kepubify_template, metadata, 'Open With template error', metadata)
-            common.log.warning("kepubify_book - after SafeFormat kepubify='%s'" % kepubify)
+            common.log.warning(
+                "kepubify_book - self.kepubify_template='%s'" % self.kepubify_template
+            )
+            kepubify = SafeFormat().safe_format(
+                self.kepubify_template, metadata, "Open With template error", metadata
+            )
+            common.log.warning(
+                "kepubify_book - after SafeFormat kepubify='%s'" % kepubify
+            )
             if kepubify is not None and kepubify.startswith("PLUGBOARD TEMPLATE ERROR"):
-                common.log.warning("kepubify_book - self.kepubify_template='%s'" % self.kepubify_template)
-                common.log.warning("kepubify_book - kepubify='%s'" %kepubify)
+                common.log.warning(
+                    "kepubify_book - self.kepubify_template='%s'"
+                    % self.kepubify_template
+                )
+                common.log.warning("kepubify_book - kepubify='%s'" % kepubify)
                 kepubify_book = True
             else:
-                kepubify_book = not kepubify == ''
-        common.log.warning("kepubify_book - returning kepubify_book='%s'" % kepubify_book)
+                kepubify_book = not kepubify == ""
+        common.log.warning(
+            "kepubify_book - returning kepubify_book='%s'" % kepubify_book
+        )
         return kepubify_book
 
     @property

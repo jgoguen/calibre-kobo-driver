@@ -4,12 +4,12 @@ default_language_version:
 minimum_pre_commit_version: '2.7.1'
 repos:
   - repo: https://github.com/psf/black
-    rev: 21.11b1  # Replace by any tag/version: https://github.com/psf/black/tags
+    rev: 22.3.0  # Replace by any tag/version: https://github.com/psf/black/tags
     hooks:
       - id: black
         language_version: python3  # Should be a command that runs python3.6+
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.0.1
+    rev: v4.2.0
     hooks:
       - id: check-case-conflict
       - id: mixed-line-ending
@@ -21,7 +21,7 @@ repos:
       - id: flake8
         args: ['--builtins=_,ngettext,load_translations,get_resources', '--max-line-length=88']
   - repo: https://github.com/jumanjihouse/pre-commit-hooks
-    rev: '2.1.5'
+    rev: '2.1.6'
     hooks:
       - id: shellcheck
         args:

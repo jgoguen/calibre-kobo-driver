@@ -138,13 +138,14 @@ class TestDeviceWithExtendedFeatures(DeviceTestBase):
 
 
 @mock.patch.object(driver.KOBOTOUCHEXTENDED, "extra_features", False)
+@mock.patch.object(driver.KOBOTOUCHEXTENDED, "use_template", False)
 class TestDeviceWithoutExtendedFeatures(DeviceTestBase):
     def test_filename_callback_skipped(self):
         mi = mock.MagicMock()
         mi.uuid = uuid.uuid4()
         self.assertFalse(self.device.extra_features)
 
-        for ext in ("kepub", "epub", "mobi"):
+        for ext in ("epub", "mobi"):
             cb_name = self.device.filename_callback("reference.{0}".format(ext), mi)
             self.assertEqual(cb_name, "reference.{0}".format(ext))
 

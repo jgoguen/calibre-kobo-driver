@@ -29,6 +29,7 @@ try:
 except NameError:
     pass
 
+
 def wrap_msg(msg):
     return textwrap.fill(msg.strip(), 100)
 
@@ -149,10 +150,28 @@ class ExtendedGroupBox(DeviceOptionsGroupBox):
 
         layout_line = 0
         layout_line += 1
-        self.options_layout.addWidget(self.clean_markup_checkbox, layout_line, 0, 1, 1)
-        self.options_layout.addWidget(self.smarten_punctuation_checkbox, layout_line, 1, 1, 1)
+        self.options_layout.addWidget(
+            self.clean_markup_checkbox,
+            layout_line,
+            0,
+            1,
+            1,
+        )
+        self.options_layout.addWidget(
+            self.smarten_punctuation_checkbox,
+            layout_line,
+            1,
+            1,
+            1,
+        )
         layout_line += 1
-        self.options_layout.addWidget(self.full_page_numbers_checkbox, layout_line, 0, 1, 1)
+        self.options_layout.addWidget(
+            self.full_page_numbers_checkbox,
+            layout_line,
+            0,
+            1,
+            1,
+        )
         layout_line += 1
         self.options_layout.setRowStretch(layout_line, 2)
 
@@ -199,7 +218,6 @@ class ExtendedGroupBox(DeviceOptionsGroupBox):
 
 
 class KepubifyGroupBox(DeviceOptionsGroupBox):
-
     def __init__(self, parent, device):
         super(KepubifyGroupBox, self).__init__(parent, device)
         self.setTitle(_("Send books as kepubs"))
@@ -209,24 +227,34 @@ class KepubifyGroupBox(DeviceOptionsGroupBox):
         self.setLayout(self.options_layout)
 
         self.setCheckable(True)
-        self.setChecked(device.get_pref('extra_features'))
-        self.setToolTip(wrap_msg(_('Enable options to transform books to kepubs when sending them to the device.')))
+        self.setChecked(device.get_pref("extra_features"))
+        self.setToolTip(
+            wrap_msg(
+                _(
+                    "Enable options to transform books to kepubs when sending "
+                    + "them to the device."
+                )
+            )
+        )
 
         self.use_template_checkbox = create_checkbox(
             _("Use template for kepubification"),  # noqa: F821
-            _("Use a template to decide if books should be kepubified. If result is false or blank, it will not be kepubified."),  # noqa: F821
+            _(
+                "Use a template to decide if books should be kepubified. If result "
+                + "is false or blank, it will not be kepubified."
+            ),  # noqa: F821
             device.get_pref("use_template"),
         )
         self.kepubify_template_edit = TemplateConfig(
-                            device.get_pref('kepubify_template'),
-                            tooltip=_(  # noqa: F821
-                                "Enter a template to decide if a book is to be kepubified. "
-                                + "If the template returns false or true, the book will not be kepubified "
-                                + "and not other modifications will be made to the book."
-            )
+            device.get_pref("kepubify_template"),
+            tooltip=_(  # noqa: F821
+                "Enter a template to decide if a book is to be kepubified. "
+                + "If the template returns false or true, the book will not be "
+                + "kepubified and not other modifications will be made to the book."
+            ),
         )
         self.use_template_checkbox.clicked.connect(self.use_template_checkbox_clicked)
-        self.use_template_checkbox_clicked(device.get_pref('use_template'))
+        self.use_template_checkbox_clicked(device.get_pref("use_template"))
 
         self.upload_encumbered_checkbox = create_checkbox(
             _("Upload DRM-encumbered ePub files"),  # noqa: F821
@@ -275,7 +303,9 @@ class KepubifyGroupBox(DeviceOptionsGroupBox):
         self.options_layout.addWidget(self.kepubify_template_edit, layout_line, 1, 1, 1)
         layout_line += 1
         self.options_layout.addWidget(self.skip_failed_checkbox, layout_line, 0, 1, 1)
-        self.options_layout.addWidget(self.upload_encumbered_checkbox, layout_line, 1, 1, 1)
+        self.options_layout.addWidget(
+            self.upload_encumbered_checkbox, layout_line, 1, 1, 1
+        )
         layout_line += 1
         self.options_layout.addWidget(self.file_copy_dir_label, layout_line, 0, 1, 1)
         self.options_layout.addWidget(self.file_copy_dir_edit, layout_line, 1, 1, 1)
@@ -442,36 +472,53 @@ class HyphenationGroupBox(DeviceOptionsGroupBox):
         layout_line = 0
         layout_line += 1
         self.options_layout.addWidget(self.hyphenate_checkbox, layout_line, 0, 1, 1)
-        self.options_layout.addWidget(self.disable_hyphenation_checkbox, layout_line, 1, 1, 1)
+        self.options_layout.addWidget(
+            self.disable_hyphenation_checkbox, layout_line, 1, 1, 1
+        )
         layout_line += 1
-        self.options_layout.addWidget(self.opt_kepub_hyphenate_chars_label, layout_line, 0, 1, 1)
-        self.options_layout.addWidget(self.opt_kepub_hyphenate_chars, layout_line, 1, 1, 1)
+        self.options_layout.addWidget(
+            self.opt_kepub_hyphenate_chars_label, layout_line, 0, 1, 1
+        )
+        self.options_layout.addWidget(
+            self.opt_kepub_hyphenate_chars, layout_line, 1, 1, 1
+        )
         layout_line += 1
         self.options_layout.addWidget(
             self.opt_kepub_hyphenate_chars_before_label, layout_line, 0, 1, 1
         )
-        self.options_layout.addWidget(self.opt_kepub_hyphenate_chars_before, layout_line, 1, 1, 1)
+        self.options_layout.addWidget(
+            self.opt_kepub_hyphenate_chars_before, layout_line, 1, 1, 1
+        )
         layout_line += 1
         self.options_layout.addWidget(
             self.opt_kepub_hyphenate_chars_after_label, layout_line, 0, 1, 1
         )
-        self.options_layout.addWidget(self.opt_kepub_hyphenate_chars_after, layout_line, 1, 1, 1)
+        self.options_layout.addWidget(
+            self.opt_kepub_hyphenate_chars_after, layout_line, 1, 1, 1
+        )
         layout_line += 1
         self.options_layout.addWidget(
             self.opt_kepub_hyphenate_limit_lines_label, layout_line, 0, 1, 1
         )
-        self.options_layout.addWidget(self.opt_kepub_hyphenate_limit_lines, layout_line, 1, 1, 1)
+        self.options_layout.addWidget(
+            self.opt_kepub_hyphenate_limit_lines, layout_line, 1, 1, 1
+        )
         layout_line += 1
         self.options_layout.setRowStretch(layout_line, 2)
 
-        self.disable_hyphenation_checkbox.clicked.connect(self.disable_hyphenation_checkbox_clicked)
+        self.disable_hyphenation_checkbox.clicked.connect(
+            self.disable_hyphenation_checkbox_clicked
+        )
         self.hyphenate_checkbox.clicked.connect(self.hyphenate_checkbox_clicked)
-        self.disable_hyphenation_checkbox_clicked(device.get_pref("disable_hyphenation"))
+        self.disable_hyphenation_checkbox_clicked(
+            device.get_pref("disable_hyphenation")
+        )
         self.hyphenate_checkbox_clicked(device.get_pref("hyphenate"))
 
-
     def disable_hyphenation_checkbox_clicked(self, checked):
-        enable_hyphenation_fields = not (checked or self.disable_hyphenation_checkbox.isChecked())
+        enable_hyphenation_fields = not (
+            checked or self.disable_hyphenation_checkbox.isChecked()
+        )
         self.toggle_hyphenation_fields(enable_hyphenation_fields)
         if self.hyphenate_checkbox.isChecked() and checked:
             self.hyphenate_checkbox.setCheckState(False)
@@ -522,4 +569,3 @@ class HyphenationGroupBox(DeviceOptionsGroupBox):
     @property
     def hyphenate_limit_lines(self):
         return self.opt_kepub_hyphenate_limit_lines.value()
-
