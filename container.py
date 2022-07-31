@@ -16,6 +16,8 @@ import os
 import re
 import shutil
 import string
+import threading
+import traceback
 from collections import defaultdict
 from concurrent.futures import Future
 from concurrent.futures import ThreadPoolExecutor
@@ -113,6 +115,7 @@ class KEPubContainer(EpubContainer):
     ) -> None:
         self.paragraph_counter = defaultdict(lambda: 1)  # type: Dict[str, int]
         super(KEPubContainer, self).__init__(epub_path, log, *args, **kwargs)
+        self.my_thread = threading.current_thread()
         self.log = log
         self.log.debug(f"Creating KePub Container for ePub at {epub_path}")
 
@@ -164,14 +167,6 @@ class KEPubContainer(EpubContainer):
                 raise
 
         return is_encumbered
-
-    def flush_cache(self) -> None:
-        args = [(name,) for name in self.dirtied]
-        self.__run_async(self.__flush_cache_impl, args)
-
-    def __flush_cache_impl(self, name: str) -> None:
-        """Flush the cache, writing all cached values to disk."""
-        self.commit_item(name, keep_parsed=True)
 
     def copy_file_to_container(
         self, path: str, name: Optional[str] = None, mt: Optional[str] = None
@@ -261,7 +256,8 @@ class KEPubContainer(EpubContainer):
             head.append(elem)
             if self.mime_map[name] == CSS_MIMETYPE:
                 self.fix_tail(elem)
-            self.dirty(infile)
+            self.commit_item(infile, keep_parsed=True)
+        return infile
 
     def fix_tail(self, item: etree._Element) -> None:
         """Fix self-closing elements.
@@ -307,7 +303,8 @@ class KEPubContainer(EpubContainer):
         html = html.replace("\uFFFD", "")
 
         self.replace(name, self.parse_xhtml(html))
-        self.flush_cache()
+        self.commit_item(name, keep_parsed=True)
+        return name
 
     def clean_markup(self, name: str) -> None:
         """Clean HTML markup.
@@ -328,7 +325,8 @@ class KEPubContainer(EpubContainer):
         html = EMPTY_HEADINGS_RE.sub("", html)
 
         self.replace(name, self.parse_xhtml(html))
-        self.flush_cache()
+        self.commit_item(name, keep_parsed=True)
+        return name
 
     def smarten_punctuation(self) -> None:
         self.__run_async_over_content(self.__smarten_punctuation_impl)
@@ -358,14 +356,35 @@ class KEPubContainer(EpubContainer):
         html = html.replace("\u2014", " &#x2014; ")
 
         self.replace(name, self.parse_xhtml(html))
-        self.flush_cache()
+        self.commit_item(name, keep_parsed=True)
+        return name
 
     def __run_async(self, func: Callable, args: List[Tuple[str, ...]]) -> None:
+        # Verify that we aren't making subthreads of a subthread
+        if threading.current_thread() != self.my_thread:
+            self.log.debug("__run_async called by a subthread")
+            traceback.print_stack()
+            raise Exception("__run_async called by a subthread")
+
         futures: List[Future] = []
         with ThreadPoolExecutor() as pool:
-            futures = [pool.submit(func, *arg) for arg in args]
-        for future in futures:
-            future.result(timeout=10)
+            try:
+                for arg in args:
+                    self.log.debug(f"Starting thread: func={func.__name__}, name={arg[0]}")
+                    futures.append(pool.submit(func, *arg))
+
+                for future in futures:
+                    name = future.result(timeout=10)
+                    self.log.debug(f"thread processing {name} finished")
+            except Exception as e:
+                self.log.debug(f"Unhandled exception in thread processing. {str(e)}")
+                raise e
+
+        # Be sure dirtied trees are committed. These should be trees dirtied in
+        # our superclass because trees dirtied here have already been committed
+        for n in list(self.dirtied):
+            self.log.debug(f"Committing dirtied: {n}")
+            self.commit_item(n)
 
     def __run_async_over_content(
         self, func: Callable, args: Optional[Tuple[str, ...]] = None
@@ -397,7 +416,7 @@ class KEPubContainer(EpubContainer):
                     "Kobo <div> tag present", "Kobo <div> tags present", kobo_div_count
                 )
             )
-            return
+            return name
 
         # NOTE: Hackish heuristic: Forgo this if we have more div's than
         # p's, which would potentially indicate a book using div's instead
@@ -423,12 +442,13 @@ class KEPubContainer(EpubContainer):
                 + ngettext(f"{p_count} <p> tag", f"{p_count} <p> tags", p_count)
                 + ")"
             )
-            return
+            return name
 
         self.__add_kobo_divs_to_body(root)
 
         self.replace(name, root)
-        self.flush_cache()
+        self.commit_item(name, keep_parsed=True)
+        return name
 
     def __add_kobo_divs_to_body(self, root: etree._Element) -> None:
         body = root.xpath("./xhtml:body", namespaces={"xhtml": XHTML_NAMESPACE})[0]
@@ -502,7 +522,8 @@ class KEPubContainer(EpubContainer):
         self._add_kobo_spans_to_node(body, name)
 
         self.replace(name, root)
-        self.flush_cache()
+        self.commit_item(name, keep_parsed=True)
+        return name
 
     def _add_kobo_spans_to_node(
         self, node: etree._Element, name: str
