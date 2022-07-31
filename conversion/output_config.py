@@ -62,24 +62,20 @@ class PluginWidget(EPUBPluginWidget, EPUBUIForm):
         """Set up the plugin widget UI."""
         super(PluginWidget, self).setupUi(Form)
 
-        try:
-            from PyQt5 import Qt as QtGui
-            from PyQt5 import QtCore
-        except ImportError:
-            from PyQt4 import QtCore
-            from PyQt4 import QtGui
+        from PyQt5 import QtWidgets
+        from PyQt5 import QtCore
 
         rows = self.gridLayout.rowCount() - 1
 
         spacer = self.gridLayout.itemAtPosition(rows, 0)
         self.gridLayout.removeItem(spacer)
 
-        self.opt_kepub_hyphenate = QtGui.QCheckBox(Form)
+        self.opt_kepub_hyphenate = QtWidgets.QCheckBox(Form)
         self.opt_kepub_hyphenate.setObjectName("opt_kepub_hyphenate")  # noqa: F821
         self.opt_kepub_hyphenate.setText(_("Hyphenate Files"))  # noqa: F821
         self.gridLayout.addWidget(self.opt_kepub_hyphenate, rows, 0, 1, 1)
 
-        self.opt_kepub_disable_hyphenation = QtGui.QCheckBox(Form)
+        self.opt_kepub_disable_hyphenation = QtWidgets.QCheckBox(Form)
         self.opt_kepub_disable_hyphenation.setObjectName(
             "opt_kepub_disable_hyphenation"  # noqa: F821
         )
@@ -90,12 +86,12 @@ class PluginWidget(EPUBPluginWidget, EPUBUIForm):
 
         rows += 1
 
-        self.opt_kepub_hyphenate_chars_label = QtGui.QLabel(
+        self.opt_kepub_hyphenate_chars_label = QtWidgets.QLabel(
             _("Minimum word length to hyphenate") + ":"  # noqa: F821
         )
         self.gridLayout.addWidget(self.opt_kepub_hyphenate_chars_label, rows, 0, 1, 1)
 
-        self.opt_kepub_hyphenate_chars = QtGui.QSpinBox(Form)
+        self.opt_kepub_hyphenate_chars = QtWidgets.QSpinBox(Form)
         self.opt_kepub_hyphenate_chars_label.setBuddy(self.opt_kepub_hyphenate_chars)
         self.opt_kepub_hyphenate_chars.setObjectName("opt_kepub_hyphenate_chars")
         self.opt_kepub_hyphenate_chars.setSpecialValueText(_("Disabled"))  # noqa: F821
@@ -111,14 +107,14 @@ class PluginWidget(EPUBPluginWidget, EPUBUIForm):
 
         rows += 1
 
-        self.opt_kepub_hyphenate_chars_before_label = QtGui.QLabel(
+        self.opt_kepub_hyphenate_chars_before_label = QtWidgets.QLabel(
             _("Minimum characters before hyphens") + ":"  # noqa: F821
         )
         self.gridLayout.addWidget(
             self.opt_kepub_hyphenate_chars_before_label, rows, 0, 1, 1
         )
 
-        self.opt_kepub_hyphenate_chars_before = QtGui.QSpinBox(Form)
+        self.opt_kepub_hyphenate_chars_before = QtWidgets.QSpinBox(Form)
         self.opt_kepub_hyphenate_chars_before_label.setBuddy(
             self.opt_kepub_hyphenate_chars_before
         )
@@ -138,14 +134,14 @@ class PluginWidget(EPUBPluginWidget, EPUBUIForm):
 
         rows += 1
 
-        self.opt_kepub_hyphenate_chars_after_label = QtGui.QLabel(
+        self.opt_kepub_hyphenate_chars_after_label = QtWidgets.QLabel(
             _("Minimum characters after hyphens") + ":"  # noqa: F821
         )
         self.gridLayout.addWidget(
             self.opt_kepub_hyphenate_chars_after_label, rows, 0, 1, 1
         )
 
-        self.opt_kepub_hyphenate_chars_after = QtGui.QSpinBox(Form)
+        self.opt_kepub_hyphenate_chars_after = QtWidgets.QSpinBox(Form)
         self.opt_kepub_hyphenate_chars_after_label.setBuddy(
             self.opt_kepub_hyphenate_chars_after
         )
@@ -165,14 +161,14 @@ class PluginWidget(EPUBPluginWidget, EPUBUIForm):
 
         rows += 1
 
-        self.opt_kepub_hyphenate_limit_lines_label = QtGui.QLabel(
+        self.opt_kepub_hyphenate_limit_lines_label = QtWidgets.QLabel(
             _("Maximum consecutive hyphenated lines") + ":"  # noqa: F821
         )
         self.gridLayout.addWidget(
             self.opt_kepub_hyphenate_limit_lines_label, rows, 0, 1, 1
         )
 
-        self.opt_kepub_hyphenate_limit_lines = QtGui.QSpinBox(Form)
+        self.opt_kepub_hyphenate_limit_lines = QtWidgets.QSpinBox(Form)
         self.opt_kepub_hyphenate_limit_lines_label.setBuddy(
             self.opt_kepub_hyphenate_limit_lines
         )
@@ -194,7 +190,7 @@ class PluginWidget(EPUBPluginWidget, EPUBUIForm):
 
         rows += 1
 
-        self.opt_kepub_clean_markup = QtGui.QCheckBox(Form)
+        self.opt_kepub_clean_markup = QtWidgets.QCheckBox(Form)
         self.opt_kepub_clean_markup.setObjectName(
             "opt_kepub_clean_markup"  # noqa: F821
         )
