@@ -76,7 +76,8 @@ class DeviceTestBase(unittest.TestCase):
             warnings.simplefilter("ignore", category=ResourceWarning)
 
     def tearDown(self):
-        self.device.shutdown()
+        if self.device:
+            self.device.shutdown()
         self.device = None
 
         self.log.reset_mock()
@@ -88,6 +89,8 @@ class DeviceTestBase(unittest.TestCase):
 @mock.patch.object(driver.KOBOTOUCHEXTENDED, "extra_features", True)
 class TestDeviceWithExtendedFeatures(DeviceTestBase):
     def test_filename_callback_not_skipped(self):
+        assert self.device is not None
+
         mi = mock.MagicMock()
         mi.uuid = uuid.uuid4()
 
@@ -99,6 +102,8 @@ class TestDeviceWithExtendedFeatures(DeviceTestBase):
         self.assertEqual(cb_name, "reference.mobi")
 
     def test_filename_callback_skipped(self):
+        assert self.device is not None
+
         mi = mock.MagicMock()
         mi.uuid = uuid.uuid4()
         self.device.skip_renaming_files.add(mi.uuid)
@@ -112,6 +117,8 @@ class TestDeviceWithExtendedFeatures(DeviceTestBase):
 
     def test_sanitize_filename_components(self):
         # Make sure test_components and expected_components stay in the right order!
+        assert self.device is not None
+
         test_components = [
             "home",
             "Calibre Library",
@@ -129,6 +136,8 @@ class TestDeviceWithExtendedFeatures(DeviceTestBase):
         driver.common, "modify_epub", side_effect=ValueError("Testing exception")
     )
     def test_modify_epub_exception_fails(self, _modify_epub):
+        assert self.device is not None
+
         self.assertFalse(self.device.skip_failed)
 
         with self.assertRaises(ValueError):
@@ -141,6 +150,8 @@ class TestDeviceWithExtendedFeatures(DeviceTestBase):
 @mock.patch.object(driver.KOBOTOUCHEXTENDED, "use_template", False)
 class TestDeviceWithoutExtendedFeatures(DeviceTestBase):
     def test_filename_callback_skipped(self):
+        assert self.device is not None
+
         mi = mock.MagicMock()
         mi.uuid = uuid.uuid4()
         self.assertFalse(self.device.extra_features)
@@ -160,6 +171,8 @@ class TestDeviceSkippingErrors(DeviceTestBase):
     def test_modify_epub_skip_exceptions(
         self, _extended_modify_epub, _base_modify_epub
     ):
+        assert self.device is not None
+
         self.assertTrue(self.device.skip_failed)
 
         self.device._modify_epub("test.epub", self.mi, self.container)

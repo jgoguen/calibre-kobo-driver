@@ -257,7 +257,6 @@ class KEPubContainer(EpubContainer):
             if self.mime_map[name] == CSS_MIMETYPE:
                 self.fix_tail(elem)
             self.commit_item(infile, keep_parsed=True)
-        return infile
 
     def fix_tail(self, item: etree._Element) -> None:
         """Fix self-closing elements.
@@ -304,7 +303,6 @@ class KEPubContainer(EpubContainer):
 
         self.replace(name, self.parse_xhtml(html))
         self.commit_item(name, keep_parsed=True)
-        return name
 
     def clean_markup(self, name: str) -> None:
         """Clean HTML markup.
@@ -326,7 +324,6 @@ class KEPubContainer(EpubContainer):
 
         self.replace(name, self.parse_xhtml(html))
         self.commit_item(name, keep_parsed=True)
-        return name
 
     def smarten_punctuation(self) -> None:
         self.__run_async_over_content(self.__smarten_punctuation_impl)
@@ -357,7 +354,6 @@ class KEPubContainer(EpubContainer):
 
         self.replace(name, self.parse_xhtml(html))
         self.commit_item(name, keep_parsed=True)
-        return name
 
     def __run_async(self, func: Callable, args: List[Tuple[str, ...]]) -> None:
         # Verify that we aren't making subthreads of a subthread
@@ -523,7 +519,6 @@ class KEPubContainer(EpubContainer):
 
         self.replace(name, root)
         self.commit_item(name, keep_parsed=True)
-        return name
 
     def _add_kobo_spans_to_node(
         self, node: etree._Element, name: str

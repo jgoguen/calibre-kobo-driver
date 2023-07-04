@@ -140,7 +140,7 @@ class KEPubOutput(OutputFormatPlugin):
 
         return PluginWidget(parent, get_option_by_name, get_option_help, db, book_id)
 
-    def convert(self, oeb_book, output, input_plugin, opts, logger):
+    def convert(self, oeb_book, output, input_plugin, opts, _):
         """Convert from calibre's internal format to KePub."""
         common.log.debug("Running ePub conversion")
         self.epub_output_plugin.convert(

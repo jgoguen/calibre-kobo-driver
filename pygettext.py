@@ -453,6 +453,8 @@ class TokenEater:
 def main():
     """Run the script."""
     global default_keywords
+    opts = ()
+    args = []
     try:
         opts, args = getopt.getopt(
             sys.argv[1:],
@@ -478,7 +480,7 @@ def main():
             ],
         )
     except getopt.error as msg:
-        usage(1, msg)
+        usage(1, str(msg))
 
     # for holding option values
     class Options:
@@ -625,7 +627,7 @@ def main():
 if __name__ == "__main__":
     main()
     # some more test strings
-    _("a unicode string")
+    #_("a unicode string")
     # this one creates a warning
-    _('*** Seen unexpected token "%(token)s"') % {"token": "test"}
-    _("more" "than" "one" "string")
+    #_('*** Seen unexpected token "%(token)s"') % {"token": "test"}
+    #_("more" "than" "one" "string")

@@ -203,12 +203,11 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
                 + "exceptions"
             )
 
+        if container is None:
+            container = KEPubContainer(infile, common.log, self.clean_markup)
         is_encumbered_book = False
         try:
-            if container is None:
-                container = KEPubContainer(infile, common.log, self.clean_markup)
-            else:
-                is_encumbered_book = container.is_drm_encumbered
+            is_encumbered_book = container.is_drm_encumbered
         except DRMError:
             common.log.warning(
                 "KoboTouchExtended:_modify_epub:ERROR: ePub is DRM-encumbered, "

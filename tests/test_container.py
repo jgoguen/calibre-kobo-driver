@@ -14,6 +14,7 @@ import warnings
 
 from collections import defaultdict
 from lxml import etree
+from unittest import mock
 
 test_dir = os.path.dirname(os.path.abspath(__file__))
 src_dir = os.path.dirname(test_dir)
@@ -21,14 +22,6 @@ test_libdir = os.path.join(
     src_dir, "pylib", "python{major}".format(major=sys.version_info.major)
 )
 sys.path = [src_dir] + glob.glob(os.path.join(test_libdir, "*.zip")) + sys.path
-
-try:
-    from typing import Callable
-    from typing import List
-    from unittest import mock
-except ImportError:
-    # Python 2
-    import mock
 
 from tests.assertions import TestAssertions
 from calibre_plugins.kobotouch_extended import container

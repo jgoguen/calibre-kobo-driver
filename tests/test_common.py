@@ -19,24 +19,24 @@ from polyglot.builtins import unicode_type
 
 
 LANGUAGES = ("en_CA", "fr_CA", "fr_FR", "de_DE", "ar_EG", "ru_RU")
-TEST_STRINGS = [
+TEST_STRINGS: List[Dict[str, Set[str]]] = [
     {
         "encodings": {"UTF-8", "CP1252"},
-        "test_strings": [
+        "test_strings": {
             unicode_type(s) for s in ["Hello, World!", "J'ai trouvé mon livre préféré"]
-        ],
+        },
     },
     {
         "encodings": {"UTF-8", "CP1256"},
-        "test_strings": [unicode_type(s) for s in ["مرحبا بالعالم"]],
+        "test_strings": {unicode_type(s) for s in ["مرحبا بالعالم"]},
     },
     {
         "encodings": {"UTF-8", "CP1251"},
-        "test_strings": [unicode_type(s) for s in ["Привет мир"]],
+        "test_strings": {unicode_type(s) for s in ["Привет мир"]},
     },
     {
         "encodings": {"UTF-8", "CP932"},
-        "test_strings": [unicode_type(s) for s in ["こんにちは世界"]],
+        "test_strings": {unicode_type(s) for s in ["こんにちは世界"]},
     },
 ]
 TEST_TIME = "2020-04-01 01:02:03"

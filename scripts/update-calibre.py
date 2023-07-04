@@ -68,6 +68,9 @@ def extract_calibre_pkg(pkg_path: str) -> None:
             if os.path.exists(p):
                 tar_path = p
                 break
+        if tar_path is None:
+            raise RuntimeError("tar not found!")
+
         print("Extracting Linux calibre package")
         subprocess.run(
             [
@@ -103,7 +106,7 @@ def get_calibre() -> None:
             if pkg_resp.status != 200:
                 raise Exception(
                     "Calibre download returned "
-                    f"HTTP{pkg_resp.status} {pkg_resp.reason}"
+                    + f"HTTP{pkg_resp.status} {pkg_resp.reason}"
                 )
 
             with tempfile.TemporaryDirectory() as tmpdir:
