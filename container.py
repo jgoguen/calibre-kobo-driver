@@ -366,7 +366,9 @@ class KEPubContainer(EpubContainer):
         with ThreadPoolExecutor() as pool:
             try:
                 for arg in args:
-                    self.log.debug(f"Starting thread: func={func.__name__}, name={arg[0]}")
+                    self.log.debug(
+                        f"Starting thread: func={func.__name__}, name={arg[0]}"
+                    )
                     futures.append(pool.submit(func, *arg))
 
                 for future in futures:
