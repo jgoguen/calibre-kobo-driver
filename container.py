@@ -370,10 +370,10 @@ class KEPubContainer(EpubContainer):
                     futures.append(pool.submit(func, *arg))
 
                 for future in futures:
-                    name = future.result(timeout=10)
+                    name = future.result(timeout=60)
                     self.log.debug(f"thread processing {name} finished")
             except Exception as e:
-                self.log.debug(f"Unhandled exception in thread processing. {str(e)}")
+                self.log.error(f"Unhandled exception in thread processing. {str(e)}")
                 raise e
 
         # Be sure dirtied trees are committed. These should be trees dirtied in

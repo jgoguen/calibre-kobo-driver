@@ -7,6 +7,10 @@ import os
 import sys
 import unittest
 
+from typing import Dict
+from typing import List
+from typing import Set
+
 test_dir = os.path.dirname(os.path.abspath(__file__))
 src_dir = os.path.dirname(test_dir)
 test_libdir = os.path.join(src_dir, "pylib", f"python{sys.version_info.major}")

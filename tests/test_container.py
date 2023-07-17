@@ -212,7 +212,6 @@ class TestContainer(TestAssertions):
         self.assertEqual(css_pre_count, 0)
 
         self.container.add_content_file_reference(css_container_name)
-        self.container.flush_cache()
         html = self.container.parsed(html_container_name)
         css_post_count = html.xpath(
             'count(//xhtml:head/xhtml:link[@href="{0}"])'.format(css_container_name),
@@ -242,7 +241,6 @@ class TestContainer(TestAssertions):
         self.assertEqual(js_pre_count, 0)
 
         self.container.add_content_file_reference(js_container_name)
-        self.container.flush_cache()
         html = self.container.parsed(html_container_name)
         js_post_count = html.xpath(
             'count(//xhtml:head/xhtml:script[@src="{0}"])'.format(js_container_name),
