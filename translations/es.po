@@ -195,7 +195,7 @@ msgstr "Opciones específicas para la salida KePub"
 
 #: conversion/output_config.py:81 device/koboextended_config.py:146
 msgid "Hyphenate Files"
-msgstr "Dividir Ficheros"
+msgstr "Separar archivos con guiones"
 
 #: conversion/output_config.py:89 device/koboextended_config.py:200
 msgid "Disable hyphenation"
