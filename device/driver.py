@@ -20,10 +20,7 @@ from calibre_plugins.kobotouch_extended import common
 from calibre_plugins.kobotouch_extended.container import KEPubContainer
 from polyglot.builtins import is_py3
 
-if is_py3:
-    from configparser import NoOptionError, SafeConfigParser
-else:
-    from ConfigParser import NoOptionError, SafeConfigParser
+from configparser import NoOptionError, ConfigParser
 
 # Support load_translations() without forcing calibre 1.9+
 try:
@@ -390,8 +387,8 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
             # The way the book progress was handled changed in 3.11.0 making this
             # option useless.
             if os.path.isfile(kobo_config_file):
-                cfg = SafeConfigParser(allow_no_value=True)
-                cfg.optionxform = str
+                cfg = ConfigParser(allow_no_value=True)
+                cfg.optionxform = lambda optionstr: optionstr
                 cfg.read(kobo_config_file)
 
                 try:
