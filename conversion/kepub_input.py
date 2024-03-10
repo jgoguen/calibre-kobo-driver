@@ -5,6 +5,7 @@ __copyright__ = "2015, David Forrester <davidfor@internode.on.net>"
 __docformat__ = "markdown en"
 
 import os
+from typing import Optional
 from typing import Set
 from typing import Tuple
 
@@ -49,14 +50,16 @@ class KEPUBInput(EPUBInput):
     }
 
     def __init__(self, *args, **kwargs):
+        self.removed_cover: Optional[str] = None
         super(KEPUBInput, self).__init__(*args, **kwargs)
         self.options = self.options.union(self.kepub_options)
         self.recommendations: Set[Tuple[str, bool, int]] = self.recommendations.union(
             self.kepub_recommendations
         )
 
+    @staticmethod
     def gui_configuration_widget(
-        self, parent, get_option_by_name, get_option_help, db, book_id=None
+        parent, get_option_by_name, get_option_help, db, book_id=None
     ):
         """Set up the input processor's configuration widget."""
         from calibre_plugins.kepubin.conversion.input_config import PluginWidget
@@ -112,8 +115,6 @@ class KEPUBInput(EPUBInput):
         parts = os.path.split(opf)
         opf = OPF(opf, os.path.dirname(os.path.abspath(opf)))
 
-        self.encrypted_fonts = []
-
         if len(parts) > 1 and parts[0]:
             delta = "/".join(parts[:-1]) + "/"
             for elem in opf.itermanifest():
@@ -128,7 +129,6 @@ class KEPUBInput(EPUBInput):
         )
         self.removed_cover = f(opf, log)
 
-        self.optimize_opf_parsing = opf
         for x in opf.itermanifest():
             if x.get("media-type", "") == "application/x-dtbook+xml":
                 raise ValueError(
@@ -205,9 +205,3 @@ class KEPUBInput(EPUBInput):
                 refactor_span(a)
 
         log("KEPUBInput::postprocess_book - end")
-
-    # Shouldn't get called, but overriding just in case.
-    def process_encryption(self, encfile, opf, log):  # skipcq: PYL-W0613
-        """Determine if encryption needs to be processed."""
-        encfile = os.path.abspath("rights.xml")
-        return not os.path.exists(encfile)

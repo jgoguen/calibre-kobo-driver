@@ -39,7 +39,7 @@ class PluginWidget(Widget, EPUBUIForm):
         Widget.__init__(
             self,
             parent,
-            OPTIONS["input"].get("epub", tuple()) + ("strip_kobo_spans",),
+            OPTIONS["input"].get("epub", ()) + ("strip_kobo_spans",),
         )
 
         if book_id:
@@ -55,7 +55,7 @@ class PluginWidget(Widget, EPUBUIForm):
         spacer = self.gridLayout.itemAtPosition(rows, 0)
         self.gridLayout.removeItem(spacer)
 
-        self.opt_strip_kobo_spans = QtGui.QCheckBox(Form)
+        self.opt_strip_kobo_spans = QtGui.QCheckBox(Form)  # skipcq: PYL-W0201
         self.opt_strip_kobo_spans.setObjectName("opt_strip_kobo_spans")
         self.opt_strip_kobo_spans.setText(_("Strip Kobo spans"))  # noqa: F821
         self.gridLayout.addWidget(self.opt_strip_kobo_spans, rows, 0, 1, 1)
@@ -76,4 +76,6 @@ class OutputOptions(BaseOutputOptions):
         """Add our configuration to the input processing."""
         super(OutputOptions, self).load_conversion_widgets()
         self.conversion_widgets.append(PluginWidget)
-        self.conversion_widgets = sorted(self.conversion_widgets, key=lambda x: x.TITLE)
+        self.conversion_widgets = sorted(
+            self.conversion_widgets, key=lambda x: x.TITLE
+        )  # skipcq: PYL-W0201

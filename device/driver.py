@@ -448,11 +448,11 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
         if self.upload_covers:
             common.log.info("KoboTouchExtended:sync_booklists:Setting ImageId fields")
 
-            select_query = (  # skipcq: BAN-B608
+            select_query = (
                 "SELECT ContentId FROM content WHERE "
                 + "ContentType = ? AND "
                 + "(ImageId IS NULL OR ImageId = '')"
-            )
+            )  # skipcq: BAN-B608
             update_query = "UPDATE content SET ImageId = ? WHERE ContentId = ?"
             try:
                 db = self.device_database_connection()

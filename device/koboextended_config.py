@@ -266,12 +266,12 @@ class KepubifyGroupBox(DeviceOptionsGroupBox):
 
         self.skip_failed_checkbox = create_checkbox(
             _("Silently Ignore Failed Conversions"),  # noqa: F821
-            _(  # noqa: F821 skipcq: BAN-B608
+            _(  # noqa: F821
                 "Select this to not upload any book that fails conversion to "
                 + "kepub. If this is not selected, the upload process will be "
                 + "stopped at the first book that fails. If this is selected, "
                 + "failed books will be silently removed from the upload queue."
-            ),
+            ),  # skipcq: BAN-B608
             device.get_pref("skip_failed"),
         )
 

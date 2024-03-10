@@ -3,6 +3,9 @@
 import sys
 import unittest
 
+from typing import Any
+from typing import Optional
+
 
 # The unittest framework doesn't print tracebacks from any frame with __unittest set to
 # True in their globals.
@@ -16,7 +19,8 @@ class TestAssertions(unittest.TestCase):  # skipcq:  PTC-W0046
     must not subclass TestCase directly.
     """
 
-    def __is_any_string_type(self, value):  # type: (...) -> bool
+    @staticmethod
+    def __is_any_string_type(value: object) -> bool:
         if isinstance(value, str):
             return True
 
@@ -28,7 +32,7 @@ class TestAssertions(unittest.TestCase):  # skipcq:  PTC-W0046
 
         return False
 
-    def assertIsNotNoneOrEmptyString(self, value):
+    def assertIsNotNoneOrEmptyString(self, value: Optional[Any]):
         try:
             self.assertIsNoneOrEmptyString(value)
         except AssertionError:
@@ -38,7 +42,7 @@ class TestAssertions(unittest.TestCase):  # skipcq:  PTC-W0046
         else:
             self.fail("value must not be None and must not be empty string")
 
-    def assertIsNoneOrEmptyString(self, value):
+    def assertIsNoneOrEmptyString(self, value: Optional[Any]):
         if value is not None:
             if not self.__is_any_string_type(value):
                 # value is not None and is not any string type

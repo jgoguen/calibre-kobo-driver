@@ -517,9 +517,6 @@ def main():
             options.docstrings = 1
         elif opt in ("-k", "--keyword"):
             options.keywords.append(arg)
-        elif opt in ("-K", "--no-default-keywords"):
-            global default_keywords
-            default_keywords = []
         elif opt in ("-n", "--add-location"):
             options.writelocations = 1
         elif opt in ("--no-location",):

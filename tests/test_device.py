@@ -33,7 +33,8 @@ class MockPropertyFalse:
 
 
 class MockKePubContainer(mock.MagicMock):
-    def is_drm_encumbered(self):
+    @staticmethod
+    def is_drm_encumbered() -> bool:
         return False
 
 
@@ -95,7 +96,7 @@ class TestDeviceWithExtendedFeatures(DeviceTestBase):
         mi.uuid = uuid.uuid4()
 
         for ext in ("kepub", "epub"):
-            cb_name = self.device.filename_callback("reference.{0}".format(ext), mi)
+            cb_name = self.device.filename_callback(f"reference.{ext}", mi)
             self.assertEqual(cb_name, "reference.kepub.epub")
 
         cb_name = self.device.filename_callback("reference.mobi", mi)
@@ -109,8 +110,8 @@ class TestDeviceWithExtendedFeatures(DeviceTestBase):
         self.device.skip_renaming_files.add(mi.uuid)
 
         for ext in ("mobi", "epub"):
-            cb_name = self.device.filename_callback("reference.{0}".format(ext), mi)
-            self.assertEqual(cb_name, "reference.{0}".format(ext))
+            cb_name = self.device.filename_callback(f"reference.{ext}", mi)
+            self.assertEqual(cb_name, f"reference.{ext}")
 
         cb_name = self.device.filename_callback("reference.kepub", mi)
         self.assertEqual(cb_name, "reference.kepub.epub")
@@ -157,8 +158,8 @@ class TestDeviceWithoutExtendedFeatures(DeviceTestBase):
         self.assertFalse(self.device.extra_features)
 
         for ext in ("epub", "mobi"):
-            cb_name = self.device.filename_callback("reference.{0}".format(ext), mi)
-            self.assertEqual(cb_name, "reference.{0}".format(ext))
+            cb_name = self.device.filename_callback(f"reference.{ext}", mi)
+            self.assertEqual(cb_name, f"reference.{ext}")
 
 
 @mock.patch.object(driver.KOBOTOUCHEXTENDED, "extra_features", True)

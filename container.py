@@ -36,7 +36,8 @@ from calibre.ebooks.conversion.utils import HeuristicProcessor
 from calibre.ebooks.oeb.polish.container import EpubContainer
 from calibre.utils.smartypants import smartyPants
 
-from lxml import etree
+# lxml isn't the best, but I don't have access to defusedxml
+from lxml import etree  # skipcq: BAN-B410
 
 
 load_translations()
@@ -258,7 +259,8 @@ class KEPubContainer(EpubContainer):
                 self.fix_tail(elem)
             self.commit_item(infile, keep_parsed=True)
 
-    def fix_tail(self, item: etree.ElementBase) -> None:
+    @staticmethod
+    def fix_tail(item: etree.ElementBase) -> None:
         """Fix self-closing elements.
 
         Designed only to work with self closing elements after item has just
@@ -448,7 +450,8 @@ class KEPubContainer(EpubContainer):
         self.commit_item(name, keep_parsed=True)
         return name
 
-    def __add_kobo_divs_to_body(self, root: etree.ElementBase) -> None:
+    @staticmethod
+    def __add_kobo_divs_to_body(root: etree.ElementBase) -> None:
         body = root.xpath("./xhtml:body", namespaces={"xhtml": XHTML_NAMESPACE})[0]
 
         # save node content for later

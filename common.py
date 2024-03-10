@@ -28,7 +28,8 @@ from calibre.utils.logging import ANSIStream
 from polyglot.builtins import is_py3
 from polyglot.io import PolyglotStringIO
 
-from lxml.etree import _Element
+# lxml isn't great, but I don't have access to defusedxml
+from lxml.etree import ElementBase  # skipcq: BAN-B410
 
 if is_py3:
     from typing import Dict
@@ -68,10 +69,11 @@ class Logger:
     def __call__(self, logmsg) -> None:
         self.info(logmsg)
 
-    def _tag_args(self, level, *args) -> List[str]:
+    @staticmethod
+    def _tag_args(level: str, *args: str) -> List[str]:
         now = time.localtime()
         buf = PolyglotStringIO()
-        tagged_args = []
+        tagged_args: List[str] = []
         for arg in args:
             prints(time.strftime("%Y-%m-%d %H:%M:%S", now), file=buf, end=" ")
             buf.write("[")
@@ -121,13 +123,13 @@ def modify_epub(
     # TODO: Refactor out cover detection logic so it can be directly used in
     # metadata/writer.py
     found_cover = False
-    opf: _Element = container.opf
-    cover_meta_node_list: List[_Element] = opf.xpath(
+    opf: ElementBase = container.opf
+    cover_meta_node_list: List[ElementBase] = opf.xpath(
         './opf:metadata/opf:meta[@name="cover"]', namespaces=OPF_NAMESPACES
     )
 
     if len(cover_meta_node_list) > 0:
-        cover_meta_node: _Element = cover_meta_node_list[0]
+        cover_meta_node: ElementBase = cover_meta_node_list[0]
         cover_id = cover_meta_node.attrib.get("content", None)
 
         log.debug("Found meta node with name=cover")
@@ -135,12 +137,12 @@ def modify_epub(
         if cover_id:
             log.info("Found cover image ID '{0}'".format(cover_id))
 
-            cover_node_list: _Element = opf.xpath(
+            cover_node_list: ElementBase = opf.xpath(
                 './opf:manifest/opf:item[@id="{0}"]'.format(cover_id),
                 namespaces=OPF_NAMESPACES,
             )
             if len(cover_node_list) > 0:
-                cover_node: _Element = cover_node_list[0]
+                cover_node: ElementBase = cover_node_list[0]
 
                 log.debug("Found an item node with cover ID")
 
@@ -157,7 +159,7 @@ def modify_epub(
     if not found_cover:
         log.debug("Looking for cover image in OPF manifest")
 
-        node_list: List[_Element] = opf.xpath(
+        node_list: List[ElementBase] = opf.xpath(
             "./opf:manifest/opf:item[(translate(@id, "
             + "'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz')"
             + '="cover" or starts-with(translate(@id, '
@@ -170,7 +172,7 @@ def modify_epub(
                 f"Found {len(node_list)} nodes, assuming the first is the right node"
             )
 
-            node: _Element = node_list[0]
+            node: ElementBase = node_list[0]
             if node.attrib.get("properties", "") != "cover-image":
                 log.info("Setting cover-image property")
                 node.set("properties", "cover-image")

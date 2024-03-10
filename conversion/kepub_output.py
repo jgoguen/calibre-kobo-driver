@@ -127,13 +127,14 @@ class KEPubOutput(OutputFormatPlugin):
         """Initialize the KePub output converter."""
         self.epub_output_plugin = EPUBOutput(*args, **kwargs)
         self.options = self.epub_output_plugin.options.union(self.kepub_options)
-        self.recommendations: Set[
-            Tuple[str, Any, int]
-        ] = self.epub_output_plugin.recommendations.union(self.kepub_recommendations)
+        self.recommendations: Set[Tuple[str, Any, int]] = (
+            self.epub_output_plugin.recommendations.union(self.kepub_recommendations)
+        )
         OutputFormatPlugin.__init__(self, *args, **kwargs)
 
+    @staticmethod
     def gui_configuration_widget(
-        self, parent, get_option_by_name, get_option_help, db, book_id=None
+        parent, get_option_by_name, get_option_help, db, book_id=None
     ):
         """Set up the plugin configuration widget."""
         from calibre_plugins.kepubout.conversion.output_config import PluginWidget
