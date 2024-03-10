@@ -17,24 +17,24 @@ from urllib.request import urlopen
 CALIBRE_VERSION_RE = re.compile(r"^.+\(.+ ([\d\.]+)\)$")
 CALIBRE_REMOTE_VERSION_RE = re.compile(r"^calibre\-([\d\.]+)[\.\-]")
 PLATFORM = platform.system().lower()
-REPO_DIR = os.path.realpath(sys.argv[0])
-while REPO_DIR != os.path.realpath("/"):
-    if os.path.isdir(os.path.join(REPO_DIR, ".git")) or os.path.isdir(
-        os.path.join(REPO_DIR, ".hg")
+repo_dir = os.path.realpath(sys.argv[0])
+while repo_dir != os.path.realpath("/"):
+    if os.path.isdir(os.path.join(repo_dir, ".git")) or os.path.isdir(
+        os.path.join(repo_dir, ".hg")
     ):
         break
-    REPO_DIR = os.path.dirname(REPO_DIR)
-if REPO_DIR == os.path.realpath("/"):
+    repo_dir = os.path.dirname(repo_dir)
+if repo_dir == os.path.realpath("/"):
     raise Exception("Could not find repository root")
 if PLATFORM == "darwin":
-    PKG_EXT = ".dmg"
+    pkg_ext = ".dmg"
 else:
     ARCH = "x86_64" if platform.architecture()[0] == "64bit" else "i686"
-    PKG_EXT = f"-{ARCH}.txz"
+    pkg_ext = f"-{ARCH}.txz"
 
 
 def extract_calibre_pkg(pkg_path: str) -> None:
-    calibre_dir = os.path.join(REPO_DIR, "calibre-py3")
+    calibre_dir = os.path.join(repo_dir, "calibre-py3")
     if os.path.isdir(calibre_dir):
         shutil.rmtree(calibre_dir)
     os.makedirs(calibre_dir)
@@ -74,20 +74,26 @@ def extract_calibre_pkg(pkg_path: str) -> None:
         if tar_path is None:
             raise RuntimeError("tar not found!")
 
-        print("Extracting Linux calibre package")
-        subprocess.run(
-            [
-                tar_path,
-                "--extract",
-                "--xz",
-                "--file",
-                pkg_path,
-                "--directory",
-                calibre_dir,
-            ],
-            stderr=sys.stderr,
-            check=True,
-        )
+        print(f"Extracting Linux calibre package from {pkg_path} to {calibre_dir}")
+        try:
+            subprocess.run(
+                [
+                    tar_path,
+                    "--extract",
+                    "--xz",
+                    "--file",
+                    pkg_path,
+                    "--directory",
+                    calibre_dir,
+                ],
+                capture_output=True,
+                check=True,
+            )
+        except subprocess.CalledProcessError as ce:
+            print(f"cmd: {ce.cmd}", file=sys.stderr)
+            print(f"stdout: {ce.stdout.decode()}", file=sys.stderr)
+            print(f"stderr: {ce.stderr.decode()}", file=sys.stderr)
+            raise
 
 
 def get_calibre() -> None:
@@ -106,7 +112,7 @@ def get_calibre() -> None:
     print("Loaded Github release data")
 
     for asset in release_data["assets"]:
-        if asset["name"].endswith(PKG_EXT):
+        if asset["name"].endswith(pkg_ext):
             print(f"Found desired asset name: {asset['name']}")
             if asset["browser_download_url"].lower().startswith("http"):
                 pkg_req = Request(asset["browser_download_url"])
@@ -123,12 +129,12 @@ def get_calibre() -> None:
                         + f"HTTP{pkg_resp.status} {pkg_resp.reason}"
                     )
 
-            with tempfile.TemporaryDirectory() as tmpdir:
-                pkg_file = os.path.join(tmpdir, asset["name"])
-                with open(pkg_file, "wb") as f:
-                    f.write(pkg_resp.read())
-                print(f"Downloaded calibre package {pkg_file}")
-                extract_calibre_pkg(pkg_file)
+                with tempfile.TemporaryDirectory() as tmpdir:
+                    pkg_file = os.path.join(tmpdir, asset["name"])
+                    with open(pkg_file, "wb") as f:
+                        f.write(pkg_resp.read())
+                    print(f"Downloaded calibre package {pkg_file}")
+                    extract_calibre_pkg(pkg_file)
 
             return None
 
