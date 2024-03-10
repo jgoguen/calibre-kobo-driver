@@ -63,7 +63,7 @@ class KEPUBInput(EPUBInput):
 
         return PluginWidget(parent, get_option_by_name, get_option_help, db, book_id)
 
-    def convert(self, stream, options, file_ext, log, accelerators):
+    def convert(self, stream, _options, _file_ext, log, _accelerators):
         """Convert a KePub file into a structure calibre can process."""
         log("KEPUBInput::convert - start")
         from calibre.utils.zipfile import ZipFile
@@ -207,7 +207,7 @@ class KEPUBInput(EPUBInput):
         log("KEPUBInput::postprocess_book - end")
 
     # Shouldn't get called, but overriding just in case.
-    def process_encryption(self, encfile, opf, log):
+    def process_encryption(self, encfile, opf, log):  # skipcq: PYL-W0613
         """Determine if encryption needs to be processed."""
         encfile = os.path.abspath("rights.xml")
         return not os.path.exists(encfile)

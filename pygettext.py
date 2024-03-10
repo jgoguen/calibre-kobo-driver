@@ -218,7 +218,6 @@ escapes = []
 
 def make_escapes(pass_iso8859):
     """Escape any non-ASCII character."""
-    global escapes
     if pass_iso8859:
         # Allow iso-8859 characters to pass through so that e.g. 'msgid
         # "H�he"' would result not result in 'msgid "H\366he"'.  Otherwise we
@@ -240,7 +239,6 @@ def make_escapes(pass_iso8859):
 
 def escape(s):
     """Process escapes for a string."""
-    global escapes
     s = list(s)
     for i in range(len(s)):
         s[i] = escapes[ord(s[i])]
@@ -268,9 +266,9 @@ def normalize(s):
     return s
 
 
-def contains_any(str, set):
-    """Check whether 'str' contains ANY of the chars in 'set'."""
-    return 1 in [c in str for c in set]
+def contains_any(haystack, needles):
+    """Check whether 'haystack' contains ANY of the chars in 'needles'."""
+    return 1 in [c in haystack for c in needles]
 
 
 def get_files_for_name(name):
@@ -287,7 +285,8 @@ def get_files_for_name(name):
                 if os.path.splitext(fname)[-1] in importlib.machinery.SOURCE_SUFFIXES:
                     file_list.append(os.path.join(root, fname))
         return file_list
-    elif (
+
+    if (
         os.path.exists(name)
         and os.path.splitext(name)[-1] in importlib.machinery.SOURCE_SUFFIXES
     ):
@@ -334,7 +333,7 @@ class TokenEater:
         if ttype == tokenize.NAME and tstring in opts.keywords:
             self.__state = self.__keywordseen
 
-    def __suiteseen(self, ttype, tstring, lineno):
+    def __suiteseen(self, ttype, tstring, lineno):  # skipcq: PYL-W0613
         # ignore anything until we see the colon
         if ttype == tokenize.OP and tstring == ":":
             self.__state = self.__suitedocstring
@@ -356,7 +355,7 @@ class TokenEater:
         else:
             self.__state = self.__waiting
 
-    def __openseen(self, ttype, tstring, lineno):
+    def __openseen(self, ttype, tstring, lineno):  # skipcq: PYL-W0613
         if ttype == tokenize.OP and tstring == ")":
             # We've seen the last of the translatable strings.  Record the
             # line number of the first line of the strings and update the list
@@ -452,7 +451,6 @@ class TokenEater:
 
 def main():
     """Run the script."""
-    global default_keywords
     opts = ()
     args = []
     try:
@@ -520,6 +518,7 @@ def main():
         elif opt in ("-k", "--keyword"):
             options.keywords.append(arg)
         elif opt in ("-K", "--no-default-keywords"):
+            global default_keywords
             default_keywords = []
         elif opt in ("-n", "--add-location"):
             options.writelocations = 1
@@ -563,9 +562,8 @@ def main():
     # initialize list of strings to exclude
     if options.excludefilename:
         try:
-            fp = open(options.excludefilename)
-            options.toexclude = fp.readlines()
-            fp.close()
+            with open(options.excludefilename) as fp:
+                options.toexclude = fp.readlines()
         except IOError:
             print(
                 _("Can't read --exclude-file: {0}").format(options.excludefilename),

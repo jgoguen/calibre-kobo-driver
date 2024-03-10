@@ -83,7 +83,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
     EXTRA_CUSTOMIZATION_MESSAGE = KOBOTOUCH.EXTRA_CUSTOMIZATION_MESSAGE[:]
     EXTRA_CUSTOMIZATION_DEFAULT = KOBOTOUCH.EXTRA_CUSTOMIZATION_DEFAULT[:]
 
-    skip_renaming_files = set([])
+    skip_renaming_files = set()
     kobo_js_re = re.compile(r".*/?kobo.*\.js$", re.IGNORECASE)
     invalid_filename_chars_re = re.compile(
         r"[\/\\\?%\*:;\|\"\'><\$!]", re.IGNORECASE | re.UNICODE
@@ -218,8 +218,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
                 return super(KOBOTOUCHEXTENDED, self)._modify_epub(
                     infile, metadata, container
                 )
-            else:
-                return False
+            return False
 
         try:
             # Add the conversion info file
@@ -233,7 +232,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
             o = {}
             if os.path.isfile(calibre_details_file):
                 with open(calibre_details_file, "rb") as f:
-                    o = json.loads(f.read())
+                    o = json.load(f)
                 for prop in (
                     "device_store_uuid",
                     "prefix",
@@ -286,10 +285,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 
             if not skip_failed:
                 tb = sys.exc_info()[2]
-                if is_py3:
-                    raise e.__class__(msg).with_traceback(tb)
-                else:
-                    exec("raise e.__class__(msg), None, tb")
+                raise e.__class__(msg).with_traceback(tb)
 
             self.skip_renaming_files.add(metadata.uuid)
             return super(KOBOTOUCHEXTENDED, self)._modify_epub(
@@ -452,7 +448,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
         if self.upload_covers:
             common.log.info("KoboTouchExtended:sync_booklists:Setting ImageId fields")
 
-            select_query = (
+            select_query = (  # skipcq: BAN-B608
                 "SELECT ContentId FROM content WHERE "
                 + "ContentType = ? AND "
                 + "(ImageId IS NULL OR ImageId = '')"
@@ -494,7 +490,6 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
                         nulls.append(
                             (self.imageid_from_contentid(b.contentID), b.contentID)
                         )
-            del all_nulls
 
             cursor = db.cursor()
             while nulls[:100]:

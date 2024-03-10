@@ -70,8 +70,6 @@ class KOBOTOUCHEXTENDEDConfig(KOBOTOUCHConfig):
         common.log.debug("KOBOTOUCHEXTENDEDConfig::commit: start")
         p = super(KOBOTOUCHEXTENDEDConfig, self).commit()
 
-        self.tabExtended.use_template
-        self.tabExtended.kepubify_template
         p["extra_features"] = self.extra_features
         p["use_template"] = self.use_template
         p["kepubify_template"] = self.kepubify_template
@@ -268,7 +266,7 @@ class KepubifyGroupBox(DeviceOptionsGroupBox):
 
         self.skip_failed_checkbox = create_checkbox(
             _("Silently Ignore Failed Conversions"),  # noqa: F821
-            _(  # noqa: F821
+            _(  # noqa: F821 skipcq: BAN-B608
                 "Select this to not upload any book that fails conversion to "
                 + "kepub. If this is not selected, the upload process will be "
                 + "stopped at the first book that fails. If this is selected, "
@@ -309,9 +307,6 @@ class KepubifyGroupBox(DeviceOptionsGroupBox):
         layout_line += 1
         self.options_layout.addWidget(self.file_copy_dir_label, layout_line, 0, 1, 1)
         self.options_layout.addWidget(self.file_copy_dir_edit, layout_line, 1, 1, 1)
-        # self.options_layout.setColumnStretch(0, 0)
-        # self.options_layout.setColumnStretch(1, 0)
-        # self.options_layout.setColumnStretch(2, 1)
 
     def use_template_checkbox_clicked(self, checked):
         self.kepubify_template_edit.setEnabled(checked)

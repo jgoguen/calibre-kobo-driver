@@ -59,7 +59,7 @@ class TestCommon(unittest.TestCase):
     orig_lang = ""
 
     def setUp(self):  # type: () -> None
-        self.orig_lang = os.environ.get("LANG", None)
+        self.orig_lang = os.environ.get("LANG")
 
     def tearDown(self):  # type: () -> None
         if not self.orig_lang:

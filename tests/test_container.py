@@ -302,8 +302,8 @@ class TestContainer(TestAssertions):
         children = node.getchildren()
         self.assertEqual(len(children), len(text_nodes))
 
-        for node_idx in range(len(children)):
-            spans = children[node_idx].getchildren()
+        for node_idx, node in enumerate(children):
+            spans = node.getchildren()
             text_chunks = [
                 g
                 for g in container.TEXT_SPLIT_RE.split(text_nodes[node_idx])
@@ -311,8 +311,8 @@ class TestContainer(TestAssertions):
             ]
             self.assertEqual(len(spans), len(text_chunks))
 
-            for text_idx in range(len(text_chunks)):
-                self.assertEqual(spans[text_idx].text, text_chunks[text_idx])
+            for text_idx, text_chunk in enumerate(text_chunks):
+                self.assertEqual(spans[text_idx].text, text_chunk)
 
     def test_add_spans_to_multiple_sentences(self):
         self.__run_multiple_node_test(

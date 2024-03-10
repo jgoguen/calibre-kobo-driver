@@ -41,14 +41,14 @@ class KEPUBMetadataWriter(EPUBMetadataWriter):
     # The logic in here to detect a cover image is mostly duplicated from
     # modify_epub() in common.py. Updates to the logic here probably need an
     # accompanying update there.
-    def set_metadata(self, stream, mi, type):
+    def set_metadata(self, stream, mi, filetype):
         """Set standard ePub metadata then properly set the cover image."""
         common.log.debug(
             "KEPUBMetadataWriter::set_metadata - self.__class__={0}".format(
                 self.__class__
             )
         )
-        super(KEPUBMetadataWriter, self).set_metadata(stream, mi, type)
+        super(KEPUBMetadataWriter, self).set_metadata(stream, mi, filetype)
 
         stream.seek(0)
         reader = get_zip_reader(stream, root=os.getcwd())

@@ -111,10 +111,11 @@ def modify_epub(
     container: EpubContainer,
     filename: str,
     metadata: Optional[Metadata] = None,
-    opts: Dict[str, Union[str, bool]] = {},
+    opts: Optional[Dict[str, Union[str, bool]]] = None,
 ) -> None:
     """Modify the ePub file to make it KePub-compliant."""
     _modify_start = time.time()
+    opts = opts or {}
 
     # Search for the ePub cover
     # TODO: Refactor out cover detection logic so it can be directly used in
@@ -242,16 +243,15 @@ def modify_epub(
                 skip_js = True
                 break
 
-        if not skip_js:
-            if os.path.isfile(REFERENCE_KEPUB):
-                reference_container = EpubContainer(REFERENCE_KEPUB, log)
-                for name in reference_container.name_path_map:
-                    if KOBO_JS_RE.match(name):
-                        jsname = container.copy_file_to_container(
-                            os.path.join(reference_container.root, name), name="kobo.js"
-                        )
-                        container.add_content_file_reference(jsname)
-                        break
+        if os.path.isfile(REFERENCE_KEPUB) and not skip_js:
+            reference_container = EpubContainer(REFERENCE_KEPUB, log)
+            for name in reference_container.name_path_map:
+                if KOBO_JS_RE.match(name):
+                    jsname = container.copy_file_to_container(
+                        os.path.join(reference_container.root, name), name="kobo.js"
+                    )
+                    container.add_content_file_reference(jsname)
+                    break
 
         # Add the Kobo style hacks
         stylehacks_css = PersistentTemporaryFile(suffix="_stylehacks", prefix="kepub_")

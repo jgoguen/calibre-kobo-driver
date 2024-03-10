@@ -47,7 +47,7 @@ CSS_MIMETYPE: str = str(guess_type("a.css")[0])
 # Technically an unneeded cast, but pyright things guess_type returns str | None
 JS_MIMETYPE: str = str(guess_type("a.js")[0])
 EXCLUDE_FROM_ZIP = frozenset([".DS_Store", ".directory", "mimetype", "thumbs.db"])
-NO_SPACE_BEFORE_CHARS = frozenset([c for c in string.punctuation] + ["\xbb"])
+NO_SPACE_BEFORE_CHARS = frozenset(list(string.punctuation) + ["\xbb"])
 ENCRYPTION_NAMESPACES = {
     "enc": "http://www.w3.org/2001/04/xmlenc#",
     "deenc": "http://ns.adobe.com/digitaleditions/enc",
@@ -111,7 +111,7 @@ class KEPubContainer(EpubContainer):
     """Extends an EpubContainer to work for a KePub."""
 
     def __init__(
-        self, epub_path: str, log, do_cleanup: bool = False, *args, **kwargs
+        self, epub_path: str, log, *args, do_cleanup: bool = False, **kwargs
     ) -> None:
         self.paragraph_counter = defaultdict(lambda: 1)  # type: Dict[str, int]
         super(KEPubContainer, self).__init__(epub_path, log, *args, **kwargs)
@@ -258,7 +258,7 @@ class KEPubContainer(EpubContainer):
                 self.fix_tail(elem)
             self.commit_item(infile, keep_parsed=True)
 
-    def fix_tail(self, item: etree._Element) -> None:
+    def fix_tail(self, item: etree.ElementBase) -> None:
         """Fix self-closing elements.
 
         Designed only to work with self closing elements after item has just
@@ -448,7 +448,7 @@ class KEPubContainer(EpubContainer):
         self.commit_item(name, keep_parsed=True)
         return name
 
-    def __add_kobo_divs_to_body(self, root: etree._Element) -> None:
+    def __add_kobo_divs_to_body(self, root: etree.ElementBase) -> None:
         body = root.xpath("./xhtml:body", namespaces={"xhtml": XHTML_NAMESPACE})[0]
 
         # save node content for later
@@ -462,8 +462,8 @@ class KEPubContainer(EpubContainer):
         body.clear()
 
         # restore node attributes
-        for key in body_attrs:
-            body.set(key, body_attrs[key])
+        for key, value in body_attrs.items():
+            body.set(key, value)
 
         # Wrap the full body in a div
         inner_div = etree.Element(
@@ -523,14 +523,10 @@ class KEPubContainer(EpubContainer):
         self.commit_item(name, keep_parsed=True)
 
     def _add_kobo_spans_to_node(
-        self, node: etree._Element, name: str
-    ) -> etree._Element:
+        self, node: etree.ElementBase, name: str
+    ) -> etree.ElementBase:
         # process node only if it is not a comment or a processing instruction
-        if (
-            node is None
-            or isinstance(node, etree._Comment)
-            or isinstance(node, etree._ProcessingInstruction)
-        ):
+        if node is None or isinstance(node, (etree.CommentBase, etree.PIBase)):
             if node is not None:
                 node.tail = None
             self.log.debug(f"[{name}] Skipping comment/ProcessingInstruction node")
@@ -571,8 +567,8 @@ class KEPubContainer(EpubContainer):
         node.clear()
 
         # restore node attributes
-        for key in node_attrs:
-            node.set(key, node_attrs[key])
+        for key, value in node_attrs.items():
+            node.set(key, value)
 
         # the node text is converted to spans
         if node_text is not None:
@@ -599,8 +595,8 @@ class KEPubContainer(EpubContainer):
         return node
 
     def _append_kobo_spans_from_text(
-        self, node: etree._Element, text: str, name: str
-    ) -> etree._Element:
+        self, node: etree.ElementBase, text: str, name: str
+    ) -> etree.ElementBase:
         if not text:
             self.log.error(f"[{name}] No text passed, can't add spans")
             return False

@@ -56,7 +56,9 @@ def extract_calibre_pkg(pkg_path: str) -> None:
         ]
         for cmd in cmd_list:
             print(f"Running macOS extraction command: {cmd}")
-            subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            subprocess.run(
+                cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True
+            )
     else:
         # Thanks Debian!
         tar_path = None
@@ -81,11 +83,13 @@ def extract_calibre_pkg(pkg_path: str) -> None:
                 pkg_path,
                 "--directory",
                 calibre_dir,
-            ]
+            ],
+            check=True,
         )
 
 
 def get_calibre() -> None:
+    # skipcq: BAN-B310
     api_resp = urlopen(
         "https://api.github.com/repos/kovidgoyal/calibre/releases/latest"
     )
@@ -102,6 +106,7 @@ def get_calibre() -> None:
     for asset in release_data["assets"]:
         if asset["name"].endswith(PKG_EXT):
             print(f"Found desired asset name: {asset['name']}")
+            assert asset["browser_download_url"].startswith("http")
             pkg_resp = urlopen(asset["browser_download_url"])
             if pkg_resp.status != 200:
                 raise Exception(

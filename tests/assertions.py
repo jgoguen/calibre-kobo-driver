@@ -9,7 +9,7 @@ import unittest
 __unittest = True
 
 
-class TestAssertions(unittest.TestCase):
+class TestAssertions(unittest.TestCase):  # skipcq:  PTC-W0046
     """Additional useful unittest assertion functions.
 
     Note that because this class subclasses unittest.TestCase, any class using this
@@ -35,8 +35,6 @@ class TestAssertions(unittest.TestCase):
             # But it must still be a string type
             if not self.__is_any_string_type(value):
                 self.fail("value must be a string type")
-        except Exception:
-            raise
         else:
             self.fail("value must not be None and must not be empty string")
 

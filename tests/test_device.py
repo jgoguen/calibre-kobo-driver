@@ -37,7 +37,7 @@ class MockKePubContainer(mock.MagicMock):
         return False
 
 
-class DeviceTestBase(unittest.TestCase):
+class DeviceTestBase(unittest.TestCase):  # skipcq: PTC-W0046
     log = mock.Mock()
 
     def __init__(self, *args, **kwargs):
