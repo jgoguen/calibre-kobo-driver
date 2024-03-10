@@ -10,6 +10,7 @@ import subprocess
 import sys
 import tempfile
 
+from urllib.request import Request
 from urllib.request import urlopen
 
 
@@ -107,18 +108,19 @@ def get_calibre() -> None:
         if asset["name"].endswith(PKG_EXT):
             print(f"Found desired asset name: {asset['name']}")
             if asset["browser_download_url"].lower().startswith("http"):
-                pkg_resp = urlopen(asset["browser_download_url"])
+                pkg_req = Request(asset["browser_download_url"])
             else:
                 raise ValueError(
-                    f"Browser download URL does not begin with http/https: "
+                    "Browser download URL does not begin with http/https: "
                     + asset["browser_download_url"]
                 )
 
-            if pkg_resp.status != 200:
-                raise Exception(
-                    "Calibre download returned "
-                    + f"HTTP{pkg_resp.status} {pkg_resp.reason}"
-                )
+            with urlopen(pkg_req) as pkg_resp:
+                if pkg_resp.status != 200:
+                    raise Exception(
+                        "Calibre download returned "
+                        + f"HTTP{pkg_resp.status} {pkg_resp.reason}"
+                    )
 
             with tempfile.TemporaryDirectory() as tmpdir:
                 pkg_file = os.path.join(tmpdir, asset["name"])

@@ -290,7 +290,9 @@ class TestContainer(TestAssertions):
     def __run_multiple_node_test(self, text_nodes):  # type: (List[str]) -> None
         html = "<div>"
         for text in text_nodes:
-            html += f"<p>{text}</p>"
+            # DeepSource falsely detects this as simply concatenating the values from
+            # the iterable.
+            html += f"<p>{text}</p>"  # skipqa: PYL-R1713
         html += "</div>"
         node = etree.fromstring(html)
         self.container._paragraph_counter = 1

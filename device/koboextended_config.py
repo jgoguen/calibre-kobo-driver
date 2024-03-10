@@ -269,10 +269,11 @@ class KepubifyGroupBox(DeviceOptionsGroupBox):
             _(  # noqa: F821
                 # DeepSource picks this up as possible SQL injection, which is not
                 # exactly correct.
-                "Select this to not upload any book that fails conversion to "  # skipcq: BAN-B608
-                + "kepub. If this is not selected, the upload process will be "  # skipcq: BAN-B608
-                + "stopped at the first book that fails. If this is selected, "
-                + "failed books will be silently removed from the upload queue."
+                "Select this to not upload any book that fails "  # skipcq: BAN-B608
+                + "conversion to kepub. If this is not selected, "  # skipcq: BAN-B608
+                + "the upload process will be stopped at the first book that fails. "
+                + "If this is selected, failed books will be silently removed from "
+                + "the upload queue."
             ),
             device.get_pref("skip_failed"),
         )

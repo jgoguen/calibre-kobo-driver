@@ -248,7 +248,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
             o["kobotouchextended_currenttime"] = datetime.utcnow().ctime()
             kte_data_file = self.temporary_file("_KoboTouchExtendedDriverInfo")
             common.log.debug(
-                f"KoboTouchExtended:_modify_epub:Driver data file :: "
+                "KoboTouchExtended:_modify_epub:Driver data file :: "
                 + kte_data_file.name
             )
             kte_data_file.write(json.dumps(o).encode("UTF-8"))
