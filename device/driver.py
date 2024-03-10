@@ -249,7 +249,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
             kte_data_file = self.temporary_file("_KoboTouchExtendedDriverInfo")
             common.log.debug(
                 f"KoboTouchExtended:_modify_epub:Driver data file :: "
-                + kte_data_file.names
+                + kte_data_file.name
             )
             kte_data_file.write(json.dumps(o).encode("UTF-8"))
             kte_data_file.close()
