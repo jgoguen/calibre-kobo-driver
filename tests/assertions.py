@@ -51,4 +51,4 @@ class TestAssertions(unittest.TestCase):  # skipcq:  PTC-W0046
             # value is not None and is a string type
             if value.strip() != "":
                 # value is not empty
-                self.fail("expected empty string, got: {0}".format(value))
+                self.fail(f"expected empty string, got: {value}")

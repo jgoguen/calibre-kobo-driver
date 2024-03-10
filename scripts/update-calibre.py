@@ -106,11 +106,14 @@ def get_calibre() -> None:
     for asset in release_data["assets"]:
         if asset["name"].endswith(PKG_EXT):
             print(f"Found desired asset name: {asset['name']}")
-            if not asset["browser_download_url"].startswith("http"):
+            if asset["browser_download_url"].lower().startswith("http"):
+                pkg_resp = urlopen(asset["browser_download_url"])
+            else:
                 raise ValueError(
-                    f"Browser download URL does not begin with http/https: {asset['browser_download_url']}"
+                    f"Browser download URL does not begin with http/https: "
+                    + asset["browser_download_url"]
                 )
-            pkg_resp = urlopen(asset["browser_download_url"])
+
             if pkg_resp.status != 200:
                 raise Exception(
                     "Calibre download returned "

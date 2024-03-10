@@ -41,7 +41,7 @@ make_pot() {
 	# shellcheck disable=SC2046
 	"${XGETTEXT_BIN}" -o ./translations/messages.pot --no-wrap \
 		--copyright-holder="Joel Goguen" --package-name="calibre-kobo-driver" \
-		$(/usr/bin/find . -type f -name '*.py' -not \( -name 'pygettext.py' -or -name 'test_*.py' -or -path '*/calibre-*' \))
+		$(/usr/bin/find . -type f -name '*.py' -not \( -name 'test_*.py' -or -path '*/calibre-*' \))
 }
 
 # Equivalent of `make clean`

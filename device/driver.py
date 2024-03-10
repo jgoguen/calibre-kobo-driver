@@ -45,10 +45,8 @@ class InvalidEPub(ValueError):
         ValueError.__init__(
             self,
             _(  # noqa: F821
-                "Failed to parse '{book}' by '{author}' with error: '{error}' "
-                + "(file: {filename}, line: {lineno})"
-            ).format(
-                book=name, author=author, error=message, filename=fname, lineno=lineno
+                f"Failed to parse '{name}' by '{author}' with error: '{message}' "
+                + f"(file: {fname}, line: {lineno})"
             ),
         )
 
@@ -250,9 +248,8 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
             o["kobotouchextended_currenttime"] = datetime.utcnow().ctime()
             kte_data_file = self.temporary_file("_KoboTouchExtendedDriverInfo")
             common.log.debug(
-                "KoboTouchExtended:_modify_epub:Driver data file :: {0}".format(
-                    kte_data_file.name
-                )
+                f"KoboTouchExtended:_modify_epub:Driver data file :: "
+                + kte_data_file.names
             )
             kte_data_file.write(json.dumps(o).encode("UTF-8"))
             kte_data_file.close()
@@ -276,10 +273,9 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
                 },
             )
         except Exception as e:
-            msg = "Failed to process {title} by {authors}: {msg}".format(
-                title=metadata.title,
-                authors=" and ".join(metadata.authors),
-                msg=str(e),
+            msg = (
+                f"Failed to process {metadata.title} by "
+                + f"{' and '.join(metadata.authors)}: {e}"
             )
             common.log.exception(msg)
 
@@ -298,7 +294,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
             dpath = self.create_upload_path(dpath, metadata, metadata.kte_calibre_name)
             common.log.info(
                 "KoboTouchExtended:_modify_epub:Generated KePub file copy "
-                + "path: {0}".format(dpath)
+                + f"path: {dpath}"
             )
             shutil.copy(infile, dpath)
 
@@ -403,9 +399,10 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
                         cfg.add_section("FeatureSettings")
                     common.log.info(
                         "KoboTouchExtended:upload_books:Setting FeatureSettings."
-                        + "FullBookPageNumbers to {0}".format(
-                            "true" if self.full_page_numbers else "false"
-                        )
+                        + "FullBookPageNumbers to "
+                        + "true"
+                        if self.full_page_numbers
+                        else "false"
                     )
                     cfg.set(
                         "FeatureSettings",
@@ -426,14 +423,10 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
             and path.endswith(EPUB_EXT)
             and mi.uuid not in self.skip_renaming_files
         ):
-            common.log.debug(
-                "KoboTouchExtended:filename_callback:Path - {0}".format(path)
-            )
+            common.log.debug(f"KoboTouchExtended:filename_callback:Path - {path}")
             path = path[: -len(EPUB_EXT)] + KEPUB_EXT + EPUB_EXT
 
-            common.log.debug(
-                "KoboTouchExtended:filename_callback:New path - {0}".format(path)
-            )
+            common.log.debug(f"KoboTouchExtended:filename_callback:New path - {path}")
         else:
             path = super(KOBOTOUCHEXTENDED, self).filename_callback(path, mi)
 
@@ -449,10 +442,14 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
             common.log.info("KoboTouchExtended:sync_booklists:Setting ImageId fields")
 
             select_query = (
-                "SELECT ContentId FROM content WHERE "
-                + "ContentType = ? AND "
+                # DeepSource picks this up as possible SQL injection from string
+                # concatenation, but the concatenation here is only static SQL. All
+                # parameters are parameterized and passed to the SQL engine for
+                # safe replacement.
+                "SELECT ContentId FROM content WHERE "  # skipcq: BAN-B608
+                + "ContentType = ? AND "  # skipcq: BAN-B608
                 + "(ImageId IS NULL OR ImageId = '')"
-            )  # skipcq: BAN-B608
+            )
             update_query = "UPDATE content SET ImageId = ? WHERE ContentId = ?"
             try:
                 db = self.device_database_connection()

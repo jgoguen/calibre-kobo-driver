@@ -75,9 +75,9 @@ class PluginWidget(EPUBPluginWidget, EPUBUIForm):
         self.opt_kepub_hyphenate.setText(_("Hyphenate Files"))  # noqa: F821
         self.gridLayout.addWidget(self.opt_kepub_hyphenate, rows, 0, 1, 1)
 
-        self.opt_kepub_disable_hyphenation = QtWidgets.QCheckBox(
+        self.opt_kepub_disable_hyphenation = QtWidgets.QCheckBox(  # skipcq: PYL-W0201
             Form
-        )  # skipcq: PYL-W0201
+        )
         self.opt_kepub_disable_hyphenation.setObjectName(
             "opt_kepub_disable_hyphenation"  # noqa: F821
         )
@@ -88,9 +88,9 @@ class PluginWidget(EPUBPluginWidget, EPUBUIForm):
 
         rows += 1
 
-        self.opt_kepub_hyphenate_chars_label = QtWidgets.QLabel(
+        self.opt_kepub_hyphenate_chars_label = QtWidgets.QLabel(  # skipcq: PYL-W0201
             _("Minimum word length to hyphenate") + ":"  # noqa: F821
-        )  # skipcq: PYL-W0201
+        )
         self.gridLayout.addWidget(self.opt_kepub_hyphenate_chars_label, rows, 0, 1, 1)
 
         self.opt_kepub_hyphenate_chars = QtWidgets.QSpinBox(Form)  # skipcq: PYL-W0201
@@ -109,16 +109,16 @@ class PluginWidget(EPUBPluginWidget, EPUBUIForm):
 
         rows += 1
 
-        self.opt_kepub_hyphenate_chars_before_label = QtWidgets.QLabel(
-            _("Minimum characters before hyphens") + ":"  # noqa: F821
-        )  # skipcq: PYL-W0201
+        self.opt_kepub_hyphenate_chars_before_label = (  # skipcq: PYL-W0201
+            QtWidgets.QLabel(_("Minimum characters before hyphens") + ":")  # noqa: F821
+        )
         self.gridLayout.addWidget(
             self.opt_kepub_hyphenate_chars_before_label, rows, 0, 1, 1
         )
 
-        self.opt_kepub_hyphenate_chars_before = QtWidgets.QSpinBox(
+        self.opt_kepub_hyphenate_chars_before = QtWidgets.QSpinBox(  # skipcq: PYL-W0201
             Form
-        )  # skipcq: PYL-W0201
+        )
         self.opt_kepub_hyphenate_chars_before_label.setBuddy(
             self.opt_kepub_hyphenate_chars_before
         )
@@ -138,16 +138,16 @@ class PluginWidget(EPUBPluginWidget, EPUBUIForm):
 
         rows += 1
 
-        self.opt_kepub_hyphenate_chars_after_label = QtWidgets.QLabel(
-            _("Minimum characters after hyphens") + ":"  # noqa: F821
-        )  # skipcq: PYL-W0201
+        self.opt_kepub_hyphenate_chars_after_label = (  # skipcq: PYL-W0201
+            QtWidgets.QLabel(_("Minimum characters after hyphens") + ":")  # noqa: F821
+        )
         self.gridLayout.addWidget(
             self.opt_kepub_hyphenate_chars_after_label, rows, 0, 1, 1
         )
 
-        self.opt_kepub_hyphenate_chars_after = QtWidgets.QSpinBox(
+        self.opt_kepub_hyphenate_chars_after = QtWidgets.QSpinBox(  # skipcq: PYL-W0201
             Form
-        )  # skipcq: PYL-W0201
+        )
         self.opt_kepub_hyphenate_chars_after_label.setBuddy(
             self.opt_kepub_hyphenate_chars_after
         )
@@ -167,16 +167,18 @@ class PluginWidget(EPUBPluginWidget, EPUBUIForm):
 
         rows += 1
 
-        self.opt_kepub_hyphenate_limit_lines_label = QtWidgets.QLabel(
-            _("Maximum consecutive hyphenated lines") + ":"  # noqa: F821
-        )  # skipcq: PYL-W0201
+        self.opt_kepub_hyphenate_limit_lines_label = (  # skipcq: PYL-W0201
+            QtWidgets.QLabel(
+                _("Maximum consecutive hyphenated lines") + ":"  # noqa: F821
+            )
+        )
         self.gridLayout.addWidget(
             self.opt_kepub_hyphenate_limit_lines_label, rows, 0, 1, 1
         )
 
-        self.opt_kepub_hyphenate_limit_lines = QtWidgets.QSpinBox(
+        self.opt_kepub_hyphenate_limit_lines = QtWidgets.QSpinBox(  # skipcq: PYL-W0201
             Form
-        )  # skipcq: PYL-W0201
+        )
         self.opt_kepub_hyphenate_limit_lines_label.setBuddy(
             self.opt_kepub_hyphenate_limit_lines
         )
@@ -223,6 +225,6 @@ class OutputOptions(BaseOutputOptions):
         """Add our configuration to the output process."""
         super(OutputOptions, self).load_conversion_widgets()
         self.conversion_widgets.append(PluginWidget)
-        self.conversion_widgets = sorted(
+        self.conversion_widgets = sorted(  # skipcq: PYL-W0201
             self.conversion_widgets, key=lambda x: x.TITLE
-        )  # skipcq: PYL-W0201
+        )

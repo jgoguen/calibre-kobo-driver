@@ -95,8 +95,6 @@ TEXT_SPLIT_RE = re.compile(
 class InvalidEpub(ValueError):
     """Designates an invalid ePub file."""
 
-    pass
-
 
 class ParseError(ValueError):
     """Designates an error parsing an ePub inner file."""

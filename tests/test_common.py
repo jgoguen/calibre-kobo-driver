@@ -101,11 +101,7 @@ class TestCommon(unittest.TestCase):
                         test_tagged = logger._tag_args("DEBUG", msg)
                         self.assertListEqual(
                             test_tagged,
-                            [
-                                "{timestr} [{level}] {msg}".format(
-                                    timestr=TEST_TIME, level="DEBUG", msg=msg
-                                ),
-                            ],
+                            [f"{TEST_TIME} [DEBUG] {msg}"],
                         )
 
     @mock.patch(

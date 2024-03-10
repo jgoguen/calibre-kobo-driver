@@ -18,9 +18,7 @@ from unittest import mock
 
 test_dir = os.path.dirname(os.path.abspath(__file__))
 src_dir = os.path.dirname(test_dir)
-test_libdir = os.path.join(
-    src_dir, "pylib", "python{major}".format(major=sys.version_info.major)
-)
+test_libdir = os.path.join(src_dir, "pylib", f"python{sys.version_info.major}")
 sys.path = [src_dir] + glob.glob(os.path.join(test_libdir, "*.zip")) + sys.path
 
 from tests.assertions import TestAssertions
@@ -123,7 +121,7 @@ class TestContainer(TestAssertions):
         o = self.container.parsed(os.path.basename(self.files["test_without_spans"]))
         for div_id in {"book-columns", "book-inner"}:
             element_count = o.xpath(
-                'count(//xhtml:div[@id="{0}"])'.format(div_id),
+                f'count(//xhtml:div[@id="{div_id}"])',
                 namespaces={"xhtml": container.XHTML_NAMESPACE},
             )
             self.assertEqual(element_count, 1)
@@ -133,7 +131,7 @@ class TestContainer(TestAssertions):
         o = self.container.parsed(os.path.basename(self.files["test_with_spans"]))
         for div_id in {"book-columns", "book-inner"}:
             element_count = o.xpath(
-                'count(//xhtml:div[@id="{0}"])'.format(div_id),
+                f'count(//xhtml:div[@id="{div_id}"])',
                 namespaces={"xhtml": container.XHTML_NAMESPACE},
             )
             self.assertEqual(element_count, 1)
@@ -206,7 +204,7 @@ class TestContainer(TestAssertions):
 
         html = self.container.parsed(html_container_name)
         css_pre_count = html.xpath(
-            'count(//xhtml:head/xhtml:style[@href="{0}"])'.format(css_container_name),
+            f'count(//xhtml:head/xhtml:style[@href="{css_container_name}"])',
             namespaces={"xhtml": container.XHTML_NAMESPACE},
         )
         self.assertEqual(css_pre_count, 0)
@@ -214,14 +212,14 @@ class TestContainer(TestAssertions):
         self.container.add_content_file_reference(css_container_name)
         html = self.container.parsed(html_container_name)
         css_post_count = html.xpath(
-            'count(//xhtml:head/xhtml:link[@href="{0}"])'.format(css_container_name),
+            f'count(//xhtml:head/xhtml:link[@href="{css_container_name}"])',
             namespaces={"xhtml": container.XHTML_NAMESPACE},
         )
         self.assertEqual(css_post_count, 1)
 
         self.assertIsNotNone(
             re.search(
-                r'<link.+?href="{0}".*? ?/>'.format(css_container_name),
+                rf'<link.+?href="{css_container_name}".*? ?/>',
                 self.container.raw_data(html_container_name),
                 re.UNICODE | re.MULTILINE,
             )
@@ -235,7 +233,7 @@ class TestContainer(TestAssertions):
 
         html = self.container.parsed(html_container_name)
         js_pre_count = html.xpath(
-            'count(//xhtml:head/xhtml:script[@src="{0}"])'.format(js_container_name),
+            f'count(//xhtml:head/xhtml:script[@src="{js_container_name}"])',
             namespaces={"xhtml": container.XHTML_NAMESPACE},
         )
         self.assertEqual(js_pre_count, 0)
@@ -243,14 +241,14 @@ class TestContainer(TestAssertions):
         self.container.add_content_file_reference(js_container_name)
         html = self.container.parsed(html_container_name)
         js_post_count = html.xpath(
-            'count(//xhtml:head/xhtml:script[@src="{0}"])'.format(js_container_name),
+            f'count(//xhtml:head/xhtml:script[@src="{js_container_name}"])',
             namespaces={"xhtml": container.XHTML_NAMESPACE},
         )
         self.assertEqual(js_post_count, 1)
 
         self.assertIsNotNone(
             re.search(
-                r'<script.+?src="{0}".*?></script>'.format(js_container_name),
+                rf'<script.+?src="{js_container_name}".*?></script>',
                 self.container.raw_data(html_container_name),
                 re.UNICODE | re.MULTILINE,
             )
@@ -268,7 +266,7 @@ class TestContainer(TestAssertions):
         for text in text_samples:
             for text_only in {True, False}:
                 self.container.paragraph_counter = defaultdict(lambda: 1)
-                node = etree.Element("{{{0}}}p".format(container.XHTML_NAMESPACE))
+                node = etree.Element(f"{{{container.XHTML_NAMESPACE}}}p")
 
                 if text_only:
                     self.assertTrue(
@@ -292,7 +290,7 @@ class TestContainer(TestAssertions):
     def __run_multiple_node_test(self, text_nodes):  # type: (List[str]) -> None
         html = "<div>"
         for text in text_nodes:
-            html += "<p>{0}</p>".format(text)
+            html += f"<p>{text}</p>"
         html += "</div>"
         node = etree.fromstring(html)
         self.container._paragraph_counter = 1

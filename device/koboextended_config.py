@@ -30,7 +30,7 @@ except NameError:
     pass
 
 
-def wrap_msg(msg):
+def wrap_msg(msg: str) -> str:
     return textwrap.fill(msg.strip(), 100)
 
 
@@ -267,11 +267,13 @@ class KepubifyGroupBox(DeviceOptionsGroupBox):
         self.skip_failed_checkbox = create_checkbox(
             _("Silently Ignore Failed Conversions"),  # noqa: F821
             _(  # noqa: F821
-                "Select this to not upload any book that fails conversion to "
-                + "kepub. If this is not selected, the upload process will be "
+                # DeepSource picks this up as possible SQL injection, which is not
+                # exactly correct.
+                "Select this to not upload any book that fails conversion to "  # skipcq: BAN-B608
+                + "kepub. If this is not selected, the upload process will be "  # skipcq: BAN-B608
                 + "stopped at the first book that fails. If this is selected, "
                 + "failed books will be silently removed from the upload queue."
-            ),  # skipcq: BAN-B608
+            ),
             device.get_pref("skip_failed"),
         )
 

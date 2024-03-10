@@ -135,10 +135,10 @@ def modify_epub(
         log.debug("Found meta node with name=cover")
 
         if cover_id:
-            log.info("Found cover image ID '{0}'".format(cover_id))
+            log.info(f"Found cover image ID '{cover_id}'")
 
             cover_node_list: ElementBase = opf.xpath(
-                './opf:manifest/opf:item[@id="{0}"]'.format(cover_id),
+                f'./opf:manifest/opf:item[@id="{v}"]',
                 namespaces=OPF_NAMESPACES,
             )
             if len(cover_node_list) > 0:
@@ -192,7 +192,7 @@ def modify_epub(
                 nohyphen_css.name, name="kte-css/no-hyphens.css"
             )
         )
-        container.add_content_file_reference("kte-css/{0}".format(css_path))
+        container.add_content_file_reference(f"kte-css/{css_path}")
         os.unlink(nohyphen_css.name)
     elif opts.get("hyphenate", False) and int(opts.get("hyphen_min_chars", 6)) > 0:
         if metadata and metadata.language == NULL_VALUES["language"]:
@@ -220,7 +220,7 @@ def modify_epub(
                 hyphen_css.name, name="kte-css/hyphenation.css"
             )
         )
-        container.add_content_file_reference("kte-css/{0}".format(css_path))
+        container.add_content_file_reference(f"kte-css/{css_path}")
         os.unlink(hyphen_css.name)
 
     # Now smarten punctuation
@@ -230,9 +230,8 @@ def modify_epub(
     if opts.get("extended_kepub_features", True):
         if metadata is not None:
             log.info(
-                "Adding extended Kobo features to {0} by {1}".format(
-                    metadata.title, " and ".join(metadata.authors)
-                )
+                "Adding extended Kobo features to {metadata.title} by "
+                + " and ".join(metadata.authors)
             )
 
         # Add the Kobo span and div tags
@@ -265,12 +264,12 @@ def modify_epub(
                 stylehacks_css.name, name="kte-css/stylehacks.css"
             )
         )
-        container.add_content_file_reference("kte-css/{0}".format(css_path))
+        container.add_content_file_reference(f"kte-css/{css_path}")
     os.unlink(filename)
     container.commit(filename)
 
     _modify_time = time.time() - _modify_start
-    log.info("modify_epub took {0:f} seconds".format(_modify_time))
+    log.info(f"modify_epub took {_modify_time:0.2f} seconds")
 
 
 def intValueChanged(widget, singular, plural, *args, **kwargs):

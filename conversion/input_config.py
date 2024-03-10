@@ -76,6 +76,6 @@ class OutputOptions(BaseOutputOptions):
         """Add our configuration to the input processing."""
         super(OutputOptions, self).load_conversion_widgets()
         self.conversion_widgets.append(PluginWidget)
-        self.conversion_widgets = sorted(
+        self.conversion_widgets = sorted(  # skipcq: PYL-W0201
             self.conversion_widgets, key=lambda x: x.TITLE
-        )  # skipcq: PYL-W0201
+        )
