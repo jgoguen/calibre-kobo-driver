@@ -85,6 +85,7 @@ def extract_calibre_pkg(pkg_path: str) -> None:
                 "--directory",
                 calibre_dir,
             ],
+            stderr=sys.stderr,
             check=True,
         )
 
