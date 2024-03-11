@@ -26,20 +26,6 @@ from calibre_plugins.kobotouch_extended import common
 
 load_translations()
 
-# These two __dict__ checks keep the type checker happy (happier? less sad?)
-if "_" not in __dict__:
-
-    def _(s: str) -> str:
-        return s
-
-
-if "ngettext" not in __dict__:
-
-    def ngettext(s: str, p: str, c: int) -> str:
-        if c != 1:
-            return p
-        return s
-
 
 def wrap_msg(msg: str) -> str:
     return textwrap.fill(msg.strip(), 100)

@@ -25,20 +25,6 @@ load_translations()
 EPUB_EXT = ".epub"
 KEPUB_EXT = ".kepub"
 
-# These two __dict__ checks keep the type checker happy (happier? less sad?)
-if "_" not in __dict__:
-
-    def _(s: str) -> str:
-        return s
-
-
-if "ngettext" not in __dict__:
-
-    def ngettext(s: str, p: str, c: int) -> str:
-        if c != 1:
-            return p
-        return s
-
 
 class KOBOTOUCHEXTENDED(KOBOTOUCH):
     """Extended driver for Kobo Touch, Kobo Glo, and Kobo Mini devices.
