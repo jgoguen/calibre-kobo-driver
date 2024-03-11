@@ -17,6 +17,7 @@ from calibre_plugins.kobotouch_extended import common
 from calibre_plugins.kobotouch_extended.container import KEPubContainer
 from configparser import NoOptionError, ConfigParser
 from typing import List
+from typing import Optional
 from typing import Set
 from typing import Union
 
@@ -145,7 +146,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
         super(KOBOTOUCHEXTENDED, cls).save_settings(config_widget)
 
     def _modify_epub(
-        self, infile: str, metadata, container: Optional[KEpubContainer] = None
+        self, infile: str, metadata, container: Optional[KEPubContainer] = None
     ):
         if container is None:
             container = KEPubContainer(infile, common.log, do_cleanup=self.clean_markup)
@@ -205,7 +206,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
             )
             common.log.exception(msg)
 
-            if not skip_failed:
+            if not self.skip_failed:
                 tb = sys.exc_info()[2]
                 raise e.__class__(msg).with_traceback(tb)
 
