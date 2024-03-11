@@ -658,33 +658,30 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
         """Return if the book is to be kepubified."""
         kepubify_book = self.extra_features
         common.log.warning(
-            "kepubify_book - self.kepubify_template='%s'" % self.kepubify_template
+            f"kepubify_book - self.kepubify_template='{self.kepubify_template}'"
         )
         if kepubify_book and self.use_template:
             from calibre.ebooks.metadata.book.formatter import SafeFormat
 
-            common.log.warning("kepubify_book - metadata='%s'" % metadata)
+            common.log.warning(f"kepubify_book - metadata='{metadata}'")
             common.log.warning(
-                "kepubify_book - self.kepubify_template='%s'" % self.kepubify_template
+                f"kepubify_book - self.kepubify_template='{self.kepubify_template}'"
             )
             kepubify = SafeFormat().safe_format(
                 self.kepubify_template, metadata, "Open With template error", metadata
             )
             common.log.warning(
-                "kepubify_book - after SafeFormat kepubify='%s'" % kepubify
+                f"kepubify_book - after SafeFormat kepubify='{kepubify}'"
             )
             if kepubify is not None and kepubify.startswith("PLUGBOARD TEMPLATE ERROR"):
                 common.log.warning(
-                    "kepubify_book - self.kepubify_template='%s'"
-                    % self.kepubify_template
+                    f"kepubify_book - self.kepubify_template='{self.kepubify_template}'"
                 )
-                common.log.warning("kepubify_book - kepubify='%s'" % kepubify)
+                common.log.warning(f"kepubify_book - kepubify='{kepubify}'")
                 kepubify_book = True
             else:
                 kepubify_book = not kepubify == ""
-        common.log.warning(
-            "kepubify_book - returning kepubify_book='%s'" % kepubify_book
-        )
+        common.log.warning(f"kepubify_book - returning kepubify_book='{kepubify_book}'")
         return kepubify_book
 
     @property

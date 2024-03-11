@@ -6,5 +6,6 @@ name = "shell"
 [[analyzers]]
 name = "python"
 
-  [analyzers.meta]
-  runtime_version = "3.x.x"
+[analyzers.meta]
+runtime_version = "3.x.x"
+additional_builtins = ["_", "ngettext"]

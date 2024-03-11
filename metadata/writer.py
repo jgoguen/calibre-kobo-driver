@@ -44,9 +44,7 @@ class KEPUBMetadataWriter(EPUBMetadataWriter):
     def set_metadata(self, stream, mi, filetype):
         """Set standard ePub metadata then properly set the cover image."""
         common.log.debug(
-            "KEPUBMetadataWriter::set_metadata - self.__class__={0}".format(
-                self.__class__
-            )
+            f"KEPUBMetadataWriter::set_metadata - self.__class__={self.__class__}"
         )
         super(KEPUBMetadataWriter, self).set_metadata(stream, mi, filetype)
 
@@ -57,12 +55,10 @@ class KEPUBMetadataWriter(EPUBMetadataWriter):
         covers = reader.opf.raster_cover_path(reader.opf.metadata)
         if len(covers) > 0:
             common.log.debug(
-                "KEPUBMetadataWriter::set_metadata - covers={0}".format(covers)
+                f"KEPUBMetadataWriter::set_metadata - covers={', '.join(covers)}"
             )
             cover_id = covers[0].get("content")
-            common.log.debug(
-                "KEPUBMetadataWriter::set_metadata - cover_id={0}".format(cover_id)
-            )
+            common.log.debug(f"KEPUBMetadataWriter::set_metadata - cover_id={cover_id}")
             for item in reader.opf.itermanifest():
                 if item.get("id", None) == cover_id:
                     mt = item.get("media-type", "")
