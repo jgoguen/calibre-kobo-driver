@@ -10,24 +10,35 @@ __docformat__ = "markdown en"
 import functools
 import textwrap
 
-from PyQt5.Qt import QGridLayout
-from PyQt5.Qt import QLabel
-from PyQt5.Qt import QLineEdit
-from PyQt5.Qt import QSpinBox
-from PyQt5.Qt import QVBoxLayout
+from PyQt5.QtWidgets import QGridLayout
+from PyQt5.QtWidgets import QLabel
+from PyQt5.QtWidgets import QLineEdit
+from PyQt5.QtWidgets import QSpinBox
+from PyQt5.QtWidgets import QVBoxLayout
 
 from calibre.devices.kobo.kobotouch_config import KOBOTOUCHConfig, TemplateConfig
 from calibre.gui2.device_drivers.tabbed_device_config import DeviceConfigTab
 from calibre.gui2.device_drivers.tabbed_device_config import DeviceOptionsGroupBox
 from calibre.gui2.device_drivers.tabbed_device_config import create_checkbox
+from calibre.utils.config_base import ConfigProxy
 
 from calibre_plugins.kobotouch_extended import common
 
-# Support load_translations() without forcing calibre 1.9+
-try:
-    load_translations()
-except NameError:
-    pass
+load_translations()
+
+# These two __dict__ checks keep the type checker happy (happier? less sad?)
+if "_" not in __dict__:
+
+    def _(s: str) -> str:
+        return s
+
+
+if "ngettext" not in __dict__:
+
+    def ngettext(s: str, p: str, c: int) -> str:
+        if c != 1:
+            return p
+        return s
 
 
 def wrap_msg(msg: str) -> str:
@@ -68,7 +79,7 @@ class KOBOTOUCHEXTENDEDConfig(KOBOTOUCHConfig):
     def commit(self):
         """Process driver options for saving."""
         common.log.debug("KOBOTOUCHEXTENDEDConfig::commit: start")
-        p = super(KOBOTOUCHEXTENDEDConfig, self).commit()
+        p: ConfigProxy = super(KOBOTOUCHEXTENDEDConfig, self).commit()
 
         p["extra_features"] = self.extra_features
         p["use_template"] = self.use_template

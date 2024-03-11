@@ -6,49 +6,38 @@ __license__ = "GPL v3"
 __copyright__ = "2013, Joel Goguen <jgoguen@jgoguen.ca>"
 __docformat__ = "markdown en"
 
-import json
 import os
 import re
 import shutil
 import sys
-from datetime import datetime
 
 from calibre.constants import config_dir
 from calibre.devices.kobo.driver import KOBOTOUCH
-from calibre.ebooks.oeb.polish.errors import DRMError
 from calibre_plugins.kobotouch_extended import common
 from calibre_plugins.kobotouch_extended.container import KEPubContainer
-from polyglot.builtins import is_py3
-
 from configparser import NoOptionError, ConfigParser
+from typing import List
+from typing import Set
+from typing import Union
 
-# Support load_translations() without forcing calibre 1.9+
-try:
-    load_translations()
-except NameError:
-    pass
+load_translations()
 
 EPUB_EXT = ".epub"
 KEPUB_EXT = ".kepub"
 
+# These two __dict__ checks keep the type checker happy (happier? less sad?)
+if "_" not in __dict__:
 
-class InvalidEPub(ValueError):
-    """InvalidEpub wraps ValueError and ensures book information is present."""
+    def _(s: str) -> str:
+        return s
 
-    def __init__(self, name, author, message, fname=None, lineno=None):
-        """Construct a new InvalidEpub."""
-        self.name = name
-        self.author = author
-        self.message = message
-        self.fname = fname
-        self.lineno = lineno
-        ValueError.__init__(
-            self,
-            _(  # noqa: F821
-                f"Failed to parse '{name}' by '{author}' with error: '{message}' "
-                + f"(file: {fname}, line: {lineno})"
-            ),
-        )
+
+if "ngettext" not in __dict__:
+
+    def ngettext(s: str, p: str, c: int) -> str:
+        if c != 1:
+            return p
+        return s
 
 
 class KOBOTOUCHEXTENDED(KOBOTOUCH):
@@ -78,16 +67,18 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 
     content_types = {"main": 6, "content": 9, "toc": 899}
 
-    EXTRA_CUSTOMIZATION_MESSAGE = KOBOTOUCH.EXTRA_CUSTOMIZATION_MESSAGE[:]
-    EXTRA_CUSTOMIZATION_DEFAULT = KOBOTOUCH.EXTRA_CUSTOMIZATION_DEFAULT[:]
+    EXTRA_CUSTOMIZATION_MESSAGE: List[str] = KOBOTOUCH.EXTRA_CUSTOMIZATION_MESSAGE[:]
+    EXTRA_CUSTOMIZATION_DEFAULT: List[Union[str, bool]] = (
+        KOBOTOUCH.EXTRA_CUSTOMIZATION_DEFAULT[:]
+    )
 
-    skip_renaming_files = set()
+    skip_renaming_files: Set[str] = set()
     kobo_js_re = re.compile(r".*/?kobo.*\.js$", re.IGNORECASE)
     invalid_filename_chars_re = re.compile(
         r"[\/\\\?%\*:;\|\"\'><\$!]", re.IGNORECASE | re.UNICODE
     )
 
-    def modifying_epub(self):
+    def modifying_epub(self) -> bool:
         """Determine if this epub will be modified."""
         return (
             self.modifying_css()
@@ -123,12 +114,9 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
             common.log.warning(
                 "KoboTouchExtended:config_widget: Have old style config."
             )
-            try:
-                from PyQt5.QtCore import QCoreApplication
-                from PyQt5.QtWidgets import QScrollArea
-            except ImportError:
-                from PyQt4.Qt import QCoreApplication
-                from PyQt4.Qt import QScrollArea
+            from PyQt5.QtCore import QCoreApplication
+            from PyQt5.QtWidgets import QScrollArea
+
             qsa = QScrollArea()
             qsa.setWidgetResizable(True)
             qsa.setWidget(cw)
@@ -170,12 +158,13 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
 
         super(KOBOTOUCHEXTENDED, cls).save_settings(config_widget)
 
-    def _modify_epub(self, infile, metadata, container=None):
+    def _modify_epub(self, infile, metadata, _=None):
+        container = KEPubContainer(infile, common.log, self.clean_markup)
         if not infile.endswith(EPUB_EXT) or not self.kepubify_book(metadata):
             if infile.endswith(KEPUB_EXT):
                 common.log.info(
                     "KoboTouchExtended:_modify_epub:Skipping all processing for "
-                    + f"calibre-converted KePub file {infile}"
+                    + f"KePub file {infile}"
                 )
             return super(KOBOTOUCHEXTENDED, self)._modify_epub(
                 infile, metadata, container
@@ -186,9 +175,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
             + f"{metadata.title} by {' and '.join(metadata.authors)}"
         )
 
-        opts = self.settings()
-        skip_failed = self.skip_failed
-        if skip_failed:
+        if self.skip_failed:
             common.log.info(
                 "KoboTouchExtended:_modify_epub:Failed conversions will be skipped"
             )
@@ -198,19 +185,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
                 + "exceptions"
             )
 
-        if container is None:
-            container = KEPubContainer(infile, common.log, self.clean_markup)
-        is_encumbered_book = False
-        try:
-            is_encumbered_book = container.is_drm_encumbered
-        except DRMError:
-            common.log.warning(
-                "KoboTouchExtended:_modify_epub:ERROR: ePub is DRM-encumbered, "
-                + "not modifying"
-            )
-            is_encumbered_book = True
-
-        if is_encumbered_book:
+        if container.is_drm_encumbered:
             self.skip_renaming_files.add(metadata.uuid)
             if self.upload_encumbered:
                 return super(KOBOTOUCHEXTENDED, self)._modify_epub(
@@ -219,44 +194,6 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
             return False
 
         try:
-            # Add the conversion info file
-            calibre_details_file = self.normalize_path(
-                os.path.join(self._main_prefix, "driveinfo.calibre")
-            )
-            common.log.debug(
-                "KoboTouchExtended:_modify_epub:Calibre details file :: "
-                + calibre_details_file
-            )
-            o = {}
-            if os.path.isfile(calibre_details_file):
-                with open(calibre_details_file, "rb") as f:
-                    o = json.load(f)
-                for prop in (
-                    "device_store_uuid",
-                    "prefix",
-                    "last_library_uuid",
-                    "location_code",
-                ):
-                    del o[prop]
-            else:
-                common.log.warning(
-                    "KoboTouchExtended:_modify_file:Calibre details file does "
-                    + "not exist!"
-                )
-            o["kobotouchextended_version"] = ".".join([str(n) for n in self.version])
-            o["kobotouchextended_options"] = str(opts.extra_customization)
-            o["kobotouchextended_currenttime"] = datetime.utcnow().ctime()
-            kte_data_file = self.temporary_file("_KoboTouchExtendedDriverInfo")
-            common.log.debug(
-                "KoboTouchExtended:_modify_epub:Driver data file :: "
-                + kte_data_file.name
-            )
-            kte_data_file.write(json.dumps(o).encode("UTF-8"))
-            kte_data_file.close()
-            container.copy_file_to_container(
-                kte_data_file.name, name="driverinfo.kte", mt="application/json"
-            )
-
             common.modify_epub(
                 container,
                 infile,
