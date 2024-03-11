@@ -145,7 +145,7 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
         super(KOBOTOUCHEXTENDED, cls).save_settings(config_widget)
 
     def _modify_epub(self, infile, metadata, _=None):
-        container = KEPubContainer(infile, common.log, self.clean_markup)
+        container = KEPubContainer(infile, common.log, do_cleanup=self.clean_markup)
         if not infile.endswith(EPUB_EXT) or not self.kepubify_book(metadata):
             if infile.endswith(KEPUB_EXT):
                 common.log.info(
