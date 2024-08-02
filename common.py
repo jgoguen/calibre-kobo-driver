@@ -138,7 +138,7 @@ def modify_epub(
             log.info(f"Found cover image ID '{cover_id}'")
 
             cover_node_list: ElementBase = opf.xpath(
-                f'./opf:manifest/opf:item[@id="{v}"]',
+                f'./opf:manifest/opf:item[@id="{cover_id}"]',
                 namespaces=OPF_NAMESPACES,
             )
             if len(cover_node_list) > 0:
