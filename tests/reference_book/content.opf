@@ -13,6 +13,9 @@
   <manifest>
     <item href="cover.jpg" id="cover" media-type="image/jpeg" properties="cover-image"/>
     <item href="toc.ncx" id="ncx" media-type="application/x-dtbncx+xml"/>
+		<item href="OEBPS/part001.xhtml" id="part001" media-type="application/xhtml+xml" />
+		<item href="OEBPS/part%20002.xhtml" id="part002" media-type="application/xhtml+xml" />
+		<item href="OEBPS/part_%28003%29.xhtml" id="part003" media-type="application/xhtml+xml" />
   </manifest>
   <spine toc="ncx">
   </spine>

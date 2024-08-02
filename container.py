@@ -28,6 +28,7 @@ from typing import Iterator
 from typing import List
 from typing import Optional
 from typing import Tuple
+from urllib.parse import unquote
 
 from calibre import guess_type
 from calibre.ebooks.conversion.plugins.epub_input import ADOBE_OBFUSCATION
@@ -131,6 +132,7 @@ class KEPubContainer(EpubContainer):
             if node.get("media-type") in HTML_MIMETYPES:
                 href = os.path.join(os.path.dirname(self.opf_name), node.get("href"))
                 href = os.path.normpath(href).replace(os.sep, "/")
+                href = unquote(href)
                 yield href
 
     @property
@@ -299,7 +301,7 @@ class KEPubContainer(EpubContainer):
         html = FORCE_OPEN_TAG_RE.sub(r"<\1 \2></\1>", html)
 
         # Remove Unicode replacement characters
-        html = html.replace("\uFFFD", "")
+        html = html.replace("\ufffd", "")
 
         self.replace(name, self.parse_xhtml(html))
         self.commit_item(name, keep_parsed=True)
