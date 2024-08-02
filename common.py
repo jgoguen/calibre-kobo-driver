@@ -41,7 +41,7 @@ KOBO_JS_RE = re.compile(r".*/?kobo.*?\.js$", re.IGNORECASE)
 XML_NAMESPACE = "http://www.w3.org/XML/1998/namespace"
 CONFIGDIR = os.path.join(config_dir, "plugins")
 REFERENCE_KEPUB = os.path.join(CONFIGDIR, "reference.kepub.epub")
-PLUGIN_VERSION = (3, 6, 8)
+PLUGIN_VERSION = (3, 6, 9)
 PLUGIN_MINIMUM_CALIBRE_VERSION = (5, 0, 0)
 
 
@@ -138,7 +138,7 @@ def modify_epub(
             log.info(f"Found cover image ID '{cover_id}'")
 
             cover_node_list: ElementBase = opf.xpath(
-                f'./opf:manifest/opf:item[@id="{v}"]',
+                f'./opf:manifest/opf:item[@id="{cover_id}"]',
                 namespaces=OPF_NAMESPACES,
             )
             if len(cover_node_list) > 0:
@@ -230,7 +230,7 @@ def modify_epub(
     if opts.get("extended_kepub_features", True):
         if metadata is not None:
             log.info(
-                "Adding extended Kobo features to {metadata.title} by "
+                f"Adding extended Kobo features to {metadata.title} by "
                 + " and ".join(metadata.authors)
             )
 

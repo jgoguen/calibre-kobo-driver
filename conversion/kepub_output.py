@@ -148,7 +148,9 @@ class KEPubOutput(OutputFormatPlugin):
             oeb_book, output, input_plugin, opts, common.log
         )
         common.log.debug("Done ePub conversion")
-        container = KEPubContainer(output, common.log, opts.kepub_clean_markup)
+        container = KEPubContainer(
+            output, common.log, do_cleanup=opts.kepub_clean_markup
+        )
 
         if container.is_drm_encumbered:
             common.log.error("DRM-encumbered container, skipping conversion")
