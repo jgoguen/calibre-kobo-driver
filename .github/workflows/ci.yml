@@ -5,10 +5,10 @@ name: CI
 
 # Controls when the action will run. Workflow runs when manually triggered
 # using the UI or API.
-'on':
+"on":
   push:
     branches:
-      - '*'
+      - "*"
   pull_request:
 
 # A workflow run is made up of one or more jobs that can run sequentially or
@@ -20,7 +20,7 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - 'ubuntu-latest'
+          - "ubuntu-latest"
 
     steps:
       - uses: actions/checkout@v3
@@ -34,7 +34,7 @@ jobs:
         run: |
           PLATFORM=$(uname)
           if [ "${PLATFORM}" = "Linux" ]; then
-            sudo apt-get install -y zsh gettext
+            sudo apt-get install -y zsh gettext libegl1 libopengl0
           fi
 
       # yamllint disable rule:line-length
@@ -45,7 +45,6 @@ jobs:
           printf 'CALIBRE_CONFIG_DIRECTORY="%s"\n' "${CALIBRE_DIR}/config" >>"${GITHUB_ENV}"
           printf 'CALIBRE_TEMP_DIR="%s"\n' "${CALIBRE_DIR}/tmp" >>"${GITHUB_ENV}"
       # yamllint enable rule:line-length
-
       - name: Create calibre directories
         run: |
           mkdir -p "${CALIBRE_CONFIG_DIRECTORY}" "${CALIBRE_TEMP_DIR}"
