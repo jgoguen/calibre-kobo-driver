@@ -529,14 +529,21 @@ class KEPubContainer(EpubContainer):
         self, node: etree.ElementBase, name: str
     ) -> etree.ElementBase:
         # process node only if it is not a comment or a processing instruction
-        if node is None or isinstance(node, (etree.CommentBase, etree.PIBase)):
+        if node is None or isinstance(
+            node, (etree._Comment, etree._ProcessingInstruction)
+        ):
             if node is not None:
                 node.tail = None
             self.log.debug(f"[{name}] Skipping comment/ProcessingInstruction node")
             return node
 
         # Special case some tags
-        special_tag_match = re.search(r"^(?:\{[^\}]+\})?(\w+)$", node.tag)
+        try:
+            special_tag_match = re.search(r"^(?:\{[^\}]+\})?(\w+)$", node.tag)
+        except Exception as e:
+            raise Exception(
+                f"Exception: {e}\nNode class: {type(node)}\nNode tag class: {type(node.tag)}\nNode tag: {node.tag}"
+            )
         if special_tag_match:
             # Skipped tags are just flat out skipped
             if special_tag_match.group(1) in SKIPPED_TAGS:

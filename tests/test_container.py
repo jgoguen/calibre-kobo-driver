@@ -46,6 +46,9 @@ class TestContainer(TestAssertions):
                 "test_without_spans": os.path.join(
                     self.testfile_basedir, "page_without_spans.html"
                 ),
+                "test_without_spans_with_comments": os.path.join(
+                    self.testfile_basedir, "page_without_spans_with_comments.html"
+                ),
                 "dirty_markup": os.path.join(
                     self.testfile_basedir, "page_dirty_markup.html"
                 ),
@@ -86,11 +89,9 @@ class TestContainer(TestAssertions):
         self.assertIn(self.container.mime_map[container_name], container.HTML_MIMETYPES)
         self.assertIn("content.opf", self.container.dirtied)
 
-    def __run_added_test(
-        self, expect_changed, added_func
-    ):  # type: (bool, Callable) -> None
+    def __run_added_test(self, expect_changed, added_func):  # type: (bool, Callable) -> None
         if expect_changed:
-            source_file = self.files["test_without_spans"]
+            source_file = self.files["test_without_spans_with_comments"]
         else:
             source_file = self.files["test_with_spans"]
         with open(source_file, "r") as f:
@@ -118,7 +119,9 @@ class TestContainer(TestAssertions):
 
     def test_divs_added(self):
         self.__run_added_test(True, self.container.add_kobo_divs)
-        o = self.container.parsed(os.path.basename(self.files["test_without_spans"]))
+        o = self.container.parsed(
+            os.path.basename(self.files["test_without_spans_with_comments"])
+        )
         for div_id in {"book-columns", "book-inner"}:
             element_count = o.xpath(
                 f'count(//xhtml:div[@id="{div_id}"])',
@@ -138,7 +141,9 @@ class TestContainer(TestAssertions):
 
     def test_spans_added(self):
         self.__run_added_test(True, self.container.add_kobo_spans)
-        o = self.container.parsed(os.path.basename(self.files["test_without_spans"]))
+        o = self.container.parsed(
+            os.path.basename(self.files["test_without_spans_with_comments"])
+        )
         element_count = o.xpath(
             'count(//xhtml:span[@class="koboSpan"])',
             namespaces={"xhtml": container.XHTML_NAMESPACE},
