@@ -260,7 +260,7 @@ class KEPubContainer(EpubContainer):
             self.commit_item(infile, keep_parsed=True)
 
     @staticmethod
-    def fix_tail(item: etree.ElementBase) -> None:
+    def fix_tail(item: etree._Element) -> None:
         """Fix self-closing elements.
 
         Designed only to work with self closing elements after item has just
@@ -451,7 +451,7 @@ class KEPubContainer(EpubContainer):
         return name
 
     @staticmethod
-    def __add_kobo_divs_to_body(root: etree.ElementBase) -> None:
+    def __add_kobo_divs_to_body(root: etree._Element) -> None:
         body = root.xpath("./xhtml:body", namespaces={"xhtml": XHTML_NAMESPACE})[0]
 
         # save node content for later
@@ -526,8 +526,8 @@ class KEPubContainer(EpubContainer):
         self.commit_item(name, keep_parsed=True)
 
     def _add_kobo_spans_to_node(
-        self, node: etree.ElementBase, name: str
-    ) -> etree.ElementBase:
+        self, node: etree._Element, name: str
+    ) -> etree._Element:
         # process node only if it is not a comment or a processing instruction
         if node is None or isinstance(
             node, (etree._Comment, etree._ProcessingInstruction)
@@ -538,12 +538,7 @@ class KEPubContainer(EpubContainer):
             return node
 
         # Special case some tags
-        try:
-            special_tag_match = re.search(r"^(?:\{[^\}]+\})?(\w+)$", node.tag)
-        except Exception as e:
-            raise Exception(
-                f"Exception: {e}\nNode class: {type(node)}\nNode tag class: {type(node.tag)}\nNode tag: {node.tag}"
-            )
+        special_tag_match = re.search(r"^(?:\{[^\}]+\})?(\w+)$", node.tag)
         if special_tag_match:
             # Skipped tags are just flat out skipped
             if special_tag_match.group(1) in SKIPPED_TAGS:
@@ -605,8 +600,8 @@ class KEPubContainer(EpubContainer):
         return node
 
     def _append_kobo_spans_from_text(
-        self, node: etree.ElementBase, text: str, name: str
-    ) -> etree.ElementBase:
+        self, node: etree._Element, text: str, name: str
+    ) -> etree._Element:
         if not text:
             self.log.error(f"[{name}] No text passed, can't add spans")
             return False

@@ -29,7 +29,7 @@ from polyglot.builtins import is_py3
 from polyglot.io import PolyglotStringIO
 
 # lxml isn't great, but I don't have access to defusedxml
-from lxml.etree import ElementBase  # skipcq: BAN-B410
+from lxml.etree import _Element  # skipcq: BAN-B410
 
 if is_py3:
     from typing import Dict
@@ -41,7 +41,7 @@ KOBO_JS_RE = re.compile(r".*/?kobo.*?\.js$", re.IGNORECASE)
 XML_NAMESPACE = "http://www.w3.org/XML/1998/namespace"
 CONFIGDIR = os.path.join(config_dir, "plugins")
 REFERENCE_KEPUB = os.path.join(CONFIGDIR, "reference.kepub.epub")
-PLUGIN_VERSION = (3, 6, 10)
+PLUGIN_VERSION = (3, 6, 11)
 PLUGIN_MINIMUM_CALIBRE_VERSION = (5, 0, 0)
 
 
@@ -123,13 +123,13 @@ def modify_epub(
     # TODO: Refactor out cover detection logic so it can be directly used in
     # metadata/writer.py
     found_cover = False
-    opf: ElementBase = container.opf
-    cover_meta_node_list: List[ElementBase] = opf.xpath(
+    opf: _Element = container.opf
+    cover_meta_node_list: List[_Element] = opf.xpath(
         './opf:metadata/opf:meta[@name="cover"]', namespaces=OPF_NAMESPACES
     )
 
     if len(cover_meta_node_list) > 0:
-        cover_meta_node: ElementBase = cover_meta_node_list[0]
+        cover_meta_node: _Element = cover_meta_node_list[0]
         cover_id = cover_meta_node.attrib.get("content", None)
 
         log.debug("Found meta node with name=cover")
@@ -137,12 +137,12 @@ def modify_epub(
         if cover_id:
             log.info(f"Found cover image ID '{cover_id}'")
 
-            cover_node_list: ElementBase = opf.xpath(
+            cover_node_list: _Element = opf.xpath(
                 f'./opf:manifest/opf:item[@id="{cover_id}"]',
                 namespaces=OPF_NAMESPACES,
             )
             if len(cover_node_list) > 0:
-                cover_node: ElementBase = cover_node_list[0]
+                cover_node: _Element = cover_node_list[0]
 
                 log.debug("Found an item node with cover ID")
 
@@ -159,7 +159,7 @@ def modify_epub(
     if not found_cover:
         log.debug("Looking for cover image in OPF manifest")
 
-        node_list: List[ElementBase] = opf.xpath(
+        node_list: List[_Element] = opf.xpath(
             "./opf:manifest/opf:item[(translate(@id, "
             + "'ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'abcdefghijklmnopqrstuvwxyz')"
             + '="cover" or starts-with(translate(@id, '
@@ -172,7 +172,7 @@ def modify_epub(
                 f"Found {len(node_list)} nodes, assuming the first is the right node"
             )
 
-            node: ElementBase = node_list[0]
+            node: _Element = node_list[0]
             if node.attrib.get("properties", "") != "cover-image":
                 log.info("Setting cover-image property")
                 node.set("properties", "cover-image")

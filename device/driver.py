@@ -148,8 +148,6 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
     def _modify_epub(
         self, infile: str, metadata, container: Optional[KEPubContainer] = None
     ):
-        if container is None:
-            container = KEPubContainer(infile, common.log, do_cleanup=self.clean_markup)
         if not infile.endswith(EPUB_EXT) or not self.kepubify_book(metadata):
             if infile.endswith(KEPUB_EXT):
                 common.log.info(
@@ -174,6 +172,9 @@ class KOBOTOUCHEXTENDED(KOBOTOUCH):
                 "KoboTouchExtended:_modify_epub:Failed conversions will raise "
                 + "exceptions"
             )
+
+        if container is None:
+            container = KEPubContainer(infile, common.log, do_cleanup=self.clean_markup)
 
         if container.is_drm_encumbered:
             self.skip_renaming_files.add(metadata.uuid)
