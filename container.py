@@ -87,7 +87,7 @@ ELLIPSIS_RE = re.compile(r"(?u)(?<=\w)\s?(\.\s+?){2}\.", re.UNICODE | re.MULTILI
 MS_CRUFT_RE_1 = re.compile(r"<o:p>\s*</o:p>", re.UNICODE | re.MULTILINE)
 MS_CRUFT_RE_2 = re.compile(r"(?i)</?st1:\w+>", re.UNICODE | re.MULTILINE)
 TEXT_SPLIT_RE = re.compile(
-    r'(\s*.*?[\.\!\?\:][\'"\u201c\u201d\u2018\u2019\u2026]?)(?=\s)',
+    r'(\s*.*?(?:[\.\!\?\:][\'"\u201c\u201d\u2018\u2019\u2026]?|\S(?=\s*$)))(?=\s)',
     re.UNICODE | re.MULTILINE,
 )
 
