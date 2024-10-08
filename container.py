@@ -610,7 +610,7 @@ class KEPubContainer(EpubContainer):
             node[-1].tail = groups[0]
 
         # append each sentence in its own span
-        segment_counter = 1 
+        segment_counter = 1
         for g, ws in zip(groups[1::2], groups[2::2]):
             span = etree.Element(
                 f"{{{XHTML_NAMESPACE}}}span",
@@ -624,4 +624,4 @@ class KEPubContainer(EpubContainer):
             node.append(span)
             segment_counter += 1
 
-        return len(groups) > 1 # Return true if any spans were added.
+        return len(groups) > 1  # Return true if any spans were added.
