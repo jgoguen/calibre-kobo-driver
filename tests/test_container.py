@@ -89,7 +89,9 @@ class TestContainer(TestAssertions):
         self.assertIn(self.container.mime_map[container_name], container.HTML_MIMETYPES)
         self.assertIn("content.opf", self.container.dirtied)
 
-    def __run_added_test(self, expect_changed, added_func):  # type: (bool, Callable) -> None
+    def __run_added_test(
+        self, expect_changed, added_func
+    ):  # type: (bool, Callable) -> None
         if expect_changed:
             source_file = self.files["test_without_spans_with_comments"]
         else:
