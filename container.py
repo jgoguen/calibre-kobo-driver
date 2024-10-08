@@ -87,7 +87,7 @@ ELLIPSIS_RE = re.compile(r"(?u)(?<=\w)\s?(\.\s+?){2}\.", re.UNICODE | re.MULTILI
 MS_CRUFT_RE_1 = re.compile(r"<o:p>\s*</o:p>", re.UNICODE | re.MULTILINE)
 MS_CRUFT_RE_2 = re.compile(r"(?i)</?st1:\w+>", re.UNICODE | re.MULTILINE)
 TEXT_SPLIT_RE = re.compile(
-    r'(\s*.*?(?:[\.\!\?\:][\'"\u201c\u201d\u2018\u2019\u2026]?|\S(?=\s*$)))(?=\s)',
+    r'(\S.*?(?:[\.\!\?\:][\'"\u201c\u201d\u2018\u2019\u2026]*(?=\s)|(?=\s*$)))',
     re.UNICODE | re.MULTILINE,
 )
 
@@ -577,10 +577,7 @@ class KEPubContainer(EpubContainer):
 
         # the node text is converted to spans
         if node_text is not None:
-            if not self._append_kobo_spans_from_text(node, node_text, name):
-                # didn't add spans, restore text
-                node.text = node_text
-            else:
+            if self._append_kobo_spans_from_text(node, node_text, name):
                 self.paragraph_counter[name] += 1
 
         # re-add the node children
@@ -591,10 +588,7 @@ class KEPubContainer(EpubContainer):
             node.append(self._add_kobo_spans_to_node(child, name))
             # the child tail is converted to spans
             if child_tail is not None:
-                if not self._append_kobo_spans_from_text(node, child_tail, name):
-                    # didn't add spans, restore tail on last child
-                    node[-1].tail = child_tail
-                else:
+                if self._append_kobo_spans_from_text(node, child_tail, name):
                     self.paragraph_counter[name] += 1
 
         return node
@@ -606,19 +600,18 @@ class KEPubContainer(EpubContainer):
             self.log.error(f"[{name}] No text passed, can't add spans")
             return False
 
-        # if text is only whitespace, don't add spans
-        if text.strip() == "":
-            self.log.warning(f"[{name}] Found only whitespace, not adding spans")
-            return False
-
         # split text in sentences
         groups = TEXT_SPLIT_RE.split(text)
-        # remove empty strings resulting from split()
-        groups = [g for g in groups if g != ""]
 
-        # add each sentence in its own span
-        segment_counter = 1
-        for g in groups:
+        # append first group (whitespace) as text
+        if len(node) == 0:
+            node.text     = groups[0]
+        else:
+            node[-1].tail = groups[0]
+
+        # append each sentence in its own span
+        segment_counter = 1 
+        for g, ws in zip(groups[1::2], groups[2::2]):
             span = etree.Element(
                 f"{{{XHTML_NAMESPACE}}}span",
                 attrib={
@@ -627,7 +620,8 @@ class KEPubContainer(EpubContainer):
                 },
             )
             span.text = g
+            span.tail = ws
             node.append(span)
             segment_counter += 1
 
-        return True
+        return len(groups) > 1 # Return true if any spans were added.
