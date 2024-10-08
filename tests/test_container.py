@@ -261,16 +261,16 @@ class TestContainer(TestAssertions):
             )
         )
 
-    def __run_single_node_test(self, sentence, text_only=False, number_of_sentences=None):
+    def __run_single_node_test(self, text, text_only=False, number_of_sentences=None):
         self.container.paragraph_counter = defaultdict(lambda: 1)
         node = etree.Element(f"{{{container.XHTML_NAMESPACE}}}p")
 
         if text_only:
             self.assertTrue(
-                self.container._append_kobo_spans_from_text(node, sentence, "test")
+                self.container._append_kobo_spans_from_text(node, text, "test")
             )
         else:
-            node.text = sentence
+            node.text = text
             node = self.container._add_kobo_spans_to_node(node, "test")
 
         # check number of sentences
