@@ -278,10 +278,10 @@ class TestContainer(TestAssertions):
             self.assertEqual(len(node.getchildren()), number_of_sentences)
 
         for span in node.getchildren():
-            # spans should not end in whitespace (PR#191)
-            self.assertFalse(re.match(r'\s', span.tail[-1]))
+            # spans should not end in whitespace (PR#191), and be nonempty
+            self.assertFalse(re.match(r'\s', span.text[-1]))
             # tail of span should *only* be whitespace
-            self.assertTrue(re.match(r'\s*', span.tail[-1] or ''))
+            self.assertTrue(re.match(r'\s*', span.tail or ''))
 
             # attrib is technically of type lxml.etree._Attrib, but functionally
             # it's a dict. Cast it here to make assertDictEqual() happy.
@@ -360,7 +360,7 @@ class TestContainer(TestAssertions):
 
         pre_span = self.container.parsed(container_name)
         text_chunks = [
-            g.lstrip("\n\t")
+            g
             for g in pre_span.xpath(
                 "//xhtml:p//text()", namespaces={"xhtml": container.XHTML_NAMESPACE}
             )
@@ -370,7 +370,7 @@ class TestContainer(TestAssertions):
 
         post_span = self.container.parsed(container_name)
         post_text_chunks = [
-            g.lstrip("\n\t")
+            g
             for g in post_span.xpath(
                 "//xhtml:p//text()", namespaces={"xhtml": container.XHTML_NAMESPACE}
             )
