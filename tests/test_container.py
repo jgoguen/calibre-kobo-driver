@@ -89,7 +89,9 @@ class TestContainer(TestAssertions):
         self.assertIn(self.container.mime_map[container_name], container.HTML_MIMETYPES)
         self.assertIn("content.opf", self.container.dirtied)
 
-    def __run_added_test(self, expect_changed, added_func):  # type: (bool, Callable) -> None
+    def __run_added_test(
+        self, expect_changed, added_func
+    ):  # type: (bool, Callable) -> None
         if expect_changed:
             source_file = self.files["test_without_spans_with_comments"]
         else:
@@ -259,6 +261,40 @@ class TestContainer(TestAssertions):
             )
         )
 
+    def __run_single_node_test(self, text, text_only=False, number_of_sentences=None):
+        self.container.paragraph_counter = defaultdict(lambda: 1)
+        node = etree.Element(f"{{{container.XHTML_NAMESPACE}}}p")
+
+        if text_only:
+            self.assertTrue(
+                self.container._append_kobo_spans_from_text(node, text, "test")
+            )
+        else:
+            node.text = text
+            node = self.container._add_kobo_spans_to_node(node, "test")
+
+        # check number of sentences
+        if number_of_sentences is not None:
+            self.assertEqual(len(node.getchildren()), number_of_sentences)
+
+        for span in node.getchildren():
+            # spans should not end in whitespace (PR#191), and be nonempty
+            self.assertFalse(re.match(r'\s', span.text[-1]))
+            # tail of span should *only* be whitespace
+            self.assertTrue(re.match(r'\s*', span.tail or ''))
+
+            # attrib is technically of type lxml.etree._Attrib, but functionally
+            # it's a dict. Cast it here to make assertDictEqual() happy.
+            self.assertDictEqual(
+                dict(span.attrib), {"id": "kobo.1.1", "class": "koboSpan"}
+            )
+
+        # remaining text should only contain whitespace
+        self.assertTrue(re.match(r'\s*', node.text or ''))
+
+        # complete text should remain the same
+        self.assertEqual(''.join(node.itertext()), text)
+
     def test_add_spans_to_text(self):
         text_samples = [
             "Hello, World!",
@@ -266,31 +302,12 @@ class TestContainer(TestAssertions):
             "Hello, World!    ",
             "    Hello, World!    ",
             "\n\n    GIF is pronounced as it's spelled.\n   ",
+            " \"Yes, but I asked 'Why?'\" "
         ]
 
         for text in text_samples:
             for text_only in {True, False}:
-                self.container.paragraph_counter = defaultdict(lambda: 1)
-                node = etree.Element(f"{{{container.XHTML_NAMESPACE}}}p")
-
-                if text_only:
-                    self.assertTrue(
-                        self.container._append_kobo_spans_from_text(node, text, "test")
-                    )
-                else:
-                    node.text = text
-                    node = self.container._add_kobo_spans_to_node(node, "test")
-
-                self.assertEqual(len(node.getchildren()), 1)
-
-                span = node.getchildren()[0]
-                self.assertIsNone(span.tail)
-                # attrib is technically of type lxml.etree._Attrib, but functionally
-                # it's a dict. Cast it here to make assertDictEqual() happy.
-                self.assertDictEqual(
-                    dict(span.attrib), {"id": "kobo.1.1", "class": "koboSpan"}
-                )
-                self.assertEqual(span.text, text)
+                self.__run_single_node_test(text, text_only=text_only, number_of_sentences=1)
 
     def __run_multiple_node_test(self, text_nodes):  # type: (List[str]) -> None
         html = "<div>"
@@ -305,19 +322,21 @@ class TestContainer(TestAssertions):
 
         node = self.container._add_kobo_spans_to_node(node, "test")
         children = node.getchildren()
-        self.assertEqual(len(children), len(text_nodes))
 
-        for node_idx, node in enumerate(children):
+        # check each paragraph
+        self.assertEqual(len(text_nodes), len(children))
+        for text, node in zip(text_nodes, children):
             spans = node.getchildren()
-            text_chunks = [
-                g
-                for g in container.TEXT_SPLIT_RE.split(text_nodes[node_idx])
-                if g.strip() != ""
-            ]
-            self.assertEqual(len(spans), len(text_chunks))
+            # note: this regexp isn't being tested (it's known to be fallible, but good enough)
+            sentences = container.TEXT_SPLIT_RE.findall(text)
 
-            for text_idx, text_chunk in enumerate(text_chunks):
-                self.assertEqual(spans[text_idx].text, text_chunk)
+            # check spans are added correctly for phrase individually
+            self.__run_single_node_test(text, text_only=False, number_of_sentences=len(sentences))
+
+            # assert span is correctly split into sentences
+            self.assertEqual(len(spans), len(sentences))
+            for span, sentence in zip(spans, sentences):
+                self.assertEqual(span.text, sentence)
 
     def test_add_spans_to_multiple_sentences(self):
         self.__run_multiple_node_test(
@@ -341,7 +360,7 @@ class TestContainer(TestAssertions):
 
         pre_span = self.container.parsed(container_name)
         text_chunks = [
-            g.lstrip("\n\t")
+            g
             for g in pre_span.xpath(
                 "//xhtml:p//text()", namespaces={"xhtml": container.XHTML_NAMESPACE}
             )
@@ -351,12 +370,12 @@ class TestContainer(TestAssertions):
 
         post_span = self.container.parsed(container_name)
         post_text_chunks = [
-            g.lstrip("\n\t")
+            g
             for g in post_span.xpath(
                 "//xhtml:p//text()", namespaces={"xhtml": container.XHTML_NAMESPACE}
             )
         ]
-        self.assertListEqual(text_chunks, post_text_chunks)
+        self.assertEqual(''.join(text_chunks), ''.join(post_text_chunks))
 
     def test_github_issue_136(self):
         source_file = os.path.join(self.testfile_basedir, "page_github_136.html")
