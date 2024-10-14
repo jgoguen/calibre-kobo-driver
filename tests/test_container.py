@@ -277,7 +277,13 @@ class TestContainer(TestAssertions):
         if number_of_sentences is not None:
             self.assertEqual(len(node.getchildren()), number_of_sentences)
 
-        for span in node.getchildren():
+        para_count = 1
+        text_chunks = [
+            chunk.strip() for chunk in text.strip().split("\n") if chunk.split() != ""
+        ]
+        self.assertEqual(len(node.getchildren()), len(text_chunks))
+        for span, chunk in zip(node.getchildren(), text_chunks):
+            self.assertEqual(span.text, chunk)
             # spans should not end in whitespace (PR#191), and be nonempty
             self.assertFalse(re.match(r'\s', span.text[-1]))
             # tail of span should *only* be whitespace
@@ -286,8 +292,9 @@ class TestContainer(TestAssertions):
             # attrib is technically of type lxml.etree._Attrib, but functionally
             # it's a dict. Cast it here to make assertDictEqual() happy.
             self.assertDictEqual(
-                dict(span.attrib), {"id": "kobo.1.1", "class": "koboSpan"}
+                dict(span.attrib), {"id": f"kobo.1.{para_count}", "class": "koboSpan"}
             )
+            para_count += 1
 
         # remaining text should only contain whitespace
         self.assertTrue(re.match(r'\s*', node.text or ''))
@@ -340,7 +347,7 @@ class TestContainer(TestAssertions):
 
     def test_add_spans_to_multiple_sentences(self):
         self.__run_multiple_node_test(
-            ["Copyright", "by me.", "All rights reserved. All wrongs on retainer."]
+            ["Copyright", "by me.", "All rights reserved.", "All wrongs on retainer."]
         )
 
     def test_add_spans_to_pretty_printed_text(self):
