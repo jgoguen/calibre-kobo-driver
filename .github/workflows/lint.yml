@@ -3,10 +3,10 @@
 # yaml-language-server: $schema=https://json.schemastore.org/github-workflow
 name: Lint
 
-'on':
+"on":
   push:
     branches:
-      - '*'
+      - "*"
   pull_request:
 
 jobs:
@@ -14,12 +14,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - name: Set up Python 3.x
-        uses: actions/setup-python@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          python-version: 3.x
+          python-version: "3.11"
 
       - uses: psf/black@main
 
@@ -27,7 +27,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - uses: jgoguen/gh-actions/shellcheck@main
 
@@ -35,31 +35,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: yamllint
         uses: jgoguen/gh-actions/yaml-lint@main
         with:
           source: ./.github/workflows/
-
-  vale:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: File Changes
-        id: file_changes
-        uses: trilom/file-changes-action@v1.2.4
-
-      - name: Lint Markdown files
-        uses: errata-ai/vale-action@reviewdog
-        with:
-          files: '${{ steps.file_changes.outputs.files_modified }}'
-          styles: |
-            https://github.com/errata-ai/Microsoft/releases/latest/download/Microsoft.zip
-            https://github.com/errata-ai/proselint/releases/latest/download/proselint.zip
-            https://github.com/errata-ai/Joblint/releases/latest/download/Joblint.zip
-            https://github.com/errata-ai/write-good/releases/latest/download/write-good.zip
-        env:
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}

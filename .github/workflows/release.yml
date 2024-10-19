@@ -3,45 +3,35 @@
 # yaml-language-server: $schema=https://json.schemastore.org/github-workflow
 name: Populate Release
 
-'on':
+"on":
   push:
     tags:
-      - 'v*'
+      - "v*"
 
 jobs:
   upload-assets:
-    runs-on: 'ubuntu-latest'
+    runs-on: "ubuntu-latest"
 
     steps:
       - name: Install repo dependencies
         run: sudo apt install -y gettext
 
       - name: Check out release tag
-        uses: actions/checkout@v2.2.0
+        uses: actions/checkout@v4
 
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.x'
+          python-version: "3.11"
 
       - name: Fetch calibre
-        run: ./scripts/update-calibre.py 3
+        run: ./scripts/update-calibre.py
 
       - name: Build ZIP files
         run: ./scripts/build.sh build
 
       - name: Create release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.ref }}
-          release_name: ${{ github.ref }}
-          draft: false
-          prerelease: false
-
-      - name: Upload release assets
-        uses: softprops/action-gh-release@v1
-        with:
-          files: '*.zip'
+          files: "*.zip"
+          make_latest: true

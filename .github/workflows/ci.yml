@@ -23,12 +23,12 @@ jobs:
           - "ubuntu-latest"
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - name: Set up Python 3.x
-        uses: actions/setup-python@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          python-version: 3.x
+          python-version: "3.11"
 
       - name: Install dependencies
         run: |
@@ -69,5 +69,5 @@ jobs:
             python3 -m pip install -r tests/requirements.txt
           fi
 
-      - name: Run calibre Python ${{ matrix.python-version }} tests
+      - name: Run tests
         run: ./scripts/build.sh test
