@@ -23,7 +23,6 @@ from concurrent.futures import Future
 from concurrent.futures import ThreadPoolExecutor
 from copy import deepcopy
 from typing import Callable
-from typing import Dict
 from typing import Iterator
 from typing import List
 from typing import Optional
@@ -87,7 +86,7 @@ ELLIPSIS_RE = re.compile(r"(?u)(?<=\w)\s?(\.\s+?){2}\.", re.UNICODE | re.MULTILI
 MS_CRUFT_RE_1 = re.compile(r"<o:p>\s*</o:p>", re.UNICODE | re.MULTILINE)
 MS_CRUFT_RE_2 = re.compile(r"(?i)</?st1:\w+>", re.UNICODE | re.MULTILINE)
 TEXT_SPLIT_RE = re.compile(
-    r'(\S.*?(?:[\.\!\?\:][\'"\u201c\u201d\u2018\u2019\u2026]*(?=\s)|(?=\s*$)))',
+    r'(.*?(?:[\.\!\?\:][\'"\u201c\u201d\u2018\u2019\u2026]*(?=\s)|(?=\s*$)))',
     re.UNICODE | re.MULTILINE,
 )
 
@@ -605,7 +604,7 @@ class KEPubContainer(EpubContainer):
 
         # append first group (whitespace) as text
         if len(node) == 0:
-            node.text     = groups[0]
+            node.text = groups[0]
         else:
             node[-1].tail = groups[0]
 
