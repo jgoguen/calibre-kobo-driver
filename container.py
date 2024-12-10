@@ -347,13 +347,8 @@ class KEPubContainer(EpubContainer):
         # d : dashes
         # e : ellipses
         html = smartyPants(html, attr="qBde")
-
-        # Unicode char code for em-dash and en-dash not converted by smartyPants()
-        html = html.replace("\x97", " &#x2013; ")
-        html = html.replace("\u2013", " &#x2013; ")
-        html = html.replace("\u2014", " &#x2014; ")
-
         self.replace(name, self.parse_xhtml(html))
+
         self.commit_item(name, keep_parsed=True)
 
     def __run_async(self, func: Callable, args: List[Tuple[str, ...]]) -> None:
