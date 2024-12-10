@@ -275,19 +275,22 @@ class TestContainer(TestAssertions):
 
         # check number of sentences
         if number_of_sentences is not None:
-            self.assertEqual(len(node.getchildren()), number_of_sentences)
+            self.assertEqual(
+                number_of_sentences,
+                len(node.getchildren()),
+            )
 
         para_count = 1
         text_chunks = [
-            chunk.strip() for chunk in text.strip().split("\n") if chunk.split() != ""
+            chunk.rstrip() for chunk in text.split("\n") if chunk.strip() != ""
         ]
         self.assertEqual(len(node.getchildren()), len(text_chunks))
         for span, chunk in zip(node.getchildren(), text_chunks):
             self.assertEqual(span.text, chunk)
             # spans should not end in whitespace (PR#191), and be nonempty
-            self.assertFalse(re.match(r'\s', span.text[-1]))
+            self.assertFalse(re.match(r"\s", span.text[-1]))
             # tail of span should *only* be whitespace
-            self.assertTrue(re.match(r'\s*', span.tail or ''))
+            self.assertTrue(re.match(r"\s*", span.tail or ""))
 
             # attrib is technically of type lxml.etree._Attrib, but functionally
             # it's a dict. Cast it here to make assertDictEqual() happy.
@@ -297,10 +300,10 @@ class TestContainer(TestAssertions):
             para_count += 1
 
         # remaining text should only contain whitespace
-        self.assertTrue(re.match(r'\s*', node.text or ''))
+        self.assertTrue(re.match(r"\s*", node.text or ""))
 
         # complete text should remain the same
-        self.assertEqual(''.join(node.itertext()), text)
+        self.assertEqual("".join(node.itertext()), "".join(text_chunks))
 
     def test_add_spans_to_text(self):
         text_samples = [
@@ -309,12 +312,14 @@ class TestContainer(TestAssertions):
             "Hello, World!    ",
             "    Hello, World!    ",
             "\n\n    GIF is pronounced as it's spelled.\n   ",
-            " \"Yes, but I asked 'Why?'\" "
+            " \"Yes, but I asked 'Why?'\" ",
         ]
 
         for text in text_samples:
             for text_only in {True, False}:
-                self.__run_single_node_test(text, text_only=text_only, number_of_sentences=1)
+                self.__run_single_node_test(
+                    text, text_only=text_only, number_of_sentences=1
+                )
 
     def __run_multiple_node_test(self, text_nodes):  # type: (List[str]) -> None
         html = "<div>"
@@ -334,11 +339,18 @@ class TestContainer(TestAssertions):
         self.assertEqual(len(text_nodes), len(children))
         for text, node in zip(text_nodes, children):
             spans = node.getchildren()
-            # note: this regexp isn't being tested (it's known to be fallible, but good enough)
-            sentences = container.TEXT_SPLIT_RE.findall(text)
+            # note: this regexp isn't being tested (it's known to be fallible, but
+            # good enough)
+            sentences = [
+                txt
+                for txt in container.TEXT_SPLIT_RE.findall(text)
+                if txt.strip() != ""
+            ]
 
             # check spans are added correctly for phrase individually
-            self.__run_single_node_test(text, text_only=False, number_of_sentences=len(sentences))
+            self.__run_single_node_test(
+                text, text_only=False, number_of_sentences=len(sentences)
+            )
 
             # assert span is correctly split into sentences
             self.assertEqual(len(spans), len(sentences))
@@ -366,23 +378,14 @@ class TestContainer(TestAssertions):
         self.assertIn(container_name, self.container.name_path_map)
 
         pre_span = self.container.parsed(container_name)
-        text_chunks = [
-            g
-            for g in pre_span.xpath(
-                "//xhtml:p//text()", namespaces={"xhtml": container.XHTML_NAMESPACE}
-            )
-        ]
-
         self.container.add_kobo_spans(container_name)
-
         post_span = self.container.parsed(container_name)
-        post_text_chunks = [
-            g
-            for g in post_span.xpath(
-                "//xhtml:p//text()", namespaces={"xhtml": container.XHTML_NAMESPACE}
-            )
-        ]
-        self.assertEqual(''.join(text_chunks), ''.join(post_text_chunks))
+
+        self.assertEqual(
+            len(list(pre_span.itertext())), len(list(post_span.itertext()))
+        )
+        for pre, post in zip(pre_span.itertext(), post_span.itertext()):
+            self.assertEqual(pre, post, f"\npre='{pre}'\npost='{post}'")
 
     def test_github_issue_136(self):
         source_file = os.path.join(self.testfile_basedir, "page_github_136.html")

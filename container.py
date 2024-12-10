@@ -590,7 +590,7 @@ class KEPubContainer(EpubContainer):
     def _append_kobo_spans_from_text(
         self, node: etree._Element, text: str, name: str
     ) -> etree._Element:
-        if not text:
+        if not text or text == "":
             self.log.error(f"[{name}] No text passed, can't add spans")
             return False
 
@@ -606,6 +606,8 @@ class KEPubContainer(EpubContainer):
         # append each sentence in its own span
         segment_counter = 1
         for g, ws in zip(groups[1::2], groups[2::2]):
+            if g.strip() == "":
+                continue
             span = etree.Element(
                 f"{{{XHTML_NAMESPACE}}}span",
                 attrib={
