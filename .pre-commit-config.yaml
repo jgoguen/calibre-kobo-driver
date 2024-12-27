@@ -3,11 +3,6 @@ default_language_version:
   python: python3
 minimum_pre_commit_version: "2.7.1"
 repos:
-  - repo: https://github.com/psf/black
-    rev: 24.10.0 # Replace by any tag/version: https://github.com/psf/black/tags
-    hooks:
-      - id: black
-        language_version: python3 # Should be a command that runs python3.6+
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
     hooks:
@@ -15,10 +10,13 @@ repos:
       - id: mixed-line-ending
         args:
           - "--fix=lf"
-  - repo: https://github.com/pycqa/flake8
-    rev: "7.1.1"
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.8.4
     hooks:
-      - id: flake8
+      # Linter
+      - id: ruff
         args:
-          - "--builtins=_,ngettext,load_translations,get_resources"
-          - "--max-line-length=88"
+          - "--fix"
+          - "--show-fixes"
+      # Formatter
+      - id: ruff-format
