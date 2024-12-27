@@ -33,7 +33,7 @@ strictListInference = true
 strictParameterNoneValue = true
 
 [tool.ruff]
-builtins = ["_", "ngettext", "get_resources"]
+builtins = ["_", "ngettext", "get_resources", "load_translations"]
 exclude = ["**/__pycache__", "calibre-py3/**", "venv/**"]
 line-length = 88
 target-version = "py311"
