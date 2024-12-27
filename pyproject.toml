@@ -1,10 +1,46 @@
-[tool.black]
+[project]
+name = "calibre-kobo-driver"
+dynamic = ["version"]
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = "== 3.11"
+
+[tool.basedpyright]
+exclude = ["**/__pycache__", "calibre-py3/**", "venv/**"]
+extraPaths = ["../calibre", "../calibre/src"]
+pythonVersion = "3.11"
+reportAssertAlwaysTrue = "warning"
+reportDuplicateImport = "error"
+reportFunctionMemberAccess = "warning"
+reportImplicitOverride = false
+reportImplicitStringConcatenation = "warning"
+reportImportCycles = "warning"
+reportMissingImports = false
+reportMissingTypeStubs = false
+reportOptionalCall = "warning"
+reportOptionalIterable = "warning"
+reportOptionalMemberAccess = "warning"
+reportOptionalSubscript = "warning"
+reportPrivateUsage = "warning"
+reportUndefinedVariable = "none"
+reportUnnecessaryCast = "warning"
+reportUnnecessaryIsInstance = "warning"
+reportUnusedCallResult = false
+reportUnusedFunction = "error"
+reportUnusedVariable = "warning"
+strictDictionaryInference = true
+strictListInference = true
+strictParameterNoneValue = true
+
+[tool.ruff]
+builtins = ["_", "ngettext", "get_resources"]
+exclude = ["**/__pycache__", "calibre-py3/**", "venv/**"]
 line-length = 88
-target-version = ['py37', 'py38']
-include = '\.pyi?$'
-exclude = '''
-/(
-    \.git
-  | calibre\-py.*
-)/
-'''
+target-version = "py311"
+
+[tool.ruff.format]
+docstring-code-format = true
+exclude = ["*.pyi"]
+line-ending = "lf"
+quote-style = "double"
+skip-magic-trailing-comma = false
