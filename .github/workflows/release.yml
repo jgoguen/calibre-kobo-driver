@@ -14,10 +14,14 @@ jobs:
 
     steps:
       - name: Install repo dependencies
-        run: sudo apt install -y gettext
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gettext
 
       - name: Check out release tag
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -30,8 +34,20 @@ jobs:
       - name: Build ZIP files
         run: ./scripts/build.sh build
 
-      - name: Create release
-        uses: softprops/action-gh-release@v2
+      - name: Create GitHub release
+        if: runner.environment == 'github-hosted'
+        uses: https://github.com/softprops/action-gh-release@v2
         with:
-          files: "*.zip"
+          files: "release/*.zip"
           make_latest: true
+          generate_release_notes: true
+
+      - name: Create Forgejo release
+        if: runner.environment != 'github-hosted'
+        uses: https://code.forgejo.org/actions/forgejo-release@v2
+        with:
+          direction: upload
+          token: ${{ secrets.TOKEN }}
+          tag: ${{ github.ref_name }}
+          release-dir: release
+          release-notes-assistant: true

@@ -10,34 +10,58 @@ name: Lint
   pull_request:
 
 jobs:
-  black:
+  ruff:
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      - uses: psf/black@main
+      - name: Install Ruff
+        run: pip install ruff
+
+      - name: Lint Python
+        run: |
+          ruff check --output-format github
+          ruff format --diff
 
   shellcheck:
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
 
-      - uses: jgoguen/gh-actions/shellcheck@main
+      - name: Install ShellCheck
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y zsh shellcheck
+
+      - name: Run ShellCheck
+        run: shellcheck --severity=error --shell=sh **/*.sh
 
   yamllint:
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
-
-      - name: yamllint
-        uses: jgoguen/gh-actions/yaml-lint@main
         with:
-          source: ./.github/workflows/
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install yamllint
+        run: pip install yamllint
+
+      - name: Run yamllint
+        run: yamllint -f colored ./.github/workflows/

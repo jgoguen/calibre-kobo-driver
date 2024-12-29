@@ -82,7 +82,7 @@ compile_translations() {
 build_kte() {
 	/bin/cp -f ./device_init.py ./__init__.py
 
-	if [ -r ./KoboTouchExtended.zip ]; then
+	if [ -r ./release/KoboTouchExtended.zip ]; then
 		zip_args="-u"
 	else
 		zip_args=""
@@ -91,7 +91,7 @@ build_kte() {
 	# print the file names surrounded in quotes already or refer to a set of
 	# CLI flags.
 	# shellcheck disable=SC2046,SC2086
-	/usr/bin/zip ${zip_args} ./KoboTouchExtended.zip $(__common_files "kobotouch_extended") \
+	/usr/bin/zip ${zip_args} ./release/KoboTouchExtended.zip $(__common_files "kobotouch_extended") \
 		$(__all_css) ./container.py ./device/*.py
 
 	/bin/rm -f ./__init__.py plugin-import-name-*.txt
@@ -102,7 +102,7 @@ build_kepub_output() {
 	/bin/cp -f ./conversion_out_init.py ./__init__.py
 	/bin/cp -f ./conversion/output_init.py ./conversion/__init__.py
 
-	if [ -r "./KePub Output.zip" ]; then
+	if [ -r "./release/KePub Output.zip" ]; then
 		zip_args="-u"
 	else
 		zip_args=""
@@ -110,7 +110,7 @@ build_kepub_output() {
 	# We explicitly do not want to quote things here since they all print the
 	# file names surrounded in quotes already or refer to a set of CLI flags.
 	# shellcheck disable=SC2046,SC2086
-	/usr/bin/zip ${zip_args} "./KePub Output.zip" $(__common_files "kepubout") \
+	/usr/bin/zip ${zip_args} "./release/KePub Output.zip" $(__common_files "kepubout") \
 		$(__all_css) ./conversion/__init__.py ./container.py \
 		./conversion/kepub_output.py ./conversion/output_config.py
 
@@ -122,7 +122,7 @@ build_kepub_input() {
 	/bin/cp -f ./conversion_in_init.py ./__init__.py
 	/bin/cp -f ./conversion/input_init.py ./conversion/__init__.py
 
-	if [ -r "./KePub Input.zip" ]; then
+	if [ -r "./release/KePub Input.zip" ]; then
 		zip_args="-u"
 	else
 		zip_args=""
@@ -130,7 +130,7 @@ build_kepub_input() {
 	# We explicitly do not want to quote things here since they all print the
 	# file names surrounded in quotes already or refer to a set of CLI flags.
 	# shellcheck disable=SC2046,SC2086
-	/usr/bin/zip ${zip_args} "./KePub Input.zip" $(__common_files "kepubin") \
+	/usr/bin/zip ${zip_args} "./release/KePub Input.zip" $(__common_files "kepubin") \
 		./conversion/__init__.py ./container.py ./conversion/kepub_input.py \
 		./conversion/input_config.py
 
@@ -141,7 +141,7 @@ build_kepub_input() {
 build_kepub_md_reader() {
 	/bin/cp -f ./md_reader_init.py ./__init__.py
 
-	if [ -r "./KePub Metadata Reader.zip" ]; then
+	if [ -r "./release/KePub Metadata Reader.zip" ]; then
 		zip_args="-u"
 	else
 		zip_args=""
@@ -149,7 +149,7 @@ build_kepub_md_reader() {
 	# We explicitly do not want to quote things here since they all print the
 	# file names surrounded in quotes already or refer to a set of CLI flags.
 	# shellcheck disable=SC2046,SC2086
-	/usr/bin/zip ${zip_args} "./KePub Metadata Reader.zip" $(__common_files "kepubmdreader") \
+	/usr/bin/zip ${zip_args} "./release/KePub Metadata Reader.zip" $(__common_files "kepubmdreader") \
 		./metadata/__init__.py ./metadata/reader.py
 
 	/bin/rm -f ./__init__.py plugin-import-name-*.txt
@@ -159,7 +159,7 @@ build_kepub_md_reader() {
 build_kepub_md_writer() {
 	/bin/cp -f ./md_writer_init.py ./__init__.py
 
-	if [ -r "./KePub Metadata Writer.zip" ]; then
+	if [ -r "./release/KePub Metadata Writer.zip" ]; then
 		zip_args="-u"
 	else
 		zip_args=""
@@ -167,7 +167,7 @@ build_kepub_md_writer() {
 	# We explicitly do not want to quote things here since they all print the
 	# file names surrounded in quotes already or refer to a set of CLI flags.
 	# shellcheck disable=SC2046,SC2086
-	/usr/bin/zip ${zip_args} "./KePub Metadata Writer.zip" $(__common_files "kepubmdwriter") \
+	/usr/bin/zip ${zip_args} "./release/KePub Metadata Writer.zip" $(__common_files "kepubmdwriter") \
 		./metadata/__init__.py ./metadata/writer.py
 
 	/bin/rm -f ./__init__.py plugin-import-name-*.txt
@@ -175,6 +175,10 @@ build_kepub_md_writer() {
 
 # Build all plugin ZIP files
 build() {
+	if [ -d ./release ]; then
+		rm -r ./release
+	fi
+	mkdir ./release
 	build_kte
 	build_kepub_output
 	build_kepub_input
@@ -201,8 +205,13 @@ run_tests() {
 	touch ./__init__.py
 
 	if [ -z "${GITHUB_WORKFLOW:-""}" ]; then
-		# Not running in Github, create calibre directories
-		CALIBRE_DIR="$(mktemp -d XXXXXXXXXXX)"
+		# Not running in repo actions, create calibre directories
+		# Of course, macOS and Linux need different options to mktemp...
+		if [ -f /etc/os-release ]; then
+			CALIBRE_DIR=$(mktemp --tmpdir -d XXXXXXXXXXX)
+		else
+			CALIBRE_DIR="$(mktemp -d XXXXXXXXXXX)"
+		fi
 		/bin/mkdir -p "${CALIBRE_DIR}/config" "${CALIBRE_DIR}/tmp"
 		export CALIBRE_CONFIG_DIRECTORY="${CALIBRE_DIR}/config"
 		export CALIBRE_TEMP_DIR="${CALIBRE_DIR}/tmp"
@@ -217,7 +226,7 @@ run_tests() {
 		printf 'Installing plugin file "%s" to "%s"\n' "${plugin}" "${CALIBRE_CONFIG_DIRECTORY}"
 		"${CALIBRE_BIN_BASE}/calibre-customize" -a "${plugin}"
 		"${CALIBRE_BIN_BASE}/calibre-customize" --enable-plugin "$(basename "${plugin%.zip}")"
-	done < <(/usr/bin/find . -type f -maxdepth 1 -type f -name '*.zip')
+	done < <(/usr/bin/find release -type f -maxdepth 1 -type f -name '*.zip')
 
 	while IFS=$'\n' read -r test_file; do
 		printf 'Executing test: %s\n' "${test_file}"
@@ -226,29 +235,6 @@ run_tests() {
 
 	/bin/rm -f ./__init__.py
 }
-
-# Update Vale styles
-vale_styles() {
-	MKTEMP_BIN="$(command -v mktemp)"
-	CURL_BIN="$(command -v curl)"
-	UNZIP_BIN="$(command -v unzip)"
-	STYLE_DIR="$("${MKTEMP_BIN}" -d)"
-
-	for n in Microsoft proselint write-good Joblint; do
-		if [ ! -d .github/vale-styles ]; then
-			mkdir -p .github/vale-styles
-		fi
-		if [ -d ".github/vale-styles/${n}" ]; then
-			/bin/rm -r ".github/vale-styles/${n}"
-		fi
-
-		"${CURL_BIN}" -fsSL "https://github.com/errata-ai/${n}/releases/latest/download/${n}.zip" >"${STYLE_DIR}/${n}.zip"
-		"${UNZIP_BIN}" "${STYLE_DIR}/${n}.zip" -d .github/vale-styles
-	done
-
-	/bin/rm -r "${STYLE_DIR}"
-}
-
 
 # Check run mode; default if no arguments are given is 'build'
 if [ "$#" -eq 0 ]; then
@@ -259,27 +245,20 @@ else
 		OPT="${1}"
 		shift
 		case "${OPT}" in
-			build)
-				compile_translations
-				build
-				;;
-			KoboTouchExtended.zip)
-				compile_translations
-				build_kte
-				;;
-			test)
-				build
-				run_tests
-				;;
-			pot|translations)
-				make_pot
-				;;
-			vale|styles)
-				vale_styles
-				;;
-			clean)
-				clean
-				;;
+		build)
+			compile_translations
+			build
+			;;
+		test)
+			build
+			run_tests
+			;;
+		pot | translations)
+			make_pot
+			;;
+		clean)
+			clean
+			;;
 		esac
 	done
 fi

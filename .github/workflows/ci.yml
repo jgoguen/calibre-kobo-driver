@@ -7,8 +7,6 @@ name: CI
 # using the UI or API.
 "on":
   push:
-    branches:
-      - "*"
   pull_request:
 
 # A workflow run is made up of one or more jobs that can run sequentially or
@@ -24,6 +22,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -34,7 +34,8 @@ jobs:
         run: |
           PLATFORM=$(uname)
           if [ "${PLATFORM}" = "Linux" ]; then
-            sudo apt-get install -y zsh gettext libegl1 libopengl0
+            sudo apt-get update
+            sudo apt-get install -y zsh gettext libegl1 libopengl0 libglx0 libxkbcommon0
           fi
 
       # yamllint disable rule:line-length
