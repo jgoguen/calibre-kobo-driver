@@ -25,3 +25,4 @@ TODO
 /__init__.py
 .DS_Store
 translations/*.mo
+venv
